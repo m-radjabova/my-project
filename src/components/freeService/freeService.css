@@ -1,0 +1,248 @@
+.free-service {
+  background: linear-gradient(135deg, #fff6f6 0%, #fef9f5 100%);
+  padding: 80px 5%;
+  margin-top: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.free-service::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url(../../assets/BG.svg);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.free-service-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.free-service .left-side {
+  flex: 1;
+  position: relative;
+  min-height: 350px;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-container .bg {
+  width: 100%;
+  height: auto;
+  max-width: 450px;
+  filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.1));
+  animation: float 6s ease-in-out;
+}
+
+.image-container .free-delivery {
+  position: absolute;
+  top: -40px;
+  left: 165px;
+  width: 120px;
+  height: 120px;
+  animation: bounce 3s ease-in-out infinite;
+}
+
+.image-container .group {
+  position: absolute;
+  bottom: -20px;
+  right: 90px;
+  width: 100px;
+  height: 100px;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.free-service .right-side {
+  flex: 1;
+  text-align: left;
+  max-width: 500px;
+}
+
+.right-side h1 {
+  margin-bottom: 20px;
+}
+
+.title-line {
+  display: block;
+  font-weight: 600;
+  font-size: 2.5rem;
+  line-height: 1.2;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.title-highlight {
+  display: block;
+  font-weight: 700;
+  font-size: 3rem;
+  color: #e74c3c;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pricing {
+  margin: 25px 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.original-price {
+  font-size: 1.8rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.discounted-price {
+  font-weight: 700;
+  font-size: 2.5rem;
+  color: #e74c3c;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 400px;
+}
+
+.cta-button {
+  background: linear-gradient(to right, #e74c3c, #ff6b6b);
+  color: white;
+  border: none;
+  padding: 15px 35px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+.cta-button:active {
+  transform: translateY(0);
+}
+
+.button-icon {
+  transition: transform 0.3s ease;
+}
+
+.cta-button:hover .button-icon {
+  transform: translateX(5px);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 992px) {
+  .free-service-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
+  }
+  
+  .free-service .right-side {
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .description {
+    margin: 0 auto 30px;
+  }
+  
+  .cta-button {
+    margin: 0 auto;
+    justify-content: center;
+  }
+  
+  .title-line {
+    font-size: 2rem;
+  }
+  
+  .title-highlight {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .free-service {
+    padding: 60px 5%;
+    margin-top: 80px;
+  }
+  
+  .title-line {
+    font-size: 1.8rem;
+  }
+  
+  .title-highlight {
+    font-size: 2rem;
+  }
+  
+  .original-price {
+    font-size: 1.5rem;
+  }
+  
+  .discounted-price {
+    font-size: 2rem;
+  }
+  
+  .image-container .free-delivery {
+    width: 80px;
+    height: 80px;
+    right: 10px;
+  }
+  
+  .image-container .group {
+    width: 70px;
+    height: 70px;
+  }
+}

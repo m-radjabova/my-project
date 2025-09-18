@@ -1,41 +1,35 @@
-import PostsList from "./components/posts/PostsList"
-import UserList from "./components/users/UserList";
-import TodosList from "./components/todos/TodosList";
-import { NavLink, Route, Routes } from "react-router-dom";
-import CommentList from "./components/comments/CommentList";
-import AlbumList from "./components/albums/AlbumList";
-import PhotosList from "./components/albums/PhotosList";
+import { Route, Routes } from "react-router-dom"
+import Home from "./pages/home/Home"
+import MainLayout from "./layout/MainLayout"
+import AuthLayout from "./layout/AuthLayout"
+import Login from "./pages/login/Login"
+import Register from "./pages/login/Register"
+import ProtectedRoute from "./components/ProtectedRoute"
+import AdminLayout from "./layout/AdminLayout"
 
 function App() {
-
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex gap-4">
-        <NavLink to={'/users'} className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>
-          Users
-        </NavLink>
-        <NavLink to={'/posts'} className={({ isActive }) => "header-link" + (isActive ? " active" : "")} >
-          Posts
-        </NavLink>
-        <NavLink to={'/todos'} className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>
-          Todos
-        </NavLink>
-        <NavLink to={'/albums'} className={({ isActive }) => "header-link" + (isActive ? " active" : "")}>
-          Albums
-        </NavLink>
-      </div>
-
+    <div>
       <Routes>
-        <Route path="/" element={<UserList />} />
-        <Route path="/users" element={<UserList />} />
-        <Route path="/posts" element={<PostsList />} />
-        <Route path="/posts/:id/comments" element={<CommentList />} />
-        <Route path="/todos" element={<TodosList />} />
-        <Route path="/albums" element={<AlbumList />} />\
-        <Route path="/albums/:id/photos" element={<PhotosList />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+        </Route>
 
-   
-        <Route path="*" element={<div>404 page not found</div>} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/sign-up" element={<Register />} />
+        </Route>
+        
+        <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="ADMIN">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+
+          </Route>
       </Routes>
     </div>
   )

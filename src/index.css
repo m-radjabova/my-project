@@ -1,14 +1,9 @@
-@import './components/users/userList.css';
-@import './components/posts/postsList.css';
-@import "./css/DeleteModal.css";
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
+@import "./components/header/header.css";
+@import "./components/main/hero.css";
+@import "./components/freshProduct/freshProduct.css";
+@import "./components/freeService/freeService.css";
+@import "./components//mobileApp/mobileApp.css";
+
 @import "tailwindcss";
 
-.content{
-    font-family: "Rubik", sans-serif;
-    margin-top: 20px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+
