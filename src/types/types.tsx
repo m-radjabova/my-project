@@ -6,3 +6,21 @@ export interface User {
   confirmPassword: string;
   roles: string[]
 }
+
+
+export interface Category {
+  id: string;
+  name: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  oldPrice: number; 
+  categoryId: string;
+  imageUrl: string;
+  weight: string;
+  rating: number;
+}

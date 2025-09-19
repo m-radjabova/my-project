@@ -2,7 +2,9 @@
 @import "./components/main/hero.css";
 @import "./components/freshProduct/freshProduct.css";
 @import "./components/freeService/freeService.css";
-@import "./components//mobileApp/mobileApp.css";
+@import "./components/mobileApp/mobileApp.css";
+@import "./components/product/products.css";
+@import "./components/product/categories.css";
 
 @import "tailwindcss";
 
