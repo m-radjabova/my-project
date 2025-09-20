@@ -51,7 +51,10 @@ function Hero() {
   const carousel = carouselQuery.data;
 
   if (carouselQuery.isLoading) {
-    return <div>Loading...</div>;
+    return <div className="products-loading">
+                <div className="loading-spinner"></div>
+                <p>Loading...</p>
+            </div>;
   }
   if (carouselQuery.isError) {
     return <div>Error loading carousel data.</div>;

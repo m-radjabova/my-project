@@ -6,8 +6,17 @@ import Login from "./pages/login/Login"
 import Register from "./pages/login/Register"
 import ProtectedRoute from "./components/ProtectedRoute"
 import AdminLayout from "./layout/AdminLayout"
+import useLoading from "./hooks/useLoading"
+import IsLoading from "./components/IsLoading"
+import NotFound from "./components/NotFound"
 
 function App() {
+  const { loading } = useLoading();
+
+  if (loading) {
+    return <IsLoading />;
+  }
+
   return (
     <div>
       <Routes>
@@ -30,6 +39,7 @@ function App() {
           >
 
           </Route>
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   )

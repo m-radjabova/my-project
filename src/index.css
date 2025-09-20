@@ -7,6 +7,7 @@
 @import "./components/product/categories.css";
 @import "./components/footer/footer.css";
 @import "./components/bestSelling/bestSelling.css";
+@import "./css/isLoading.css";
 
 @import "tailwindcss";
 
