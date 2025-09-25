@@ -7,6 +7,8 @@ import { Avatar, Box, Menu, MenuItem, Typography } from '@mui/material';
 import { FaChevronDown, FaSearch, FaSignOutAlt, FaUserAlt, FaUserShield } from 'react-icons/fa';
 import { useState } from 'react';
 import { IoIosMenu } from 'react-icons/io';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase';
 
 function Header() {
     const { state:{ user, cart}, dispatch } = useContextPro();
@@ -26,10 +28,17 @@ function Header() {
         setAnchorEl(null);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        dispatch({ type: "LOGOUT" });
-        handleMenuClose();
+    const handleLogout =  async () => {
+        try{
+          await signOut(auth);
+        } catch (err) {
+          console.log(err);
+        } finally{
+          localStorage.removeItem("token");
+          dispatch({ type: "LOGOUT" });
+          localStorage.removeItem("role");
+          handleMenuClose();
+        }
     };
     
   return (

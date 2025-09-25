@@ -36,3 +36,32 @@ export interface CarouselItem {
   imgUrl: string;
   createdAt: string;
 }
+
+
+export interface OrderProduct {
+  id: string;
+  product: Product;
+  price: number;
+  quantity: number;
+  totalPrice: number;
+  name: string;
+  imageUrl: string;
+  weight: string;
+  rating: number;
+  description: string;
+  createdAt: Date;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  user: User;
+  totalPrice: number;
+  products: OrderProduct[];
+  createdAt: Date;
+  status: string;
+  paymentMethod: string;
+  shippingAddress: string;
+  notes: string;
+  deliveryDate: Date;
+}

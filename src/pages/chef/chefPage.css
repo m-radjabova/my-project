@@ -1,0 +1,499 @@
+.chef-page {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.chef-page-header {
+    background: linear-gradient(135deg, #E21A43 0%, #c2185b 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(226, 26, 67, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.chef-page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.chef-page-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.chef-icon {
+    font-size: 3rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+}
+
+.title-container h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.title-container p {
+    margin: 5px 0 0 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.orders-count {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.count-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.status-filter {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    background: transparent;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.filter-btn.active {
+    background: white;
+    color: #E21A43;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 25px;
+}
+
+.order-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(226, 26, 67, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(226, 26, 67, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.order-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: #E21A43;
+}
+
+.order-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(226, 26, 67, 0.15);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.order-customer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.customer-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #E21A43 0%, #c2185b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.customer-icon {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.order-customer h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.order-id {
+    font-size: 0.85rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending {
+    background: #ffeaa7;
+    color: #e17055;
+}
+
+.status-preparing {
+    background: #81ecec;
+    color: #00cec9;
+}
+
+.status-ready {
+    background: #55efc4;
+    color: #00b894;
+}
+
+.status-completed {
+    background: #a29bfe;
+    color: #6c5ce7;
+}
+
+.status-cancelled {
+    background: #fab1a0;
+    color: #d63031;
+}
+
+.order-details {
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+
+.detail-icon {
+    color: #E21A43;
+    font-size: 1.1rem;
+    min-width: 20px;
+}
+
+.address-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order-notes {
+    font-style: italic;
+    color: #718096;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-left: 3px solid #E21A43;
+}
+
+.order-products {
+    margin-bottom: 20px;
+}
+
+.order-products h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #2d3748;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.chef-product-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chef-product-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.chef-product-card:hover {
+    background: #edf2f7;
+    transform: translateX(5px);
+}
+
+.chef-product-image-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.chef-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.product-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.chef-product-quantity {
+    font-weight: 700;
+    color: #E21A43;
+    font-size: 1rem;
+}
+
+.chef-product-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.chef-product-description {
+    font-size: 0.85rem;
+    color: #718096;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.chef-product-price {
+    font-weight: 700;
+    color: #E21A43;
+}
+
+.chef-product-weight {
+    color: #a0aec0;
+}
+
+.order-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.update-btn {
+    background: linear-gradient(135deg, #E21A43 0%, #c2185b 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(226, 26, 67, 0.3);
+}
+
+.update-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(226, 26, 67, 0.4);
+}
+
+.details-btn {
+    background: transparent;
+    color: #E21A43;
+    border: 2px solid #E21A43;
+}
+
+.details-btn:hover {
+    background: #E21A43;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.no-orders {
+    text-align: center;
+    padding: 80px 20px;
+    color: #718096;
+}
+
+.no-orders-icon {
+    font-size: 5rem;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-orders h3 {
+    margin: 0 0 10px 0;
+    color: #4a5568;
+    font-size: 1.5rem;
+}
+
+.no-orders p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .chef-page {
+        padding: 15px;
+    }
+    
+    .chef-page-header {
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    .chef-page-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    
+    .title-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .orders-count {
+        align-self: stretch;
+        text-align: center;
+    }
+    
+    .orders-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .order-card {
+        padding: 20px;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .order-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .chef-product-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .product-header {
+        justify-content: center;
+    }
+}
+
+/* Animation for new orders */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.order-card {
+    animation: slideIn 0.5s ease-out;
+}

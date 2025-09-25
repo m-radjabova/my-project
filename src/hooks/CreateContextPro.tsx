@@ -26,8 +26,19 @@ type REMOVE_FROM_CARTAction = { type: "REMOVE_FROM_CART", payload: string }
 type ADD_TO_CARTAction = { type: "ADD_TO_CART", payload: Product }
 type INCREASE_QUANTITY = { type: "INCREASE_QUANTITY", payload: string }
 type DECREASE_QUANTITY = { type: "DECREASE_QUANTITY", payload: string }
+type CLEAR_CART = { type: "CLEAR_CART" }
 
-type Action = SETAction | LOGOUTAction | SETLoadingAction | EDITUserAction | CHANGE_PASSWORDAction | AddUserAction | REMOVE_FROM_CARTAction | ADD_TO_CARTAction | INCREASE_QUANTITY | DECREASE_QUANTITY
+type Action = SETAction 
+| LOGOUTAction 
+| SETLoadingAction 
+| EDITUserAction 
+| CHANGE_PASSWORDAction 
+| AddUserAction 
+| REMOVE_FROM_CARTAction 
+| ADD_TO_CARTAction 
+| INCREASE_QUANTITY 
+| DECREASE_QUANTITY
+| CLEAR_CART
 
 
 export interface ContextType {
@@ -57,6 +68,8 @@ function reducer(state: TypeState, action: Action): TypeState {
             return { ...state, cart: state.cart.map((p) => p.id === action.payload ? { ...p, quantity: p.quantity + 1 } : p) }
         case "DECREASE_QUANTITY":
             return { ...state, cart: state.cart.map((p) => p.id === action.payload ? { ...p, quantity: p.quantity - 1 } : p) }
+        case "CLEAR_CART":
+            return {...state,cart: []}
         default:
             return state;
     }

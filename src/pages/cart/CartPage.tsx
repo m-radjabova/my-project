@@ -1,11 +1,13 @@
-
-import { FaShoppingCart, FaTrash, FaArrowLeft, FaCreditCard, FaTag } from 'react-icons/fa';
+import { FaShoppingCart, FaTrash, FaArrowLeft, FaTag } from 'react-icons/fa';
 import { IoBagCheckOutline } from 'react-icons/io5';
 import useContextPro from '../../hooks/useContextPro';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types/types';
+import useLoading from '../../hooks/useLoading';
+import IsLoading from '../../components/IsLoading';
 
 function CartPage() {
+    const { loading } = useLoading();
     const { state: { cart }, dispatch } = useContextPro();
     const toNumber = (value: unknown) => {
         const n = Number(value);
@@ -17,9 +19,6 @@ function CartPage() {
     const totalPrice = cart.reduce((total, item) => total + toNumber(item.price) * toNumber(item.quantity ?? 1), 0);
     const totalSavings = cart.reduce((total, item) => total + (toNumber(item.oldPrice) - toNumber(item.price)) * toNumber(item.quantity ?? 1), 0);
     const navigate = useNavigate();
-    const handleCheckout = () => {
-        alert('Proceeding to checkout!');
-    };
 
     const deleteProduct = (cart : Product) => {
         if(cart.quantity === 1) {
@@ -29,13 +28,19 @@ function CartPage() {
         }
     }
 
+    if (loading) {
+        return <IsLoading />;
+    }
+
     return (
         <div className="cart-page">
             <div className="cart-container">
-                <h1 className="cart-title">
-                    <FaShoppingCart className="cart-title-icon" />
-                    Shopping Cart
-                </h1>
+                <div className="cart-page-title">
+                    <h1>
+                        <FaShoppingCart />
+                        Shopping Cart
+                    </h1>
+                </div>
                 
                 {cart.length === 0 ? (
                     <div className="empty-cart">
@@ -114,9 +119,8 @@ function CartPage() {
                                     <span>Total Amount</span>
                                     <span>${totalPrice.toFixed(2)}</span>
                                 </div>
-                                <button className="checkout-btn" onClick={handleCheckout}>
-                                    <FaCreditCard className="btn-icon" />
-                                    Proceed to Checkout
+                                <button className="checkout-btn">
+                                    Order
                                 </button>
                             </div>
                         </div>
