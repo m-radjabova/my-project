@@ -33,23 +33,17 @@ function useUsers() {
   const updateUserRole = async (userId: string, newRoles: string[]) => {
     try {
       const userRef = doc(db, "users", userId);
-      const userSnap = await getDocs(query(collection(db, "users"), orderBy("createdAt", "asc")));
-      const userDoc = userSnap.docs.find((d) => d.id === userId);
-      if (!userDoc) {
-        toast.error("User not found!");
-        return;
-      }
-      const currentRoles: string[] = Array.isArray(userDoc.data().roles) ? userDoc.data().roles : [];
-      const newRolesArray = Array.isArray(newRoles) ? newRoles : [newRoles];
-      const updatedRoles = Array.from(new Set([...currentRoles, ...newRolesArray]));
-      await updateDoc(userRef, { roles: updatedRoles });
+
+      await updateDoc(userRef, { roles: newRoles }); 
+
       toast.success("User roles updated!");
       await getUsers();
-
     } catch (error) {
       console.error("Error updating user role:", error);
+      toast.error("Failed to update roles");
     }
-  }
+  };
+
 
   return { users, loading, updateUserRole };
 }

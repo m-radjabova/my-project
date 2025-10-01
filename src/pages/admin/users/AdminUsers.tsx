@@ -1,15 +1,36 @@
 import { useState } from "react";
-import { FaSave, FaUser, FaTimes, FaUserShield, FaUtensils, FaConciergeBell } from "react-icons/fa";
+import Select, { type MultiValue } from "react-select";
+import { FaSave, FaUser } from "react-icons/fa";
 import useUsers from "../../../hooks/useUsers";
+import { customSelectStyles } from "../../../utils";
+
+type RoleOption = {
+  value: string;
+  label: string;
+};
 
 function AdminUsers() {
   const { users, updateUserRole, loading } = useUsers();
-  const [selectedRoles, setSelectedRoles] = useState<{ [key: string]: string[] }>({});
+  const [selectedRoles, setSelectedRoles] = useState<{
+    [key: string]: string[];
+  }>({});
   const [isSaving, setIsSaving] = useState<{ [key: string]: boolean }>({});
 
-  const handleRoleChange = (userId: string, e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = Array.from(e.target.selectedOptions, (option) => option.value);
-    setSelectedRoles((prev) => ({ ...prev, [userId]: selected }));
+  const roleOptions = (): RoleOption[] => [
+    { value: "ADMIN", label: "ADMIN" },
+    { value: "CHEF", label: "CHEF" },
+    { value: "WAITER", label: "WAITER" },
+    { value: "USER", label: "USER" }
+  ];
+  
+  const handleRoleChange = (
+    userId: string,
+    selected: MultiValue<{ value: string; label: string }>
+  ) => {
+    const roles = selected.map(
+      (option: { value: string; label: string }) => option.value
+    );
+    setSelectedRoles((prev) => ({ ...prev, [userId]: roles }));
   };
 
   const saveRoleChange = async (userId: string) => {
@@ -23,23 +44,6 @@ function AdminUsers() {
     }
   };
 
-  const getRoleBadge = (role: string) => {
-    const roleConfig = {
-      ADMIN: { color: "danger", icon: <FaUserShield className="me-1" /> },
-      CHEF: { color: "warning", icon: <FaUtensils className="me-1" /> },
-      WAITER: { color: "info", icon: <FaConciergeBell className="me-1" /> }
-    };
-    
-    const config = roleConfig[role as keyof typeof roleConfig] || { color: "secondary", icon: <FaUser className="me-1" /> };
-    
-    return (
-      <span className={`badge bg-soft-${config.color} text-${config.color} p-2 me-1 mb-1 d-inline-flex align-items-center`}>
-        {config.icon}
-        {role}
-      </span>
-    );
-  };
-
   if (loading) {
     return (
       <div className="admin-carousel">
@@ -50,101 +54,91 @@ function AdminUsers() {
       </div>
     );
   }
-  
+
   return (
     <div className="container py-4">
       <div className="mb-4 text-center">
         <h2 className="fw-bold text-center text-gradient text-primary">
-          <FaUser className=" w-100 me-2" />
+          <FaUser className="w-100 me-2" />
           User Management
         </h2>
         <p className="text-muted">Manage user roles and permissions</p>
       </div>
-      
+
       <div className="card shadow-soft border-0 rounded-3 overflow-hidden">
-        <div className="card-header bg-soft-primary border-0 py-3">
-        </div>
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="bg-soft-secondary">
+            <table className="table table-hover table-striped align-middle mb-0">
+              <thead className="bg-light">
                 <tr>
-                  <th className="ps-4 py-3 fw-semibold text-dark border-0">User Information</th>
-                  <th className="py-3 fw-semibold text-dark border-0" style={{ width: "250px" }}>Current Roles</th>
-                  <th className="py-3 fw-semibold text-dark border-0" style={{ width: "250px" }}>Assign New Roles</th>
-                  <th className="pe-4 py-3 fw-semibold text-dark border-0 text-end" style={{ width: "200px" }}>Actions</th>
+                  <th className="ps-4 py-3 text-uppercase small fw-bold">
+                    User Information
+                  </th>
+                  <th className="py-3 text-uppercase small fw-bold">
+                    Current Roles
+                  </th>
+                  <th className="py-3 text-uppercase small fw-bold">
+                    Assign Roles
+                  </th>
+                  <th className="pe-4 py-3 text-uppercase small fw-bold text-end">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user, index) => {
-                  const currentRoles = selectedRoles[user.id] ?? user.roles ?? [];
+                {users.map((user) => {
+                  const currentRoles =
+                    selectedRoles[user.id] ?? user.roles ?? [];
+
                   return (
-                    <tr key={user.id} className={index % 2 === 0 ? 'bg-soft-light' : ''}>
-                      <td className="ps-4 py-3 border-0">
-                        <div className="d-flex align-items-center">
-                          <div className="bg-soft-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
-                               style={{ width: '45px', height: '45px' }}>
-                            <FaUser className="text-primary" size={18} />
-                          </div>
-                          <div>
-                            <div className="fw-semibold text-dark">{user.name}</div>
-                            <small className="text-muted">{user.email}</small>
-                          </div>
+                    <tr key={user.id}>
+                      <td className="ps-4 py-3">
+                        <div className="d-flex flex-column">
+                          <span className="fw-semibold">{user.name}</span>
+                          <small className="text-muted">{user.email}</small>
                         </div>
                       </td>
-                      <td className="py-3 border-0">
-                        <div className="d-flex flex-wrap">
-                          {user.roles?.map(role => getRoleBadge(role))}
-                          {(!user.roles || user.roles.length === 0) && (
-                            <span className="badge bg-soft-secondary text-secondary p-2">No roles assigned</span>
-                          )}
-                        </div>
+                      <td className="py-3">
+                        {user.roles?.length ? (
+                          <span className="badge bg-info-subtle text-info">
+                            {user.roles.join(", ")}
+                          </span>
+                        ) : (
+                          <span className="badge bg-secondary-subtle text-secondary">
+                            No roles
+                          </span>
+                        )}
                       </td>
-                      <td className="py-3 border-0">
-                        <select
-                          multiple
-                          className="form-select border-soft shadow-soft"
-                          size={3}
-                          value={currentRoles}
-                          onChange={(e) => handleRoleChange(user.id, e)}
-                          style={{ borderRadius: '8px', border: '1px solid #dee2e6' }}
+                      <td className="py-3" style={{ minWidth: "220px" }}>
+                        <Select
+                          isMulti
+                          options={roleOptions()}
+                          value={currentRoles.map((r: string) => ({
+                            value: r,
+                            label: r,
+                          }))}
+                          styles={customSelectStyles}
+                          onChange={(selected) =>
+                            handleRoleChange(user.id, selected)
+                          }
+                          className="basic-multi-select"
+                          classNamePrefix="select"
+                        />
+                      </td>
+                      <td className="pe-4 py-3 text-end">
+                        <button
+                          className="btn btn-success btn-sm rounded-pill px-3"
+                          onClick={() => saveRoleChange(user.id)}
+                          disabled={isSaving[user.id]}
                         >
-                          <option value="ADMIN" className="text-danger fw-semibold">ADMIN</option>
-                          <option value="CHEF" className="text-warning fw-semibold">CHEF</option>
-                          <option value="WAITER" className="text-info fw-semibold">WAITER</option>
-                        </select>
-                      </td>
-                      <td className="pe-4 py-3 border-0 text-end">
-                        <div className="d-flex gap-2 justify-content-end">
-                          <button
-                            className="btn btn-soft-success btn-sm d-flex align-items-center gap-1 px-3 py-2"
-                            onClick={() => saveRoleChange(user.id)}
-                            disabled={isSaving[user.id]}
-                            style={{ borderRadius: '6px', transition: 'all 0.3s' }}
-                          >
-                            {isSaving[user.id] ? (
-                              <>
-                                <span
-                                  className="spinner-border spinner-border-sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                ></span>
-                                Saving...
-                              </>
-                            ) : (
-                              <>
-                                <FaSave /> Save
-                              </>
-                            )}
-                          </button>
-                          <button 
-                          
-                            className="btn btn-soft-danger btn-sm d-flex align-items-center gap-1 px-3 py-2"
-                            style={{ borderRadius: '6px', transition: 'all 0.3s' }}
-                          >
-                            <FaTimes /> Remove
-                          </button>
-                        </div>
+                          {isSaving[user.id] ? (
+                            <span className="spinner-border spinner-border-sm"></span>
+                          ) : (
+                            <>
+                              <FaSave className="me-1" /> Save
+                            </>
+                          )}
+                        </button>
                       </td>
                     </tr>
                   );
