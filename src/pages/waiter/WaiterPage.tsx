@@ -4,6 +4,7 @@ import {
   FaCommentAlt,
   FaMapMarkerAlt,
   FaMoneyBillWave,
+  FaPhone,
   FaTruck,
   FaUser,
 } from "react-icons/fa";
@@ -51,16 +52,16 @@ function WaiterPage() {
   }
 
   const updateStatus = async (orderId: string, newStatus: string) => {
-          try {
-              setSubmittingId(orderId); 
-              const orderRef = doc(db, "orders", orderId);
-              await updateDoc(orderRef, { status: newStatus });
-          } catch (error) {
-              console.error("Error updating order status:", error);
-          } finally {
-              setSubmittingId(null); 
-          }
-        };
+    try {
+      setSubmittingId(orderId);
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, { status: newStatus });
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    } finally {
+      setSubmittingId(null);
+    }
+  };
   return (
     <div className="chef-page">
       <div className="chef-page-header">
@@ -149,49 +150,60 @@ function WaiterPage() {
                       {order.status}
                     </div>
                   </div>
-                 <div className="order-details">
-                                           {order.shippingAddress && (
-                                             <div className="detail-item">
-                                               <FaMapMarkerAlt className="detail-icon" />
-                                               <span className="address-text">{order.shippingAddress}</span>
-                                             </div>
-                                           )}
-                                           {order.totalPrice > 0 && (
-                                             <div className="detail-item">
-                                               <FaMoneyBillWave className="detail-icon" />
-                                               <span>
-                                                 ${order.totalPrice.toFixed(2)} • {order.paymentMethod ?? "N/A"}
-                                               </span>
-                                             </div>
-                                           )}
-                                           {order.deliveryDate && (
-                                             <div className="detail-item">
-                                               <FaClock className="detail-icon" />
-                                               <span>{new Date(order.deliveryDate).toLocaleDateString()}</span>
-                                             </div>
-                                           )}
-                                           {order.shippingAddress && (
-                                             <div className="detail-item">
-                                               <FaTruck className="detail-icon" />
-                                               <span>{order.shippingAddress}</span>
-                                             </div>
-                                           )}
-                                           {order.notes && (
-                                             <div className="detail-item">
-                                               <FaCommentAlt className="detail-icon" />
-                                               <span>{order.notes}</span>
-                                             </div>
-                                           )}
-                 
-                                           {order.location && (
-                                             <div className="detail-item">
-                                               <FaMapMarkerAlt className="detail-icon" />
-                                               <span>
-                                                 Lat: {order.location.lat}, Lng: {order.location.lng}
-                                               </span>
-                                             </div>
-                                           )}
-                                         </div>
+                  <div className="order-details">
+                    {order.shippingAddress && (
+                      <div className="detail-item">
+                        <FaMapMarkerAlt className="detail-icon" />
+                        <span className="address-text">
+                          {order.shippingAddress}
+                        </span>
+                      </div>
+                    )}
+                    {order.totalPrice > 0 && (
+                      <div className="detail-item">
+                        <FaMoneyBillWave className="detail-icon" />
+                        <span>
+                          ${order.totalPrice.toFixed(2)} •{" "}
+                          {order.paymentMethod ?? "N/A"}
+                        </span>
+                      </div>
+                    )}
+                    {order.deliveryDate && (
+                      <div className="detail-item">
+                        <FaClock className="detail-icon" />
+                        <span>
+                          {new Date(order.deliveryDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                    {order.shippingAddress && (
+                      <div className="detail-item">
+                        <FaTruck className="detail-icon" />
+                        <span>{order.shippingAddress}</span>
+                      </div>
+                    )}
+                    {order.notes && (
+                      <div className="detail-item">
+                        <FaCommentAlt className="detail-icon" />
+                        <span>{order.notes}</span>
+                      </div>
+                    )}
+
+                    {order.location && (
+                      <div className="detail-item">
+                        <FaMapMarkerAlt className="detail-icon" />
+                        <span>
+                          Lat: {order.location.lat}, Lng: {order.location.lng}
+                        </span>
+                      </div>
+                    )}
+                    {order.phoneNumber && (
+                      <div className="detail-item">
+                        <FaPhone className="detail-icon" />
+                        <span>{order.phoneNumber}</span>
+                      </div>
+                    )}
+                  </div>
                   <div className="order-products">
                     <h4>Order Items ({order.products.length})</h4>
                     <div className="chef-product-cards">
@@ -258,4 +270,4 @@ function WaiterPage() {
   );
 }
 
-export default WaiterPage
+export default WaiterPage;

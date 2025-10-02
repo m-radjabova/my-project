@@ -69,6 +69,7 @@ export interface Order {
     lat: number;
     lng: number;
   };
+  phoneNumber: string;
 }
 
 export interface Reviews {

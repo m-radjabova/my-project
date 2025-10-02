@@ -1,4 +1,13 @@
-import { FaClock, FaCommentAlt, FaMapMarkerAlt, FaMoneyBillWave, FaTag, FaTruck, FaUser } from "react-icons/fa";
+import {
+  FaClock,
+  FaCommentAlt,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+  FaPhone,
+  FaTag,
+  FaTruck,
+  FaUser,
+} from "react-icons/fa";
 import { useOrders } from "../../hooks/useOrders";
 import { useState } from "react";
 import { GiKnifeFork } from "react-icons/gi";
@@ -136,21 +145,28 @@ function CartStatus() {
                           {order.shippingAddress && (
                             <div className="status-detail-item">
                               <FaMapMarkerAlt className="detail-icon" />
-                              <span className="address-text">{order.shippingAddress}</span>
+                              <span className="address-text">
+                                {order.shippingAddress}
+                              </span>
                             </div>
                           )}
                           {order.totalPrice > 0 && (
                             <div className="status-detail-item">
                               <FaMoneyBillWave className="detail-icon" />
                               <span>
-                                ${order.totalPrice.toFixed(2)} • {order.paymentMethod ?? "N/A"}
+                                ${order.totalPrice.toFixed(2)} •{" "}
+                                {order.paymentMethod ?? "N/A"}
                               </span>
                             </div>
                           )}
                           {order.deliveryDate && (
                             <div className="status-detail-item">
                               <FaClock className="detail-icon" />
-                              <span>{new Date(order.deliveryDate).toLocaleDateString() || "N/A"}</span>
+                              <span>
+                                {new Date(
+                                  order.deliveryDate
+                                ).toLocaleDateString() || "N/A"}
+                              </span>
                             </div>
                           )}
                           {order.shippingAddress && (
@@ -170,8 +186,15 @@ function CartStatus() {
                             <div className="status-detail-item">
                               <FaMapMarkerAlt className="detail-icon" />
                               <span>
-                                Lat: {order.location.lat}, Lng: {order.location.lng}
+                                Lat: {order.location.lat}, Lng:{" "}
+                                {order.location.lng}
                               </span>
+                            </div>
+                          )}
+                          {order.phoneNumber && (
+                            <div className="detail-item">
+                              <FaPhone className="detail-icon" />
+                              <span>{order.phoneNumber}</span>
                             </div>
                           )}
                         </div>
