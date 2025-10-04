@@ -5,6 +5,9 @@
     min-height: 100vh;
 }
 
+.order-ohone{
+    cursor: pointer;
+}
 .chef-page::before {
     content: '';
     position: absolute;

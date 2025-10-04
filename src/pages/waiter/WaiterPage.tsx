@@ -211,7 +211,7 @@ function WaiterPage() {
 
                     {order.location && (
                       <div
-                        className="status-detail-item clickable"
+                        className="status-detail-item clickable order-ohone"
                         onClick={() => handleShowRoute(order.location)}
                       >
                         <FaMapMarkerAlt className="detail-icon" />
