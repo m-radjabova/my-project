@@ -7,6 +7,7 @@
 @import "./components/projects/projects.css";
 @import "./components/projects/withoutbackend.css";
 @import "./components/contact/contact.css";
+@import "./components/isLoading.css";
 
 *{
     font-family: 'Nunito', sans-serif;

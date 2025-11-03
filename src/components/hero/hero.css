@@ -246,7 +246,6 @@
 }
 
 .hero-description {
-  font-family: "Inter", sans-serif;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.7;
   max-width: 500px;
@@ -560,6 +559,11 @@
     text-align: center;
   }
 
+  .hero-description{
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
   .avatar-wrapper {
     width: 350px;
     height: 350px;
@@ -567,6 +571,19 @@
 
   .hero-stats {
     justify-content: center;
+  }
+
+  .btn{
+    margin: 0 auto;
+  }
+
+  .scroll-indicator{
+    display: none;
+  }
+
+  .hero-title{
+    font-size: 2.5rem;
+
   }
 }
 
@@ -600,14 +617,10 @@
     height: 220px;
   }
 
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
   .btn {
     width: 220px;
     justify-content: center;
+    margin: 0 auto;
   }
 
   .hero-stats {
@@ -616,5 +629,10 @@
 
   .tech-sphere {
     display: none;
+  }
+
+  .hero-title{
+    font-size: 2rem;
+    height: 100px;
   }
 }

@@ -8,8 +8,23 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from "./layout/AdminLayout"
 import HelloAdmin from "./pages/admin/HelloAdmin"
 import NotFound from './components/NotFound';
+import IsLoading from "./components/IsLoading"
+import useLoading from "./hooks/useLoading"
+import { useEffect } from "react"
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 function App() {
+  const { loading } = useLoading();
+
+  useEffect(() => {
+    AOS.init({ duration: 2000 });
+  }, []);
+
+  if (loading) {
+    return <IsLoading />;
+  }
+
 
   return (
     <div>

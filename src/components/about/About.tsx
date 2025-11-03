@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { 
   FaReact, 
   FaJs, 
@@ -19,10 +19,23 @@ import {
   SiVite
 } from 'react-icons/si';
 
+// AOS import qilish
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
 const About = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const aboutRef = useRef(null);
   const [activeTab, setActiveTab] = useState('skills');
+
+  // AOS ni initialize qilish
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+      mirror: false
+    });
+  }, []);
 
   const skills = [
     { name: 'React', level: 90, icon: <FaReact />, color: '#61DAFB', gradient: 'var(--gradient-3)' },
@@ -49,23 +62,6 @@ const About = () => {
     }
   ];
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (aboutRef.current) {
-      observer.observe(aboutRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <section id="about" className="about-section" ref={aboutRef}>
       <div className="about-container">
@@ -77,7 +73,12 @@ const About = () => {
           <div className="floating-shape shape-4"></div>
         </div>
 
-        <div className={`about-header ${isVisible ? 'animate-in' : ''}`}>
+        {/* Header with AOS animatsiyasi */}
+        <div 
+          className="about-header"
+          data-aos="fade-down"
+          data-aos-delay="100"
+        >
           <div className="header-decoration">
             <div className="decoration-line"></div>
             <FaRocket className="decoration-icon" />
@@ -92,8 +93,12 @@ const About = () => {
         </div>
 
         <div className="about-content">
-          {/* Left Side - Personal Card */}
-          <div className={`about-personal ${isVisible ? 'animate-in' : ''}`}>
+          {/* Left Side - Personal Card with AOS */}
+          <div 
+            className="about-personal"
+            data-aos="fade-right"
+            data-aos-delay="200"
+          >
             <div className="personal-card">
               <div className="card-glow"></div>
               <div className="avatar-section">
@@ -125,13 +130,19 @@ const About = () => {
             </div>
           </div>
 
-          {/* Right Side - Tabs Content */}
-          <div className={`about-details ${isVisible ? 'animate-in' : ''}`}>
+          {/* Right Side - Tabs Content with AOS */}
+          <div 
+            className="about-details"
+            data-aos="fade-left"
+            data-aos-delay="300"
+          >
             <div className="tabs-container">
               <div className="tabs-header">
                 <button 
                   className={`tab-btn ${activeTab === 'skills' ? 'active' : ''}`}
                   onClick={() => setActiveTab('skills')}
+                  data-aos="zoom-in"
+                  data-aos-delay="400"
                 >
                   <FaCode className="tab-icon" />
                   Skills
@@ -139,6 +150,8 @@ const About = () => {
                 <button 
                   className={`tab-btn ${activeTab === 'education' ? 'active' : ''}`}
                   onClick={() => setActiveTab('education')}
+                  data-aos="zoom-in"
+                  data-aos-delay="500"
                 >
                   <FaGraduationCap className="tab-icon" />
                   Education
@@ -152,7 +165,8 @@ const About = () => {
                       <div 
                         key={skill.name}
                         className="skill-card"
-                        style={{ animationDelay: `${index * 0.1}s` }}
+                        data-aos="fade-up"
+                        data-aos-delay={index * 100}
                       >
                         <div className="skill-header">
                           <div 
@@ -188,7 +202,8 @@ const About = () => {
                       <div 
                         key={index}
                         className="timeline-item"
-                        style={{ animationDelay: `${index * 0.2}s` }}
+                        data-aos="fade-up"
+                        data-aos-delay={index * 200}
                       >
                         <div 
                           className="timeline-icon"
