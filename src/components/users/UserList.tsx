@@ -2,14 +2,13 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  Paper,
   IconButton,
   Box,
   Typography,
   Button,
+  Container,
 } from "@mui/material";
 import type { User } from "../../types/types";
 import { FaEdit, FaMinus, FaTrash } from "react-icons/fa";
@@ -51,7 +50,7 @@ function UserList() {
   };
 
   return (
-    <TableContainer component={Paper}>
+    <Container maxWidth="lg">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -91,7 +90,7 @@ function UserList() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user) => (
+          {users.map((user : User) => (
             <TableRow
               key={user.id}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -156,7 +155,7 @@ function UserList() {
         onSubmit={handleSubmit} 
         editingUser={selectedUser} 
       />
-    </TableContainer>
+    </Container>
   );
 }
 

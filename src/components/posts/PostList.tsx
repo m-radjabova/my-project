@@ -2,14 +2,13 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  Paper,
   IconButton,
   Box,
   Typography,
   Button,
+  Container,
 } from "@mui/material";
 import type { Post } from "../../types/types";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -55,7 +54,7 @@ function PostList() {
   };
 
   return (
-    <TableContainer component={Paper}>
+    <Container maxWidth="lg">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -87,12 +86,15 @@ function PostList() {
               <strong>User ID</strong>
             </TableCell>
             <TableCell>
+              <strong>Comments</strong>
+            </TableCell>
+            <TableCell>
               <strong>Actions</strong>
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {posts.map((post) => (
+          {posts.map((post: Post) => (
             <TableRow
               key={post.id}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -128,6 +130,15 @@ function PostList() {
               </TableCell>
               <TableCell>{post.user_id}</TableCell>
               <TableCell>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => navigate(`/posts/${post.id}/comments`)}
+                >
+                  View Comments
+                </Button>
+              </TableCell>
+              <TableCell>
                 <Box display="flex" gap={1}>
                   <IconButton
                     color="primary"
@@ -156,7 +167,7 @@ function PostList() {
         onSubmit={handleSubmit} 
         editingPost={selectedPost}
       />
-    </TableContainer>
+    </Container>
   );
 }
 

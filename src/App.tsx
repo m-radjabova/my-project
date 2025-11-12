@@ -11,6 +11,7 @@ import NotFound from './components/NotFound';
 import PostList from "./components/posts/PostList"
 import UserList from "./components/users/UserList"
 import TodoList from "./components/todos/TodoList"
+import CommentList from "./components/comments/CommentList"
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/posts" element={<PostList />} />
+          <Route path="/posts/:id/comments" element={<CommentList />} />
           <Route path="/users" element={<UserList />} />
           <Route path="/todos" element={<TodoList />} />
         </Route>

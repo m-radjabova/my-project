@@ -1,69 +1,67 @@
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
 import type { User } from "../types/types";
 
 function useUsers() {
-  const [users, setUsers] = useState<User[]>([]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    getUsers();
-  }, []);
-
-  const getUsers = async () => {
-    try {
+  const { data: users = [], isLoading, error, refetch } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
       const response = await apiClient.get("/users");
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
+      return response.data;
     }
-  };
+  });
 
-  const addUser = async (user: User) => {
-    try {
-      const response = await apiClient.post("/users", user);
-      setUsers([...users, response.data]);
-    } catch (error) {
-      console.error("Error adding user:", error);
+  const addUser = useMutation({
+    mutationFn: (user: User) => apiClient.post("/users", user).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     }
-  };
+  });
 
-  const updateUser = async (user: User) => {
-    try {
-      const response = await apiClient.put(`/users/${user.id}`, user);
-      setUsers(users.map((u) => (u.id === user.id ? response.data : u)));
-    } catch (error) {
-      console.error("Error updating user:", error);
+  const updateUser = useMutation({
+    mutationFn: (user: User) => apiClient.put(`/users/${user.id}`, user).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     }
-  };
+  });
 
-  const deleteUser = async (id: number) => {
-    try {
-      await apiClient.delete(`/users/${id}`);
-      setUsers(users.filter((user) => user.id !== id));
-    } catch (error) {
-      console.error("Error deleting user:", error);
+  const deleteUser = useMutation({
+    mutationFn: (id: number) => apiClient.delete(`/users/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     }
-  };
+  });
 
-  const incrementAge = async (id: number) => {
-    try {
-      const response = await apiClient.patch(`/users/${id}/age/increment`);
-      setUsers(users.map((user) => (user.id === id ? response.data : user)));
-    } catch (error) {
-      console.error("Error incrementing age:", error);
+  const incrementAge = useMutation({
+    mutationFn: (id: number) => apiClient.patch(`/users/${id}/increment`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     }
-  };
+  })
 
-  const decrementAge = async (id: number) => {
-    try {
-      const response = await apiClient.patch(`/users/${id}/age/decrement`);
-      setUsers(users.map((user) => (user.id === id ? response.data : user)));
-    } catch (error) {
-      console.error("Error decrementing age:", error);
+  const decrementAge = useMutation({
+    mutationFn: (id : number) => apiClient.patch(`/users/${id}/decrement`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     }
-  };
+  })
 
-  return { users, addUser, updateUser, deleteUser, incrementAge, decrementAge };
+  return {
+    users,
+    isLoading,
+    error,
+    refetch,
+    addUser: addUser.mutate,
+    incrementAge: incrementAge.mutate,
+    decrementAge: decrementAge.mutate,
+    updateUser: updateUser.mutate,
+    deleteUser: deleteUser.mutate,
+    isAdding: addUser.isPending,
+    isUpdating: updateUser.isPending,
+    isDeleting: deleteUser.isPending
+  };
 }
 
 export default useUsers;

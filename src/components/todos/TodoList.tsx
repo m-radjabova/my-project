@@ -2,16 +2,15 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  Paper,
   IconButton,
   Box,
   Typography,
   Button,
   Checkbox,
   Chip,
+  Container,
 } from "@mui/material";
 import type { Todo } from "../../types/types";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -65,7 +64,7 @@ function TodoList() {
     }
   };
   return (
-    <TableContainer component={Paper}>
+    <Container maxWidth="lg" >
       <Box
         display="flex"
         justifyContent="space-between"
@@ -165,7 +164,7 @@ function TodoList() {
         onSubmit={handleSubmit} 
         editingTodo={selectedTodo}
       />
-    </TableContainer>
+    </Container>
   );
 }
 
