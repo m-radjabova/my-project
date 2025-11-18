@@ -12,6 +12,11 @@ function Projects() {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const order = ["TODO", "INPROGRESS", "VERIFIED", "DONE"];
+
+  const sortedStatus = [...statusList].sort(
+    (a, b) => order.indexOf(a.title) - order.indexOf(b.title)
+  );
 
   return (
     <div className="projects-container">
@@ -32,7 +37,7 @@ function Projects() {
       <StatusModal open={open} onClose={handleClose} />
 
       <div className="status-grid">
-        {statusList.map((item : Status) => (
+        {sortedStatus.map((item : Status) => (
           <StatusCard key={item.id} status={item} />
         ))}
       </div>

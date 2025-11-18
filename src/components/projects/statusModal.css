@@ -1,4 +1,3 @@
-/* Status Modal Styles - Modern Dark Theme */
 .status-modal-drawer .MuiDrawer-paper {
   background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 50%, #2d2d2d 100%) !important;
   border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -108,7 +107,6 @@
   left: 100%;
 }
 
-/* Modal header decoration */
 .status-modal-container::before {
   content: '';
   position: absolute;

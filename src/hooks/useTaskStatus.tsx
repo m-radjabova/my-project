@@ -14,6 +14,9 @@ function useTaskStatus() {
       const res = await apiClient.get("/status/list");
       return res.data;
     },
+    staleTime: 2 * 60 * 1000, 
+    gcTime: 5 * 60 * 1000, 
+    refetchInterval: 15 * 1000, 
   });
 
   const {
@@ -25,6 +28,8 @@ function useTaskStatus() {
       return res.data;
     },
   });
+
+  // console.log("statusType", statusType);
 
   const { mutate: addTaskStatus, isPending: isAdding } = useMutation({
     mutationFn: async (statusType: string) => {
@@ -48,12 +53,36 @@ function useTaskStatus() {
 
   const existingStatusTypes = statusList.map((status: Status) => status.title);
 
+  const {mutate: deleteTaskStatus, isPending: isDeleting} = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiClient.delete(`/status/delete/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["statusList"] });  
+      queryClient.invalidateQueries({ queryKey: ["statusTypes"] }); 
+    }
+  })
+
+  const {data: priorityType = []} = useQuery({
+    queryKey: ["priority"],
+    queryFn: async () => {
+      const res = await apiClient.get("/tasks/priority");
+      return res.data;
+    },
+  });
+
+  // console.log("priorityType", priorityType);
+
   return {
     statusList,
+    priorityType,
     statusType,
     existingStatusTypes,
     isAdding,
     addTaskStatus,
+    isDeleting,
+    deleteTaskStatus
   };
 }
 

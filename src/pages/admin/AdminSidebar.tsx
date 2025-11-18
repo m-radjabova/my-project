@@ -25,11 +25,11 @@ function AdminSidebar() {
     return (
         <div
             className={`admin-sidebar vh-100 d-flex flex-column`}
-            style={{ width: "250px" }}
+            style={{ width: "210px" }}
         >
             <div className="sidebar-header d-flex justify-content-between align-items-center p-3">
-                <h4 onClick={() => navigate("/admin")} className="m-0">
-                        Admin Panel
+                <h4 onClick={() => navigate("/")} className="m-0">
+                        Projects
                     </h4>
             </div>
 

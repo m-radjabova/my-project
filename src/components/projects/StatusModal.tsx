@@ -59,7 +59,7 @@ function StatusModal({ open, onClose }: StatusModalProps) {
       onClose={onClose}
       className="status-modal-drawer"
     >
-      <Box className="status-modal-container" sx={{ p: 3, width: 400 }}>
+      <Box className="status-modal-container" sx={{ p: 3, width: 700 }}>
         <IconButton 
           onClick={onClose}
           sx={{ position: 'absolute', right: 8, top: 8 }}

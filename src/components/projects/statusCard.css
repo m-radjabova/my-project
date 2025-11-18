@@ -51,14 +51,24 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.status-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  position: relative;
+  z-index: 5;
+}
+
 .status-card-content {
-  padding: 2rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
   color: white;
   position: relative;
   z-index: 2;
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .status-badge {
@@ -66,19 +76,18 @@
   color: rgba(255, 255, 255, 0.9) !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
-  margin-bottom: 1.5rem !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 12px !important;
   padding: 6px 14px !important;
   backdrop-filter: blur(10px);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  align-self: flex-start;
+  margin-left: 1rem;
 }
 
 .status-card-title {
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
   font-size: 1.5rem;
   background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
   -webkit-background-clip: text;
@@ -88,14 +97,6 @@
   letter-spacing: -0.5px;
 }
 
-.status-card-description {
-  opacity: 0.7;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  color: #cccccc;
-  flex: 1;
-}
 
 .add-task-btn {
   border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
@@ -158,8 +159,8 @@
 
 .status-indicator {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: 1rem;
+  left: 1.5rem;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -242,6 +243,136 @@
   background: rgba(46, 204, 113, 0.1) !important;
 }
 
+
+.status-card-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
+.delete-status-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.delete-status-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.delete-status-icon {
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.delete-status-btn:hover .delete-status-icon {
+  transform: scale(1.1);
+}
+
+/* Modal styles */
+.delete-confirmation-modal .modal-paper {
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(25, 25, 35, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  color: white;
+  min-width: 400px;
+}
+
+.modal-title {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 2rem;
+  font-weight: 600;
+  color: #e74c3c;
+  font-size: 1.3rem;
+}
+
+.modal-content {
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  padding: 1.5rem 2rem;
+  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cancel-btn {
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 12px !important;
+  padding: 10px 24px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.cancel-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.confirm-delete-btn {
+  border-radius: 12px !important;
+  padding: 10px 24px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3) !important;
+}
+
+.confirm-delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%) !important;
+}
+
+
+.status-card[data-status="TODO"] .delete-status-btn:hover {
+  background: rgba(127, 140, 141, 0.2) !important;
+  border-color: rgba(127, 140, 141, 0.4) !important;
+  color: #7f8c8d !important;
+}
+
+.status-card[data-status="INPROGRESS"] .delete-status-btn:hover {
+  background: rgba(52, 152, 219, 0.2) !important;
+  border-color: rgba(52, 152, 219, 0.4) !important;
+  color: #3498db !important;
+}
+
+.status-card[data-status="VERIFIED"] .delete-status-btn:hover {
+  background: rgba(155, 89, 182, 0.2) !important;
+  border-color: rgba(155, 89, 182, 0.4) !important;
+  color: #9b59b6 !important;
+}
+
+.status-card[data-status="DONE"] .delete-status-btn:hover {
+  background: rgba(46, 204, 113, 0.2) !important;
+  border-color: rgba(46, 204, 113, 0.4) !important;
+  color: #2ecc71 !important;
+}
+
 @media (max-width: 768px) {
   .status-card {
     min-height: 260px;
@@ -258,5 +389,37 @@
   .status-card-description {
     font-size: 0.9rem;
   }
+  .status-card-actions {
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+  
+  .delete-status-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .delete-confirmation-modal .modal-paper {
+    min-width: unset;
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  .modal-title {
+    padding: 1.2rem 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    padding: 1.2rem 1.5rem;
+    flex-direction: column;
+  }
+  
+  .cancel-btn,
+  .confirm-delete-btn {
+    width: 100%;
+  }
 }
-

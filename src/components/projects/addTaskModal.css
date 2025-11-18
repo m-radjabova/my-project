@@ -1,0 +1,227 @@
+/* styles.css yoki component faylingizga import qiling */
+.add-task-modal {
+  & .MuiDrawer-paper {
+    background-color: #0f0f0f;
+    background-image: 
+      linear-gradient(45deg, #1a1a1a 25%, transparent 25%), 
+      linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), 
+      linear-gradient(45deg, transparent 75%, #1a1a1a 75%), 
+      linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+}
+
+.modal-container {
+  padding: 24px;
+  width: 700px;
+  background-color: transparent;
+}
+
+.modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #333;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.modal-subtitle {
+  color: #94a3b8;
+}
+
+.close-button {
+  color: #94a3b8;
+  
+  &:hover {
+    color: white;
+    background-color: #333;
+  }
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-label {
+  margin-bottom: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+}
+
+.form-input {
+  & .MuiOutlinedInput-root {
+    background-color: #1a1a1a;
+    border-radius: 4px;
+    color: white;
+    border: 1px solid #333;
+
+    & fieldset {
+      border-color: transparent;
+    }
+
+    &:hover fieldset {
+      border-color: #3b82f6;
+    }
+
+    &.Mui-focused fieldset {
+      border-color: #3b82f6;
+    }
+  }
+}
+
+.form-input-error {
+  & .MuiFormHelperText-root {
+    color: #ef4444;
+    font-size: 12px;
+  }
+}
+
+.row-container {
+  display: flex;
+  gap: 16px;
+}
+
+.select-field {
+  background-color: #1a1a1a;
+  border-radius: 4px;
+  color: white;
+  border: 1px solid #333;
+
+  & .MuiOutlinedInput-notchedOutline {
+    border-color: transparent;
+  }
+
+  &:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #3b82f6;
+  }
+
+  &.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #3b82f6;
+  }
+}
+
+.menu-item {
+  background-color: #1a1a1a;
+  color: white;
+
+  &:hover {
+    background-color: #333;
+  }
+}
+
+.react-select-styles {
+  /* React Select uchun dark theme */
+  & .react-select__control {
+    background-color: #1a1a1a;
+    border-color: #333;
+    border-radius: 4px;
+    min-height: 56px;
+
+    &:hover {
+      border-color: #3b82f6;
+    }
+
+    &.react-select__control--is-focused {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+  }
+
+  & .react-select__menu {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+  }
+
+  & .react-select__option {
+    background-color: #1a1a1a;
+    color: white;
+
+    &:hover {
+      background-color: #333;
+    }
+
+    &.react-select__option--is-focused {
+      background-color: #333;
+    }
+
+    &.react-select__option--is-selected {
+      background-color: #3b82f6;
+    }
+  }
+
+  & .react-select__multi-value {
+    background-color: #3b82f6;
+  }
+
+  & .react-select__multi-value__label {
+    color: white;
+  }
+
+  & .react-select__multi-value__remove {
+    color: white;
+
+    &:hover {
+      background-color: #ef4444;
+      color: white;
+    }
+  }
+
+  & .react-select__input {
+    color: white;
+  }
+
+  & .react-select__placeholder {
+    color: #94a3b8;
+  }
+
+  & .react-select__single-value {
+    color: white;
+  }
+}
+
+.submit-button {
+  margin-top: 16px;
+  padding: 12px 0;
+  border-radius: 4px;
+  font-weight: 600;
+  background-color: #3b82f6;
+  background: linear-gradient(45deg, #3b82f6 30%, #1d4ed8 90%);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+
+  &:hover {
+    background-color: #2563eb;
+    background: linear-gradient(45deg, #2563eb 30%, #1e40af 90%);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+  }
+}
+
+.modal-footer {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.footer-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+.error-text {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ef4444;
+}

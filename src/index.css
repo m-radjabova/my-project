@@ -4,3 +4,5 @@
 @import "./components/projects/project.css";
 @import "./components/projects/statusCard.css";
 @import "./components/projects/statusModal.css";
+@import "./components/projects/addTaskModal.css";
+@import "./components/tasks/taskList.css";
