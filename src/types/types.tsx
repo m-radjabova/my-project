@@ -4,6 +4,11 @@ export interface User {
   email: string;
 }
 
+export interface ReqUser {
+  username: string;
+  email: string;
+}
+
 export interface ResponseTask{
   status : string;
   tasks : Task[];

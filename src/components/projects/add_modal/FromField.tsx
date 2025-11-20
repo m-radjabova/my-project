@@ -11,7 +11,7 @@ interface FormFieldProps {
 function FormField({ icon, label, children, error }: FormFieldProps) {
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, mt: 2 }}>
         {icon}
         <Typography sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
           {label}

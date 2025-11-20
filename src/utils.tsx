@@ -91,4 +91,5 @@ export const selectStyles = {
   "& .MuiSelect-icon": {
     color: "rgba(255,255,255,0.5)",
   },
+  
 };

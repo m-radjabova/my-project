@@ -35,7 +35,7 @@ function reducer(state: TypeState, action: Action): TypeState {
     case "LOGOUT":
       return { ...state, user: null };
     case "SET_LOADING":
-      console.log("loading", action.payload);
+      // console.log("loading", action.payload);
       return { ...state, isLoading: action.payload as boolean };
     default:
       return state;

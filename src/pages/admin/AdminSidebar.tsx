@@ -1,14 +1,15 @@
 
 import { Nav } from "react-bootstrap"
 import { Link, useNavigate, useLocation } from "react-router-dom"
-import { House } from "react-bootstrap-icons"
+import { House, PersonCheckFill } from "react-bootstrap-icons"
 
 function AdminSidebar() {
     const navigate = useNavigate()
     const location = useLocation() 
 
     const menuItems = [
-        { name: "Projects", icon: <House />, path: "/projects"}
+        { name: "Projects", icon: <House />, path: "/projects"},
+        { name: "Users", icon: <PersonCheckFill />, path: "/users" },
     ]
 
 
@@ -25,9 +26,9 @@ function AdminSidebar() {
     return (
         <div
             className={`admin-sidebar vh-100 d-flex flex-column`}
-            style={{ width: "210px" }}
+            style={{ width: "250px" }}
         >
-            <div className="sidebar-header d-flex justify-content-between align-items-center p-3">
+            <div className="sidebar-header p-3">
                 <h4 onClick={() => navigate("/")} className="m-0">
                         Projects
                     </h4>

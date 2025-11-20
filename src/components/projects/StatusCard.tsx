@@ -5,7 +5,7 @@ import {
 import { FaPlus } from "react-icons/fa";
 import { statusLabels } from "../../utils";
 import { useState } from "react";
-import AddTaskModal from "./add_modal/AddTaskModal";
+import AddTaskModal, { type StatusType } from "./add_modal/AddTaskModal";
 import TaskList from "../tasks/TaskList";
 import useTasks from "../../hooks/useTasks";
 
@@ -71,7 +71,7 @@ function StatusCard({ statusName }: StatusCardProps) {
         </div>
       </div>
 
-      <AddTaskModal open={openAddTask} onClose={handleClose} />
+      <AddTaskModal open={openAddTask} onClose={handleClose} defaultStatus={statusName as StatusType | undefined} />
 
     </>
   );

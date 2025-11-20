@@ -26,7 +26,7 @@ import type { ReqTask, Task, User } from "../../../types/types";
 import useUsers from "../../../hooks/useUsers";
 import useTasks from "../../../hooks/useTasks";
 import FormField from "./FromField";
-import { getPriorityIcon, inputStyles } from "../../../utils";
+import { getPriorityIcon, inputStyles, selectStyles } from "../../../utils";
 
 export type StatusType = "TODO" | "IN_PROGRESS" | "VERIFIED" | "DONE";
 export type PriorityType = "LOW" | "MEDIUM" | "HIGH";
@@ -36,12 +36,13 @@ interface AddTaskModalProps {
   open: boolean;
   onClose: () => void;
   task?: Task | null;
+  defaultStatus?: StatusType ;
 }
 
 const statusType: StatusType[] = ["TODO", "IN_PROGRESS", "VERIFIED", "DONE"];
 const priorityType: PriorityType[] = ["LOW", "MEDIUM", "HIGH"];
 
-function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
+function AddTaskModal({ open, onClose, task, defaultStatus }: AddTaskModalProps) {
   const { users } = useUsers();
   const { taskStatus, addTask, updateTask } = useTasks();
   const [isEditing, setIsEditing] = useState(false);
@@ -62,9 +63,9 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
       title: "",
       description: "",
       assignee: [] as AssigneeOption[],
-      status: "TODO" as StatusType,
+      status: defaultStatus || "TODO" as StatusType,
       priority: "LOW" as PriorityType,
-      end_date: new Date().toISOString().split("T")[0],
+      end_date: "",
     },
   });
 
@@ -91,12 +92,12 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
         title: "",
         description: "",
         assignee: [],
-        status: "TODO",
+        status: defaultStatus || "TODO" as StatusType,
         priority: "LOW",
-        end_date: new Date().toISOString().split("T")[0],
+        end_date: "",
       });
     }
-  }, [task, reset, taskStatus]);
+  }, [task, reset, taskStatus, defaultStatus]);
 
   const onSubmit = (data: FieldValues) => {
     const selectedUserIds = data.assignee.map((option: { value: string }) =>
@@ -197,7 +198,6 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
           />
 
           <Box sx={{ display: "flex", gap: 2 }}>
-            {/* Status */}
             <Controller
               name="status"
               control={control}
@@ -223,31 +223,12 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
                   <FormControl fullWidth>
                     <MuiSelect
                       {...field}
-                      sx={{
-                        color: "white",
-                        backgroundColor: "rgba(255,255,255,0.03)",
-                        borderRadius: 2,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "rgba(255,255,255,0.1)",
-                          borderWidth: "1.5px",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "rgba(99, 102, 241, 0.5)",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#6366f1",
-                          borderWidth: "2px",
-                        },
-                        "& .MuiSelect-icon": {
-                          color: "rgba(255,255,255,0.5)",
-                        },
-                      }}
+                      sx={selectStyles}
                     >
                       {statusType.map((st) => (
                         <MenuItem
                           key={st}
                           value={st}
-                          sx={{ color: "white", backgroundColor: "#1a1a1a" }}
                         >
                           <Box
                             sx={{
@@ -306,31 +287,12 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
                   <FormControl fullWidth>
                     <MuiSelect
                       {...field}
-                      sx={{
-                        color: "white",
-                        backgroundColor: "rgba(255,255,255,0.03)",
-                        borderRadius: 2,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "rgba(255,255,255,0.1)",
-                          borderWidth: "1.5px",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "rgba(99, 102, 241, 0.5)",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#6366f1",
-                          borderWidth: "2px",
-                        },
-                        "& .MuiSelect-icon": {
-                          color: "rgba(255,255,255,0.5)",
-                        },
-                      }}
+                      sx={selectStyles}
                     >
                       {priorityType.map((priority) => (
                         <MenuItem
                           key={priority}
                           value={priority}
-                          sx={{ color: "white", backgroundColor: "#1a1a1a" }}
                         >
                           <Box
                             sx={{
@@ -351,7 +313,6 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
             />
           </Box>
 
-          {/* Assignee */}
           <Controller
             name="assignee"
             control={control}
@@ -378,7 +339,6 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
             )}
           />
 
-          {/* Due Date */}
           <Controller
             name="end_date"
             control={control}
@@ -390,7 +350,7 @@ function AddTaskModal({ open, onClose, task }: AddTaskModalProps) {
                     style={{ color: "#6366f1", fontSize: "1.1rem" }}
                   />
                 }
-                label="Due Date"
+                label="End Date"
                 error={errors.end_date?.message as string}
               >
                 <TextField

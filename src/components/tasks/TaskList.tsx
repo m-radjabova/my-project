@@ -103,7 +103,6 @@ function TaskList({ tasks }: TaskListProps) {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="task-actions">
                 <button
                   className="delete-task-btn"
@@ -118,7 +117,7 @@ function TaskList({ tasks }: TaskListProps) {
             {task.end_date && (
               <div className="task-due-date">
                 <FaCalendarAlt className="date-icon" />
-                <span className="date-text">Due: {formatDate(task.end_date)}</span>
+                <span className="date-text">End: {formatDate(task.end_date)}</span>
               </div>
             )}
           </div>

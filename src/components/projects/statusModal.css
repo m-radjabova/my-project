@@ -136,21 +136,6 @@
   background: linear-gradient(135deg, #8b5cf6, #d946ef);
 }
 
-/* Animation for modal entrance */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.status-modal-drawer .MuiDrawer-paper {
-  animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
 
 /* Responsive Design */
 @media (max-width: 480px) {

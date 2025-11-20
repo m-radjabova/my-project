@@ -21,7 +21,6 @@ function useTasks() {
     },
   });
 
-  console.log("Fetched tasks:", tasks);
   const { mutate: addTask, isPending: adding } = useMutation({
     mutationFn: async (task: ReqTask) => {
       const res = await apiClient.post("/tasks", task);

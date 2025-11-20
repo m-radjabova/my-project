@@ -5,9 +5,10 @@ import { FaEdit } from "react-icons/fa";
 interface ModalHeaderProps {
   isEditing: boolean;
   onClose: () => void;
+  title?: string;
 }
 
-function ModalHeader({ isEditing, onClose }: ModalHeaderProps) {
+function ModalHeader({ isEditing, onClose, title }: ModalHeaderProps) {
   return (
     <Box
       sx={{
@@ -36,7 +37,7 @@ function ModalHeader({ isEditing, onClose }: ModalHeaderProps) {
         </Box>
         <Box>
           <Typography variant="h5" sx={{ color: "white", fontWeight: 600, mb: 0.5 }}>
-            {isEditing ? "Edit Task" : "Create Task"}
+            {title || (isEditing ? "Edit Task" : "Create Task")}
           </Typography>
           <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.9rem" }}>
             {isEditing ? "Update your task details" : "Add a new task to your project"}
