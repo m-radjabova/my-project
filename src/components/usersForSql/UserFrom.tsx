@@ -19,6 +19,7 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
     defaultValues: {
       email: "",
       phone_number: "",
+      full_name: ""
     },
   });
 
@@ -29,6 +30,7 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
       reset({
         email: "",
         phone_number: "",
+        full_name: ""
       });
     }
   }, [editingUser, reset, isOpen]);
@@ -48,6 +50,21 @@ const UserModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, editingUser }) 
       <form onSubmit={handleSubmit(submitHandler)}>
         <div className="container-fluid">
           <div className="row">
+            <div className="col-12 mb-3">
+              <label htmlFor="full_name" className="text-dark">
+                Full name <span className="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="full_name"
+                className={`form-control ${errors.full_name ? "is-invalid" : ""}`}
+                placeholder="Enter full name"
+                {...register("full_name", { required: "Name is required" })}
+              />
+              {errors.full_name && (
+                <div className="invalid-feedback">{errors.full_name.message}</div>
+              )}
+            </div>
             <div className="col-12 mb-3">
               <label htmlFor="email" className="text-dark" >
                 Email <span className="text-danger">*</span>

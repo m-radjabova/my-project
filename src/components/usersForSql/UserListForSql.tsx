@@ -82,6 +82,12 @@ function UserListForSql() {
           <TableHead>
             <TableRow>
               <TableCell>
+                <strong>id</strong>
+              </TableCell>
+              <TableCell>
+                <strong>full name</strong>
+              </TableCell>
+              <TableCell>
                 <strong>email</strong>
               </TableCell>
               <TableCell>
@@ -89,6 +95,9 @@ function UserListForSql() {
               </TableCell>
               <TableCell>
                 <strong>actions</strong>
+              </TableCell>
+              <TableCell>
+                <strong>⭐️</strong>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -98,6 +107,8 @@ function UserListForSql() {
                 key={user.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
+                <TableCell>{user.id}</TableCell>
+                <TableCell>{user.full_name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.phone_number}</TableCell>
                 <TableCell>
@@ -117,6 +128,15 @@ function UserListForSql() {
                       <FaTrash />
                     </IconButton>
                   </Box>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate(`/todos/${user.id}`)}
+                  >
+                    View Todos
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

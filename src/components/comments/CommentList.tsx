@@ -26,7 +26,6 @@ function CommentList() {
   
   const postId = Number(id);
   
-  // ✅ Hookni to'g'ri chaqiramiz
   const { 
     comments, 
     isLoading, 
@@ -136,7 +135,7 @@ function CommentList() {
 
           {comments.length === 0 && (
             <Typography variant="h6" textAlign="center" mt={4}>
-              Commentlar topilmadi
+              Comment Not Found
             </Typography>
           )}
         </>

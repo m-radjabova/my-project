@@ -2,11 +2,13 @@ export interface UserForSql {
   id: number;
   email: string;
   phone_number: string;
+  full_name: string;
 }
 
 export interface ReqUserForSql {
   email: string;
   phone_number: string;
+  full_name: string;
 }
 
 
@@ -36,4 +38,17 @@ export interface ReqComment{
   email: string;
   body: string;
   post_id: number;
+}
+
+export interface Todo{
+  todo_id: number;
+  title: string;
+  completed: boolean;
+  user_id: number;
+}
+
+export interface ReqTodo{
+  title: string;
+  completed: boolean;
+  user_id: number;
 }
