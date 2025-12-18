@@ -1,11 +1,8 @@
 import { Route, Routes } from "react-router-dom"
 
 import MainLayout from "./layout/MainLayout"
-// import UserListForSql from "./components/usersForSql/UserListForSql"
-import PostList from "./components/posts/PostsList"
-import CommentList from "./components/comments/CommentList"
-import TodoList from "./components/todos/TodoList"
-import CarList from "./components/car/CarList"
+import DebtorList from "./components/debtor/DebtorList"
+import DebtorPage from "./components/debtor/DebtorPage"
 
 function App() {
 
@@ -13,10 +10,8 @@ function App() {
     <div>
       <Routes>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<CarList />} />
-            <Route path="/posts" element={<PostList />} />
-            <Route path="/posts/:id/comments" element={<CommentList />} />
-            <Route path="/todos/:id" element={<TodoList />} />
+            <Route path="/" element={<DebtorList />} />
+            <Route path="/debtor/:id" element={<DebtorPage />} />
           </Route>
       </Routes>
     </div>

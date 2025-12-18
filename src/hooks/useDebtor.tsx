@@ -1,0 +1,81 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import apiClient from "../apiClient/apiClient";
+import type { Debt, Debtor, ReqDebt, ReqDebtor } from "../types/types";
+
+function useDebtor(debtorId?: number) {
+  const queryClient = useQueryClient();
+  
+  const { data: debtors = [] } = useQuery({
+    queryKey: ["debtors"],
+    queryFn: async () => {
+      const res = await apiClient.get<Debtor[]>("/debtor");
+      return res.data;
+    },
+  });
+
+  const { data: debtor, isLoading: debtorLoading } = useQuery({
+    queryKey: ["debtor", debtorId],
+    queryFn: async () => {
+      if (!debtorId) return null;
+      const res = await apiClient.get<Debtor>(`/debtor/${debtorId}`);
+      return res.data;
+    },
+    enabled: !!debtorId,
+  });
+
+  const addDebtorMutate = useMutation({
+    mutationFn: async (newDebtor: ReqDebtor) => {
+      const res = await apiClient.post<ReqDebtor>("/debtor", newDebtor);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["debtors"] });
+    },
+  });
+
+  const { data: debts = [], isLoading: debtsLoading } = useQuery({
+    queryKey: ["debts", debtorId],
+    queryFn: async () => {
+      if (!debtorId) return [];
+      const res = await apiClient.get<Debt[]>(`/debtor/${debtorId}/debts`);
+      return res.data;
+    },
+    enabled: !!debtorId,
+  });
+
+  const addDebtToDebtorMutate = useMutation({
+    mutationFn: async (newDebt: ReqDebt) => {
+      const res = await apiClient.post<ReqDebt>(`/debtor/${debtorId}/debt`, newDebt);;
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
+    },
+  });
+
+  const debtRepaymentMutate = useMutation({
+    mutationFn: async (payload: ReqDebt) => {
+      const res = await apiClient.put(
+        `/debtor/${debtorId}/repayment`,
+        payload
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
+    },
+  });
+  
+  return { 
+    debtors, 
+    debtor,
+    debts,
+    debtorLoading,
+    debtsLoading,
+    addDebtor: addDebtorMutate.mutate,
+    addDebtToDebtor: addDebtToDebtorMutate.mutate,
+    debtRepayment: debtRepaymentMutate.mutate
+  };
+}
+
+export default useDebtor;
