@@ -19,8 +19,9 @@ import {
   Card,
   CardContent,
   CardHeader,
+  LinearProgress,
 } from "@mui/material";
-import { green, blue, orange, red, grey } from "@mui/material/colors";
+import { green, blue, orange, grey } from "@mui/material/colors";
 
 import {
   FaMoneyBillWave,
@@ -33,8 +34,9 @@ import {
   FaHistory,
   FaFileInvoiceDollar,
   FaCheckCircle,
+  FaArrowRight,
 } from "react-icons/fa";
-import { formatCurrency, formatDateTime, getStatusColor, getStatusIcon, getStatusText } from "../../../utils";
+import { formatCurrency, formatDateTime, getStatusIcon } from "../../../utils";
 import type { DebtsHistory } from "../../../types/types";
 
 interface Props {
@@ -43,18 +45,10 @@ interface Props {
   debtsHistory: DebtsHistory[];
 }
 
-type Payment = {
-  amount: number;
-};
-
 function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
-  const calculateTotalPayments = (payments: Payment[]) => {
-    return payments.reduce((sum, payment) => sum + payment.amount, 0);
-  };
-
-  const calculateRemaining = (debtAmount: number, payments: Payment[]) => {
-    const totalPaid = calculateTotalPayments(payments);
-    return debtAmount - totalPaid;
+  
+  const calculateOverpaid = (debtAmount:  number, totalPaid: number) => {
+    return totalPaid > debtAmount ? totalPaid - debtAmount : 0;
   };
 
   return (
@@ -97,7 +91,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                 Payment History
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.95 }}>
-                Viewing {debtsHistory.length} debt record{debtsHistory.length !== 1 ? 's' : ''}
+                Viewing {debtsHistory.length} debt record{debtsHistory.length !== 1 ? 's' :  ''}
               </Typography>
             </Box>
           </Box>
@@ -156,10 +150,16 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
         ) : (
           <Stack spacing={3}>
             {debtsHistory.map((debt) => {
-              const totalPaid = calculateTotalPayments(debt.payments);
-              const remaining = calculateRemaining(debt.amount, debt.payments);
+              // ✅ Backend'dan kelayotgan qiymatlarni ishlating
+              const totalPaid = debt.total_paid; // ✅ Backenddan
+              const remaining = debt.remaining;   // ✅ Backenddan
+              const overpaid = calculateOverpaid(debt.amount, totalPaid);
+
+              // Progress percentage
               const paidPercentage = (totalPaid / debt.amount) * 100;
-              const isFullyPaid = remaining <= 0;
+
+              // Qarz to'langan yoki overpaid
+              const isFullyPaid = remaining === 0;
 
               return (
                 <Card
@@ -179,7 +179,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                 >
                   <CardHeader
                     sx={{
-                      bgcolor: isFullyPaid ? green[50] : 'white',
+                      bgcolor: isFullyPaid ? green[50] : remaining > 0 ? orange[50] : blue[50],
                       borderBottom: '1px solid',
                       borderColor: 'divider',
                       pb: 2,
@@ -189,14 +189,14 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                         sx={{
                           bgcolor: isFullyPaid
                             ? green[100]
-                            : debt.status
+                            : remaining > 0
                             ? orange[100]
-                            : red[100],
+                            : blue[100],
                           color: isFullyPaid
                             ? green[700]
-                            : debt.status
+                            : remaining > 0
                             ? orange[700]
-                            : red[700],
+                            : blue[700],
                           width: 48,
                           height: 48,
                           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -216,16 +216,29 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                         </Typography>
                         <Chip
                           icon={getStatusIcon(debt.status, remaining)}
-                          label={getStatusText(debt.status, remaining)}
+                          label={
+                            overpaid > 0
+                              ? `Overpaid (Return ${formatCurrency(overpaid)})`
+                              : remaining > 0
+                              ? `Pending:  ${formatCurrency(remaining)}`
+                              : 'Fully Paid'
+                          }
                           size="small"
                           sx={{
-                            bgcolor: getStatusColor(debt.status, remaining) + '20',
-                            color: getStatusColor(debt.status, remaining),
-                            borderColor: getStatusColor(debt.status, remaining),
+                            bgcolor: overpaid > 0
+                              ? blue[100]
+                              : remaining > 0
+                              ? orange[100]
+                              : green[100],
+                            color:  overpaid > 0
+                              ? blue[700]
+                              : remaining > 0
+                              ? orange[700]
+                              : green[700],
                             fontWeight: 600,
                             height: 28,
                           }}
-                          variant="outlined"
+                          variant="filled"
                         />
                       </Box>
                     }
@@ -269,67 +282,113 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                           Payment Progress
                         </Typography>
                         <Chip
-                          label={`${paidPercentage.toFixed(1)}%`}
+                          label={`${Math.min(paidPercentage, 100).toFixed(1)}%`}
                           size="small"
                           sx={{
-                            bgcolor: isFullyPaid
-                              ? green[100]
-                              : paidPercentage > 50
+                            bgcolor: overpaid > 0
+                              ? blue[100]
+                              : isFullyPaid
+                              ?  green[100]
+                              :  paidPercentage > 50
                               ? blue[100]
                               : orange[100],
-                            color: isFullyPaid
-                              ? green[800]
-                              : paidPercentage > 50
+                            color:  overpaid > 0
+                              ? blue[800]
+                              : isFullyPaid
+                              ?  green[800]
+                              :  paidPercentage > 50
                               ? blue[800]
                               : orange[800],
                             fontWeight: 700,
                           }}
                         />
                       </Box>
-                      <Box
+
+                      {/* Progress Bar */}
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min(paidPercentage, 100)}
                         sx={{
                           height: 10,
-                          bgcolor: grey[200],
                           borderRadius: 5,
-                          overflow: 'hidden',
-                          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            height: '100%',
-                            width: `${Math.min(paidPercentage, 100)}%`,
-                            background: isFullyPaid
-                              ? `linear-gradient(90deg, ${green[400]}, ${green[600]})`
+                          backgroundColor: grey[200],
+                          '& .MuiLinearProgress-bar': {
+                            background: overpaid > 0
+                              ? `linear-gradient(90deg, ${blue[400]}, ${blue[600]})`
+                              : isFullyPaid
+                              ?  `linear-gradient(90deg, ${green[400]}, ${green[600]})`
                               : paidPercentage > 50
                               ? `linear-gradient(90deg, ${blue[400]}, ${blue[600]})`
                               : `linear-gradient(90deg, ${orange[400]}, ${orange[600]})`,
                             borderRadius: 5,
-                            transition: 'width 0.5s ease',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                          }}
-                        />
-                      </Box>
-                      <Box display="flex" justifyContent="space-between" mt={1.5}>
-                        <Box>
-                          <Typography variant="caption" color="textSecondary">
-                            Paid
+                          },
+                        }}
+                      />
+
+                      {/* Amount Flow:  Debt → Paid → Overpaid/Remaining */}
+                      <Box display="flex" justifyContent="space-between" mt={2} gap={2} flexWrap="wrap" alignItems="center">
+                        {/* Original Debt */}
+                        <Box flex={1} minWidth="100px">
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                            Original Debt
+                          </Typography>
+                          <Typography variant="body2" fontWeight="700" color="text.primary">
+                            {formatCurrency(debt.amount)}
+                          </Typography>
+                        </Box>
+
+                        <FaArrowRight size={14} style={{ color: grey[400] }} />
+
+                        {/* Total Paid */}
+                        <Box flex={1} minWidth="100px">
+                          <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                            Total Paid
                           </Typography>
                           <Typography variant="body2" fontWeight="700" color="success.main">
                             {formatCurrency(totalPaid)}
                           </Typography>
                         </Box>
-                        <Box textAlign="right">
-                          <Typography variant="caption" color="textSecondary">
-                            Remaining
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            fontWeight="700"
-                            color={remaining > 0 ? 'error.main' : 'success.main'}
-                          >
-                            {formatCurrency(remaining)}
-                          </Typography>
+
+                        <FaArrowRight size={14} style={{ color: grey[400] }} />
+
+                        {/* Overpaid or Remaining */}
+                        <Box flex={1} minWidth="100px">
+                          {overpaid > 0 ?  (
+                            <>
+                              <Typography variant="caption" color="textSecondary" display="block" sx={{ mb:  0.5 }}>
+                                To Be Returned
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                fontWeight="700"
+                                sx={{
+                                  background: `linear-gradient(135deg, ${blue[400]}, ${blue[600]})`,
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                {formatCurrency(overpaid)}
+                              </Typography>
+                            </>
+                          ) : remaining > 0 ? (
+                            <>
+                              <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                                Remaining
+                              </Typography>
+                              <Typography variant="body2" fontWeight="700" color="error.main">
+                                {formatCurrency(remaining)}
+                              </Typography>
+                            </>
+                          ) : (
+                            <>
+                              <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                                Status
+                              </Typography>
+                              <Typography variant="body2" fontWeight="700" color="success.main">
+                                ✓ Fully Paid
+                              </Typography>
+                            </>
+                          )}
                         </Box>
                       </Box>
                     </Box>
@@ -344,7 +403,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                     </Divider>
 
                     {/* Payments List */}
-                    {debt.payments.length > 0 ? (
+                    {debt.payments && debt.payments.length > 0 ? (
                       <>
                         <Box mb={2} display="flex" alignItems="center" justifyContent="space-between">
                           <Typography
@@ -357,7 +416,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                             <Box
                               sx={{
                                 bgcolor: green[100],
-                                color: green[700],
+                                color:  green[700],
                                 p: 0.75,
                                 borderRadius: 1.5,
                                 display: 'flex',
@@ -370,7 +429,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                             Payment Records
                           </Typography>
                           <Chip
-                            label={`${debt.payments.length} payment${debt.payments.length !== 1 ? 's' : ''}`}
+                            label={`${debt.payments.length} payment${debt.payments.length !== 1 ? 's' :  ''}`}
                             size="small"
                             color="primary"
                             sx={{ fontWeight: 600 }}
@@ -378,7 +437,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                         </Box>
 
                         <List dense disablePadding>
-                          {debt.payments.map((payment, index) => (
+                          {debt.payments. map((payment, index) => (
                             <ListItem
                               key={payment.payment_history_id}
                               sx={{
@@ -451,10 +510,10 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                           sx={{
                             bgcolor: grey[200],
                             borderRadius: '50%',
-                            width: 60,
+                            width:  60,
                             height: 60,
                             display: 'flex',
-                            alignItems: 'center',
+                            alignItems:  'center',
                             justifyContent: 'center',
                             margin: '0 auto',
                             mb: 2,
@@ -472,7 +531,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                     )}
 
                     {/* Statistics */}
-                    {debt.payments.length > 0 && (
+                    {debt.payments && debt.payments.length > 0 && (
                       <Paper
                         variant="outlined"
                         sx={{
@@ -503,12 +562,12 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
                               alignItems="center"
                               fontWeight="500"
                             >
-                              <FaCalendarAlt style={{ marginRight: 4, fontSize: 10 }} />
+                              <FaCalendarAlt style={{ marginRight:  4, fontSize: 10 }} />
                               Last Payment
                             </Typography>
                             <Typography variant="body2" fontWeight="700" color="text.primary">
                               {formatDateTime(
-                                debt.payments[debt.payments.length - 1].date_time
+                                debt.payments[debt. payments.length - 1]. date_time
                               )}
                             </Typography>
                           </Box>
@@ -569,7 +628,7 @@ function PaymentHistoryModal({ open, handleClose, debtsHistory }: Props) {
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             '&:hover': {
               transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+              boxShadow:  '0 6px 16px rgba(0,0,0,0.2)',
             },
             transition: 'all 0.3s ease',
           }}

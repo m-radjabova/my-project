@@ -17,7 +17,7 @@ import {
   Tooltip,
   LinearProgress,
   IconButton,
-  Divider
+  Divider,
 } from "@mui/material";
 import {
   FaArrowLeft,
@@ -33,7 +33,13 @@ import {
   FaClock,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { formatCurrency, formatDateTime, getInitials, getStatusInfo } from "../../utils";
+import {
+  formatCurrency,
+  formatDateTime,
+  formatPhoneNumber,
+  getInitials,
+  getStatusInfo,
+} from "../../utils";
 import StatisticsCards from "./StatisticsCards";
 import { useState } from "react";
 import DebtForm from "./modal/DebtForm";
@@ -41,21 +47,33 @@ import RepaymentForm from "./modal/RepaymentForm";
 import type { ReqDebt } from "../../types/types";
 import PaymentHistoryModal from "./modal/PaymentHistoryModal";
 import AllPaidModal from "./modal/AllPaidModal";
+import RepaySingleDebt from "./modal/RepaySingleDebt";
 
 function DebtorPage() {
   const { id } = useParams();
-  const { debtor, debts, debtorLoading, debtsLoading, addDebtToDebtor, debtRepayment, debtsHistory } = useDebtor(Number(id));
+  const {
+    debtor,
+    debts,
+    debtorLoading,
+    debtsLoading,
+    addDebtToDebtor,
+    debtRepayment,
+    debtsHistory,
+    repaySingleDebt,
+  } = useDebtor(Number(id));
   const [open, setOpen] = useState(false);
   const [openRepayment, setOpenRepayment] = useState(false);
   const [openHistoryPayment, setOpenHistoryPayment] = useState(false);
   const [openAllPaidModal, setOpenAllPaidModal] = useState(false);
- 
+  const [openRepaySingleDebt, setOpenRepaySingleDebt] = useState(false);
+  const [selectedDebtId, setSelectedDebtId] = useState<number | null>(null);
+
   if (debtorLoading || debtsLoading) {
     return (
       <Container sx={{ py: 4 }}>
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: "100%" }}>
           <LinearProgress sx={{ height: 3, borderRadius: 2 }} />
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
+          <Box sx={{ textAlign: "center", mt: 4 }}>
             <Typography variant="h6" color="textSecondary">
               Loading debtor information...
             </Typography>
@@ -77,31 +95,36 @@ function DebtorPage() {
     setOpenHistoryPayment(false);
   };
 
-  const allPaid = debts.length > 0 && debts.every((debt) => debt.status === true);
+  const handleCloseRepayModal = () => {
+    setOpenRepaySingleDebt(false);
+  };
+
+  const allPaid =
+    debts.length > 0 && debts.every((debt) => debt.status === true);
 
   if (!debtor) {
     return (
       <Container sx={{ py: 6 }}>
-        <Paper 
+        <Paper
           elevation={0}
-          sx={{ 
-            p: 6, 
+          sx={{
+            p: 6,
             textAlign: "center",
             borderRadius: 4,
-            border: '1px solid',
-            borderColor: 'divider',
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           <Box
             sx={{
-              bgcolor: '#ffebee',
-              borderRadius: '50%',
+              bgcolor: "#ffebee",
+              borderRadius: "50%",
               width: 100,
               height: 100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto",
               mb: 3,
             }}
           >
@@ -110,8 +133,13 @@ function DebtorPage() {
           <Typography variant="h4" fontWeight="700" color="error" gutterBottom>
             Debtor Not Found
           </Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
-            The debtor you are looking for does not exist or has been removed from the system.
+          <Typography
+            variant="body1"
+            color="textSecondary"
+            sx={{ mb: 4, maxWidth: 500, mx: "auto" }}
+          >
+            The debtor you are looking for does not exist or has been removed
+            from the system.
           </Typography>
           <Button
             component={Link}
@@ -123,15 +151,15 @@ function DebtorPage() {
               px: 4,
               py: 1.5,
               borderRadius: 3,
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 600,
-              fontSize: '1rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+              fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
               },
-              transition: 'all 0.3s ease',
+              transition: "all 0.3s ease",
             }}
           >
             Back to Debtors
@@ -146,7 +174,8 @@ function DebtorPage() {
   const pendingDebt = debts
     .filter((d) => !d.status)
     .reduce((sum, debt) => sum + (debt.amount || 0), 0);
-  const paidDebt = debts.filter((d) => d.status)
+  const paidDebt = debts
+    .filter((d) => d.status)
     .reduce((sum, debt) => sum + (debt.amount || 0), 0);
 
   const handleAddDebt = (amount: number) => {
@@ -168,6 +197,12 @@ function DebtorPage() {
     }
   };
 
+  const handleSingleRepay = (amount: number) => {
+    if (selectedDebtId) {
+      repaySingleDebt(selectedDebtId, amount);
+    }
+  };
+  
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header Section */}
@@ -181,31 +216,31 @@ function DebtorPage() {
             color: "white",
             position: "relative",
             overflow: "hidden",
-            border: '1px solid',
-            borderColor: 'divider',
+            border: "1px solid",
+            borderColor: "divider",
           }}
         >
           {/* Decorative Background Elements */}
           <Box
             sx={{
-              position: 'absolute',
+              position: "absolute",
               top: -50,
               right: -50,
               width: 200,
               height: 200,
-              borderRadius: '50%',
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: "50%",
+              bgcolor: "rgba(255, 255, 255, 0.1)",
             }}
           />
           <Box
             sx={{
-              position: 'absolute',
+              position: "absolute",
               bottom: -30,
               left: -30,
               width: 150,
               height: 150,
-              borderRadius: '50%',
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: "50%",
+              bgcolor: "rgba(255, 255, 255, 0.1)",
             }}
           />
 
@@ -216,7 +251,7 @@ function DebtorPage() {
               justifyContent: "space-between",
               flexWrap: "wrap",
               gap: 3,
-              position: 'relative',
+              position: "relative",
               zIndex: 1,
             }}
           >
@@ -229,14 +264,19 @@ function DebtorPage() {
                   color: "#667eea",
                   fontSize: "2.25rem",
                   fontWeight: "700",
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  border: '4px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                  border: "4px solid rgba(255, 255, 255, 0.3)",
                 }}
               >
                 {getInitials(debtor.full_name)}
               </Avatar>
               <Box>
-                <Typography variant="h4" fontWeight="700" gutterBottom sx={{ mb: 1.5 }}>
+                <Typography
+                  variant="h4"
+                  fontWeight="700"
+                  gutterBottom
+                  sx={{ mb: 1.5 }}
+                >
                   {debtor.full_name}
                 </Typography>
                 <Box
@@ -248,46 +288,46 @@ function DebtorPage() {
                   }}
                 >
                   <Chip
-                    icon={<FaUser style={{ fontSize: '14px' }} />}
+                    icon={<FaUser style={{ fontSize: "14px" }} />}
                     label={`ID: #${debtor.debtor_id}`}
                     size="small"
                     sx={{
                       bgcolor: "rgba(255,255,255,0.25)",
                       color: "white",
                       fontWeight: "600",
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      '& .MuiChip-icon': {
-                        color: 'white',
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      "& .MuiChip-icon": {
+                        color: "white",
                       },
                     }}
                   />
                   <Chip
-                    icon={<FaPhone style={{ fontSize: '14px' }} />}
-                    label={debtor.phone_number}
+                    icon={<FaPhone style={{ fontSize: "14px" }} />}
+                    label={formatPhoneNumber(debtor.phone_number)}
                     size="small"
                     sx={{
                       bgcolor: "rgba(255,255,255,0.25)",
                       color: "white",
                       fontWeight: "600",
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      '& .MuiChip-icon': {
-                        color: 'white',
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      "& .MuiChip-icon": {
+                        color: "white",
                       },
                     }}
                   />
                   <Chip
-                    icon={<FaMoneyBillWave style={{ fontSize: '14px' }} />}
+                    icon={<FaMoneyBillWave style={{ fontSize: "14px" }} />}
                     label={`Total: ${formatCurrency(debtor.total_debt || 0)}`}
                     size="small"
                     sx={{
                       bgcolor: "rgba(255,255,255,0.95)",
                       color: "#667eea",
                       fontWeight: "700",
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      '& .MuiChip-icon': {
-                        color: '#667eea',
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      "& .MuiChip-icon": {
+                        color: "#667eea",
                       },
                     }}
                   />
@@ -295,8 +335,11 @@ function DebtorPage() {
               </Box>
             </Box>
 
-            <Box sx={{ display: "flex", gap: 1.5, flexWrap: 'wrap' }}>
-              <Tooltip title={allPaid ? "All debts are paid" : "Make a payment"} arrow>
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+              <Tooltip
+                title={allPaid ? "All debts are paid" : "Make a payment"}
+                arrow
+              >
                 <Button
                   variant="contained"
                   startIcon={<FaMoneyBillWave />}
@@ -307,36 +350,39 @@ function DebtorPage() {
                     px: 3,
                     py: 1.25,
                     borderRadius: 2.5,
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontWeight: "700",
-                    fontSize: '0.95rem',
-                    boxShadow: allPaid 
-                      ? '0 4px 12px rgba(76, 175, 80, 0.3)' 
-                      : '0 4px 12px rgba(0,0,0,0.15)',
-                    "&:hover": { 
+                    fontSize: "0.95rem",
+                    boxShadow: allPaid
+                      ? "0 4px 12px rgba(76, 175, 80, 0.3)"
+                      : "0 4px 12px rgba(0,0,0,0.15)",
+                    "&:hover": {
                       bgcolor: allPaid ? "#388E3C" : "rgba(255,255,255,0.95)",
-                      transform: 'translateY(-2px)',
-                      boxShadow: allPaid 
-                        ? '0 6px 16px rgba(76, 175, 80, 0.4)' 
-                        : '0 6px 16px rgba(0,0,0,0.2)',
+                      transform: "translateY(-2px)",
+                      boxShadow: allPaid
+                        ? "0 6px 16px rgba(76, 175, 80, 0.4)"
+                        : "0 6px 16px rgba(0,0,0,0.2)",
                     },
-                    transition: 'all 0.3s ease',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::after': allPaid ? {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: '-100%',
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-                      animation: 'shine 2s infinite',
-                    } : {},
-                    '@keyframes shine': {
-                      '0%': { left: '-100%' },
-                      '100%': { left: '100%' },
-                    }
+                    transition: "all 0.3s ease",
+                    position: "relative",
+                    overflow: "hidden",
+                    "&::after": allPaid
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: "-100%",
+                          width: "100%",
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                          animation: "shine 2s infinite",
+                        }
+                      : {},
+                    "@keyframes shine": {
+                      "0%": { left: "-100%" },
+                      "100%": { left: "100%" },
+                    },
                   }}
                 >
                   {allPaid ? "All Paid ✓" : "Repayment"}
@@ -353,16 +399,16 @@ function DebtorPage() {
                     px: 3,
                     py: 1.25,
                     borderRadius: 2.5,
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontWeight: "700",
-                    fontSize: '0.95rem',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    "&:hover": { 
+                    fontSize: "0.95rem",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    "&:hover": {
                       bgcolor: "rgba(255,255,255,0.35)",
-                      transform: 'translateY(-2px)',
+                      transform: "translateY(-2px)",
                     },
-                    transition: 'all 0.3s ease',
+                    transition: "all 0.3s ease",
                   }}
                 >
                   Add Debt
@@ -375,13 +421,13 @@ function DebtorPage() {
                   sx={{
                     bgcolor: "rgba(255,255,255,0.25)",
                     color: "white",
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    "&:hover": { 
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    "&:hover": {
                       bgcolor: "rgba(255,255,255,0.35)",
-                      transform: 'translateY(-2px)',
+                      transform: "translateY(-2px)",
                     },
-                    transition: 'all 0.3s ease',
+                    transition: "all 0.3s ease",
                   }}
                 >
                   <FaArrowLeft size={18} />
@@ -393,31 +439,31 @@ function DebtorPage() {
       </Box>
 
       {/* Statistics Cards */}
-      <StatisticsCards 
-        formatCurrency={formatCurrency} 
-        totalDebt={totalDebts} 
-        pendingDebt={pendingDebt} 
-        paidDebt={paidDebt} 
-        debts={debts}  
+      <StatisticsCards
+        formatCurrency={formatCurrency}
+        totalDebt={totalDebts}
+        pendingDebt={pendingDebt}
+        paidDebt={paidDebt}
+        debts={debts}
       />
 
       {/* Debt Records Table */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          borderRadius: 4, 
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 4,
           overflow: "hidden",
-          border: '1px solid',
-          borderColor: 'divider',
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
-        <Box 
-          display="flex" 
-          alignItems="center" 
-          justifyContent="space-between" 
-          sx={{ 
-            p: 3, 
-            bgcolor: '#fafafa',
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{
+            p: 3,
+            bgcolor: "#fafafa",
           }}
         >
           <Box>
@@ -431,20 +477,24 @@ function DebtorPage() {
             >
               <Box
                 sx={{
-                  bgcolor: '#e3f2fd',
-                  color: '#1976d2',
+                  bgcolor: "#e3f2fd",
+                  color: "#1976d2",
                   p: 1,
                   borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <FaReceipt size={20} />
               </Box>
               Debt Records
             </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5, ml: 5.5 }}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ mt: 0.5, ml: 5.5 }}
+            >
               All debt transactions for {debtor.full_name}
             </Typography>
           </Box>
@@ -459,16 +509,16 @@ function DebtorPage() {
                 px: 3,
                 py: 1.25,
                 borderRadius: 2.5,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: "600",
-                fontSize: '0.95rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                "&:hover": { 
+                fontSize: "0.95rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                "&:hover": {
                   bgcolor: "primary.dark",
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
                 },
-                transition: 'all 0.3s ease',
+                transition: "all 0.3s ease",
               }}
             >
               Payment History
@@ -484,28 +534,42 @@ function DebtorPage() {
               <Table>
                 <TableHead sx={{ bgcolor: "#f8f9fc" }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: "700", width: "80px", color: 'text.primary' }}>
+                    <TableCell
+                      sx={{
+                        fontWeight: "700",
+                        width: "80px",
+                        color: "text.primary",
+                      }}
+                    >
                       #
                     </TableCell>
-                    <TableCell sx={{ fontWeight: "700", color: 'text.primary' }}>
+                    <TableCell
+                      sx={{ fontWeight: "700", color: "text.primary" }}
+                    >
                       <Box display="flex" alignItems="center" gap={1}>
                         <FaCalendarAlt size={14} />
                         Date & Time
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: "700", color: 'text.primary' }}>
+                    <TableCell
+                      sx={{ fontWeight: "700", color: "text.primary" }}
+                    >
                       <Box display="flex" alignItems="center" gap={1}>
                         <FaMoneyBillWave size={14} />
                         Amount
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: "700", color: 'text.primary' }}>
+                    <TableCell
+                      sx={{ fontWeight: "700", color: "text.primary" }}
+                    >
                       <Box display="flex" alignItems="center" gap={1}>
                         <FaChartLine size={14} />
                         Status
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: "700", color: 'text.primary' }}>
+                    <TableCell
+                      sx={{ fontWeight: "700", color: "text.primary" }}
+                    >
                       <Box display="flex" alignItems="center" gap={1}>
                         <FaClock size={14} />
                         Remaining
@@ -520,10 +584,16 @@ function DebtorPage() {
                     return (
                       <TableRow
                         key={debt.debt_id}
+                        onClick={() => {
+                          setSelectedDebtId(debt.debt_id);
+                          setOpenRepaySingleDebt(true);
+                        }}
                         sx={{
-                          transition: 'all 0.2s ease',
-                          "&:hover": { 
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
                             bgcolor: "#f8f9fc",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                           },
                           "&:last-child td": { border: 0 },
                         }}
@@ -534,19 +604,23 @@ function DebtorPage() {
                               width: 32,
                               height: 32,
                               borderRadius: 2,
-                              bgcolor: '#f5f5f5',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                              bgcolor: "#f5f5f5",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                               fontWeight: 600,
-                              color: 'text.secondary',
+                              color: "text.secondary",
                             }}
                           >
                             {index + 1}
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body1" fontWeight="600" color="text.primary">
+                          <Typography
+                            variant="body1"
+                            fontWeight="600"
+                            color="text.primary"
+                          >
                             {formatDateTime(debt.date_time)}
                           </Typography>
                         </TableCell>
@@ -555,8 +629,8 @@ function DebtorPage() {
                             label={formatCurrency(debt.amount || 0)}
                             color="primary"
                             variant="outlined"
-                            sx={{ 
-                              fontWeight: "700", 
+                            sx={{
+                              fontWeight: "700",
                               fontSize: "0.9rem",
                               borderWidth: 2,
                               height: 36,
@@ -569,11 +643,11 @@ function DebtorPage() {
                             label={statusInfo.text}
                             color={statusInfo.color}
                             variant="filled"
-                            sx={{ 
-                              fontWeight: "700", 
+                            sx={{
+                              fontWeight: "700",
                               minWidth: "110px",
                               height: 36,
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
                             }}
                           />
                         </TableCell>
@@ -584,16 +658,16 @@ function DebtorPage() {
                             variant="outlined"
                             sx={{
                               fontWeight: "700",
-                              color: '#FF9800',
-                              border: '2px solid #FF9800',
+                              color: "#FF9800",
+                              border: "2px solid #FF9800",
                               height: 36,
-                              fontSize: '0.875rem',
-                              '& .MuiChip-icon': {
-                                color: '#FF9800',
-                                fontSize: '14px',
-                              }
+                              fontSize: "0.875rem",
+                              "& .MuiChip-icon": {
+                                color: "#FF9800",
+                                fontSize: "14px",
+                              },
                             }}
-                      />
+                          />
                         </TableCell>
                       </TableRow>
                     );
@@ -615,20 +689,26 @@ function DebtorPage() {
                 gap: 2,
               }}
             >
-              <Typography variant="body2" color="textSecondary" fontWeight="500">
-                Showing <strong style={{ color: '#1976d2' }}>{debts.length}</strong> debt record
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                fontWeight="500"
+              >
+                Showing{" "}
+                <strong style={{ color: "#1976d2" }}>{debts.length}</strong>{" "}
+                debt record
                 {debts.length !== 1 ? "s" : ""}
               </Typography>
               <Box display="flex" gap={2} alignItems="center">
                 <Chip
-                  icon={<FaReceipt style={{ fontSize: '14px' }} />}
+                  icon={<FaReceipt style={{ fontSize: "14px" }} />}
                   label="Total Records"
                   size="small"
                   sx={{
-                    bgcolor: 'white',
+                    bgcolor: "white",
                     fontWeight: 600,
-                    border: '1px solid',
-                    borderColor: 'divider',
+                    border: "1px solid",
+                    borderColor: "divider",
                   }}
                 />
                 <Typography variant="h6" fontWeight="700" color="primary">
@@ -638,16 +718,24 @@ function DebtorPage() {
             </Box>
           </>
         ) : (
-          <Box sx={{ p: 10, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <Box
+            sx={{
+              p: 10,
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <Box
               sx={{
-                bgcolor: '#f5f5f5',
-                borderRadius: '50%',
+                bgcolor: "#f5f5f5",
+                borderRadius: "50%",
                 width: 120,
                 height: 120,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 mb: 3,
               }}
             >
@@ -661,26 +749,31 @@ function DebtorPage() {
             >
               No debt records found
             </Typography>
-            <Typography variant="body1" color="textSecondary" sx={{ mb: 4, maxWidth: 400 }}>
-              This debtor has no debt records yet. Add the first debt record to start tracking.
+            <Typography
+              variant="body1"
+              color="textSecondary"
+              sx={{ mb: 4, maxWidth: 400 }}
+            >
+              This debtor has no debt records yet. Add the first debt record to
+              start tracking.
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               startIcon={<FaPlus />}
               onClick={() => setOpen(true)}
               sx={{
                 px: 4,
                 py: 1.5,
                 borderRadius: 3,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
-                fontSize: '1rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                fontSize: "1rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
                 },
-                transition: 'all 0.3s ease',
+                transition: "all 0.3s ease",
               }}
             >
               Add First Debt Record
@@ -690,17 +783,32 @@ function DebtorPage() {
       </Paper>
 
       {/* Modals */}
-      <DebtForm open={open} handleClose={handleClose} onSubmit={handleAddDebt} />
-      <RepaymentForm 
-        open={openRepayment} 
-        handleClose={handleCloseRepayment} 
+      <DebtForm
+        open={open}
+        handleClose={handleClose}
+        onSubmit={handleAddDebt}
+      />
+      <RepaymentForm
+        open={openRepayment}
+        handleClose={handleCloseRepayment}
         onSubmit={handleRepayment}
       />
-      <PaymentHistoryModal open={openHistoryPayment} handleClose={handleCloseHistoryPayment} debtsHistory={debtsHistory} />
-      
-      <AllPaidModal 
-        open={openAllPaidModal} 
-        onClose={() => setOpenAllPaidModal(false)} 
+      <PaymentHistoryModal
+        open={openHistoryPayment}
+        handleClose={handleCloseHistoryPayment}
+        debtsHistory={debtsHistory}
+      />
+
+      <AllPaidModal
+        open={openAllPaidModal}
+        onClose={() => setOpenAllPaidModal(false)}
+      />
+
+      <RepaySingleDebt
+        open={openRepaySingleDebt}
+        handleClose={handleCloseRepayModal}
+        onSubmit={handleSingleRepay}
+        debt_id={selectedDebtId!}
       />
     </Container>
   );

@@ -12,7 +12,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import useDebtor from "../../hooks/useDebtor";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import DebtorForm from "./modal/DebtorForm";
 import type {
   ReqDebtor,
@@ -50,7 +50,7 @@ function DebtorList() {
   }, [debouncedSearch]);
 
   const { debtors, debtorsLoading, addDebtor, page, setPage, limit } =
-    useDebtor(undefined, 3000, filterParams);
+    useDebtor(undefined, filterParams);
 
   const handleClose = () => {
     setOpen(false);
@@ -62,16 +62,18 @@ function DebtorList() {
   };
 
   const totalDebtors = debtors.data.length;
+  
   const totalDebt = debtors.data.reduce(
     (sum: number, debtor: Debtor) => sum + (debtor.total_debt || 0),
     0
   );
+
   const highDebtCount = debtors.data.filter(
     (d: Debtor) => (d.total_debt || 0) > 5000
   ).length;
 
   const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
+    event: ChangeEvent<unknown>,
     value: number
   ) => {
     setPage(value);

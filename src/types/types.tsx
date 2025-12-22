@@ -28,18 +28,16 @@ export interface ReqDebt{
 
 export interface DebtsHistory {
   debt_id: number;
-      debtor_id: number;
-      date_time: string;
-      amount: number;
-      status: boolean;
-      payments: [
-        {
-          payment_history_id: number;
-          debt_id: number;
-          date_time: string;
-          amount: number;
-        }
-      ];
+  amount: number;
+  status: boolean;
+  date_time: string;
+  total_paid: number;
+  remaining: number;
+  payments: Array<{
+    payment_history_id: number;
+    date_time: string;
+    amount: number;
+  }>;
 }
 
 

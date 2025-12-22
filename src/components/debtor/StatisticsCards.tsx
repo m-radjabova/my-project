@@ -12,13 +12,13 @@ interface Props {
 
 function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, debts }: Props) {
 
-  const safeTotalDebt = totalDebt || 0;
+  const safePendingDebt = pendingDebt || 0;
   const safePaidDebt = paidDebt || 0;
 
-  const totalAmount = safeTotalDebt + safePaidDebt;
+  const totalAmount = safePendingDebt + safePaidDebt;
 
   const pendingProgress =
-    totalAmount > 0 ? (safeTotalDebt / totalAmount) * 100 : 0;
+    totalAmount > 0 ? (safePendingDebt / totalAmount) * 100 : 0;
 
   const paidProgress =
     totalAmount > 0 ? (safePaidDebt / totalAmount) * 100 : 0;
@@ -209,7 +209,7 @@ function StatisticsCards({ formatCurrency, totalDebt, pendingDebt, paidDebt, deb
                 backgroundClip: 'text',
                 letterSpacing: '0.5px',
               }}>
-                PENDING
+                REMAINING
               </Typography>
               <Typography variant="h3" fontWeight="800" sx={{ 
                 color: '#f57c00',

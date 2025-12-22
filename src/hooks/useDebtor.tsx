@@ -5,14 +5,16 @@ import type { Debt, Debtor, FilterParams, ReqDebt, ReqDebtor } from "../types/ty
 interface MutationVariables {
   debtorId: number;
   amount?: number;
+  debt_id?: number;
 }
 
 interface MutationVariables2 {
   debtorId: number;
   newDebt: ReqDebt;
+  debt_id?: number;
 }
 
-function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: FilterParams) {
+function useDebtor(debtorId?: number, filterParams?: FilterParams) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 5;
@@ -30,8 +32,8 @@ function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: F
       return res.data ?? [];
     },
     placeholderData: (prev) => prev,
-    refetchInterval: pollingIntervalMs || false,
     refetchOnWindowFocus: true,
+    staleTime: 60000,
   });
 
   const { data: debtor, isLoading: debtorLoading } = useQuery({
@@ -42,8 +44,8 @@ function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: F
       return res.data ?? null;
     },
     enabled: typeof debtorId === "number",
-    refetchInterval: typeof debtorId === "number" ? pollingIntervalMs : false,
     refetchOnWindowFocus: true,
+    staleTime: 60000,
   });
 
   const { data: debts = [], isLoading: debtsLoading } = useQuery({
@@ -54,23 +56,23 @@ function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: F
       return res.data ?? [];
     },
     enabled: typeof debtorId === "number",
-    refetchInterval: typeof debtorId === "number" ? pollingIntervalMs : false,
+    refetchInterval: 5000, 
     refetchOnWindowFocus: true,
+    staleTime: 3000,
   });
 
   const {
     data: debtsHistory = [],
-    isLoading: debtsHistoryLoading,
+    isLoading:  debtsHistoryLoading,
   } = useQuery({
     queryKey: ["debts-history", debtorId],
-    queryFn: async () => {
+    queryFn:  async () => {
       if (typeof debtorId !== "number") return [];
       const res = await apiClient.get(`/debtor/${debtorId}/debts-history`);
-      return res.data ?? [];
+      return res.data ??  [];
     },
     enabled: typeof debtorId === "number",
-    refetchInterval: typeof debtorId === "number" ? pollingIntervalMs : false,
-    refetchOnWindowFocus: true,
+    staleTime:  Infinity,
   });
 
   const addDebtorMutate = useMutation({
@@ -105,8 +107,21 @@ function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: F
     },
   });
 
+  const repaySingleDebtMutate = useMutation({
+    mutationFn: async ({ debt_id, amount, debtorId:  dId }: MutationVariables) => {
+      const res = await apiClient.post(`/debtor/debt/${debt_id}/repayment`, { 
+        amount 
+      });
+      return res.data;
+    },
+    onSettled: (_data, _error, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] });
+    },
+  });
   useEffect(() => {
-  }, [pollingIntervalMs, queryClient]);
+  }, [queryClient]);
 
   return {
     debtors,
@@ -123,6 +138,8 @@ function useDebtor(debtorId?: number, pollingIntervalMs = 3000, filterParams?: F
       addDebtToDebtorMutate.mutate({ debtorId: debtorId as number, newDebt }),
     debtRepayment: (amount: number) =>
       debtRepaymentMutate.mutate({ debtorId: debtorId as number, amount }),
+    repaySingleDebt: (debt_id: number, amount: number) =>
+      repaySingleDebtMutate.mutate({ debtorId: debtorId as number, debt_id, amount }),
     debtsHistory,
     debtsHistoryLoading,
   };
