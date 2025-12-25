@@ -385,7 +385,7 @@ function DebtorPage() {
               <Tooltip title="Return to list" arrow>
                 <IconButton
                   component={Link}
-                  to="/debtor"
+                  to="/home/debtor"
                   sx={{
                     bgcolor: "rgba(255,255,255,0.25)",
                     color: "white",

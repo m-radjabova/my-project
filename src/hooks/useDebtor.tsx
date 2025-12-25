@@ -20,65 +20,84 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data: debtors = { data: [] , total : 0}, isLoading: debtorsLoading } = useQuery({
-    queryKey: ["debtors", filterParams,  page],
+  const getShopId = (): number | null => {
+    const shopId = localStorage.getItem('shop_id');
+    return shopId ? parseInt(shopId) : null;
+  };
+
+  const shopId = getShopId();
+
+  const { data: debtors = { data: [], total: 0 }, isLoading: debtorsLoading } = useQuery({
+    queryKey: ["debtors", filterParams, page, shopId],
     queryFn: async () => {
+      if (!shopId) {
+        throw new Error("Shop tanlanmagan");
+      }
+
       const params = new URLSearchParams();
+      params.set("shop_id", shopId.toString());
+      
       if (filterParams?.name?.trim()) {
         params.set("name", filterParams.name.trim());
       }
       params.set("page", page.toString());
       params.set("limit", limit.toString());
+      
       const res = await apiClient.get(`/debtor?${params.toString()}`);
-      return res.data ?? [];
+      return res.data ?? { data: [], total: 0 };
     },
+    enabled: !!shopId,
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: true,
     staleTime: 60000,
   });
 
   const { data: debtor, isLoading: debtorLoading } = useQuery({
-    queryKey: ["debtor", debtorId],
+    queryKey: ["debtor", debtorId, shopId],
     queryFn: async () => {
-      if (typeof debtorId !== "number") return null;
-      const res = await apiClient.get<Debtor>(`/debtor/${debtorId}`);
+      if (typeof debtorId !== "number" || !shopId) return null;
+      
+      const res = await apiClient.get<Debtor>(`/debtor/${debtorId}?shop_id=${shopId}`);
       return res.data ?? null;
     },
-    enabled: typeof debtorId === "number",
+    enabled: typeof debtorId === "number" && !!shopId,
     refetchOnWindowFocus: true,
     staleTime: 60000,
   });
 
   const { data: debts = [], isLoading: debtsLoading } = useQuery({
-    queryKey: ["debts", debtorId],
+    queryKey: ["debts", debtorId, shopId],
     queryFn: async () => {
-      if (typeof debtorId !== "number") return [];
-      const res = await apiClient.get<Debt[]>(`/debtor/${debtorId}/debts`);
+      if (typeof debtorId !== "number" || !shopId) return [];
+      
+      const res = await apiClient.get<Debt[]>(`/debtor/${debtorId}/debts?shop_id=${shopId}`);
       return res.data ?? [];
     },
-    enabled: typeof debtorId === "number",
-    refetchInterval: 5000, 
+    enabled: typeof debtorId === "number" && !!shopId,
+    refetchInterval: 5000,
     refetchOnWindowFocus: true,
     staleTime: 3000,
   });
 
   const {
     data: debtsHistory = [],
-    isLoading:  debtsHistoryLoading,
+    isLoading: debtsHistoryLoading,
   } = useQuery({
-    queryKey: ["debts-history", debtorId],
-    queryFn:  async () => {
-      if (typeof debtorId !== "number") return [];
-      const res = await apiClient.get(`/debtor/${debtorId}/debts-history`);
-      return res.data ??  [];
+    queryKey: ["debts-history", debtorId, shopId],
+    queryFn: async () => {
+      if (typeof debtorId !== "number" || !shopId) return [];
+      
+      const res = await apiClient.get(`/debtor/${debtorId}/debts-history?shop_id=${shopId}`);
+      return res.data ?? [];
     },
-    enabled: typeof debtorId === "number",
-    staleTime:  Infinity,
+    enabled: typeof debtorId === "number" && !!shopId,
+    staleTime: Infinity,
   });
 
   const addDebtorMutate = useMutation({
     mutationFn: async (newDebtor: ReqDebtor) => {
-      const res = await apiClient.post<Debtor>("/debtor", newDebtor);
+      
+      const res = await apiClient.post<Debtor>("/debtor", { ...newDebtor, shop_id: shopId });
       return res.data;
     },
     onSettled: () => {
@@ -88,48 +107,54 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
 
   const addDebtToDebtorMutate = useMutation({
     mutationFn: async ({ debtorId: dId, newDebt }: MutationVariables2) => {
-      const res = await apiClient.post<Debt>(`/debtor/${dId}/debt`, newDebt);
+      if (!shopId) throw new Error("Shop tanlanmagan");
+      
+      const res = await apiClient.post<Debt>(`/debtor/${dId}/debt?shop_id=${shopId}`, newDebt);
       return res.data;
     },
-    onSettled: (_data, _error, vars : MutationVariables2) => {
-      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] }); // QO'SHILDI
+    onSettled: (_data, _error, vars: MutationVariables2) => {
+      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId, shopId] });
     },
   });
 
   const debtRepaymentMutate = useMutation({
     mutationFn: async ({ debtorId: dId, amount }: MutationVariables) => {
-      const res = await apiClient.post(`/debtor/${dId}/repayment`, { amount });
+      if (!shopId) throw new Error("Shop tanlanmagan");
+      
+      const res = await apiClient.post(`/debtor/${dId}/repayment?shop_id=${shopId}`, { amount });
       return res.data;
     },
-    onSettled: (_data, _error, vars : MutationVariables) => {
-      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] });
+    onSettled: (_data, _error, vars: MutationVariables) => {
+      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId, shopId] });
     },
   });
 
   const repaySingleDebtMutate = useMutation({
-    mutationFn: async ({ debt_id, amount, debtorId:  dId }: MutationVariables) => {
-      const res = await apiClient.post(`/debtor/debt/${debt_id}/repayment`, { 
-        amount 
+    mutationFn: async ({ debt_id, amount, debtorId: dId }: MutationVariables) => {
+      if (!shopId) throw new Error("Shop tanlanmagan");
+      
+      const res = await apiClient.post(`/debtor/debt/${debt_id}/repayment?shop_id=${shopId}`, {
+        amount
       });
       return res.data;
     },
     onSettled: (_data, _error, vars) => {
-      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId] });
-      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ["debts", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debts-history", vars.debtorId, shopId] });
+      queryClient.invalidateQueries({ queryKey: ["debtor", vars.debtorId, shopId] });
     },
   });
-  
+
   useEffect(() => {
   }, [queryClient]);
 
   return {
     debtors,
-    page, 
+    page,
     setPage,
     limit,
     debtorsLoading,
@@ -138,14 +163,21 @@ function useDebtor(debtorId?: number, filterParams?: FilterParams) {
     debtorLoading,
     debtsLoading,
     addDebtor: addDebtorMutate.mutate,
-    addDebtToDebtor: (newDebt: ReqDebt) =>
-      addDebtToDebtorMutate.mutate({ debtorId: debtorId as number, newDebt }),
-    debtRepayment: (amount: number) =>
-      debtRepaymentMutate.mutateAsync({ debtorId: debtorId as number, amount }),
-    repaySingleDebt: (debt_id: number, amount: number) =>
-      repaySingleDebtMutate.mutate({ debtorId: debtorId as number, debt_id, amount }),
+    addDebtToDebtor: (newDebt: ReqDebt) => {
+      if (!debtorId) throw new Error("Debtor ID topilmadi");
+      addDebtToDebtorMutate.mutate({ debtorId, newDebt });
+    },
+    debtRepayment: (amount: number) => {
+      if (!debtorId) throw new Error("Debtor ID topilmadi");
+      return debtRepaymentMutate.mutateAsync({ debtorId, amount });
+    },
+    repaySingleDebt: (debt_id: number, amount: number) => {
+      if (!debtorId) throw new Error("Debtor ID topilmadi");
+      return repaySingleDebtMutate.mutate({ debtorId, debt_id, amount });
+    },
     debtsHistory,
     debtsHistoryLoading,
+    shopId,
   };
 }
 

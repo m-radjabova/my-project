@@ -149,7 +149,7 @@ function DebtorTable({ debtors, handlePageChange, setOpen , page, limit, totalDe
                           },
                           "&:last-child td, &:last-child th": { border: 0 },
                         }}
-                        onClick={() => navigate(`/debtor/${debtor.debtor_id}`)}
+                        onClick={() => navigate(`/home/debtor/${debtor.debtor_id}`)}
                       >
                         <TableCell>
                           <Box display="flex" alignItems="center" gap={2}>

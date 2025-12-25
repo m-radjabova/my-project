@@ -60,3 +60,27 @@ export type ResulType = null | {
     status: "fully_paid" | "partially_paid";
   }>;
 };
+
+export interface Shop{
+  shop_id: number;
+  shop_name: string;
+  owner_name: string;
+  phone_number: string;
+  address: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ReqShop{
+  shop_name: string;
+  owner_name?: string;
+  phone_number?: string;
+  address?: string;
+}
+
+export interface Statistics{
+  total_debtors: number;
+  total_debts: number;
+  total_debt_amount: number;
+  total_paid_amount: number;
+}

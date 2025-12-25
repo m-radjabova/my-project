@@ -12,6 +12,7 @@ import {
   IconButton,
   Avatar,
   Divider,
+  Chip
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import type { ReqDebtor } from "../../../types/types";
@@ -22,15 +23,18 @@ import {
   FaTimes,
   FaIdCard,
   FaEye,
+  FaStore,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 
 interface DebtorFormProps {
   open: boolean;
   handleClose: () => void;
   onSubmit: (data: ReqDebtor) => void;
+  shopName?: string;
 }
 
-function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
+function DebtorForm({ open, handleClose, onSubmit, shopName }: DebtorFormProps) {
   const {
     register,
     handleSubmit: formSubmit,
@@ -40,6 +44,10 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
   } = useForm<ReqDebtor>();
 
   const createDebtor = (data: ReqDebtor) => {
+    if (!shopName) {
+      console.error("Shop name not available");
+      return;
+    }
     onSubmit(data);
     reset();
   };
@@ -51,7 +59,7 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
 
   const fullName = watch("full_name");
   const phoneNumber = watch("phone_number");
-  const isFormValid = fullName && phoneNumber;
+  const isFormValid = fullName && phoneNumber && shopName;
 
   return (
     <Dialog
@@ -69,7 +77,9 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
     >
       <DialogTitle
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: !shopName 
+            ? "linear-gradient(135deg, #ff9800 0%, #f57c00 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
           py: 3,
           px: 4,
@@ -96,7 +106,9 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
         <Box display="flex" alignItems="center" gap={2} sx={{ position: 'relative', zIndex: 1 }}>
           <Avatar
             sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.25)',
+              bgcolor: !shopName 
+                ? 'rgba(255, 152, 0, 0.3)' 
+                : 'rgba(255, 255, 255, 0.25)',
               color: 'white',
               width: 48,
               height: 48,
@@ -104,14 +116,14 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
               border: '2px solid rgba(255, 255, 255, 0.3)',
             }}
           >
-            <FaIdCard size={22} />
+            {!shopName ? <FaExclamationTriangle size={22} /> : <FaIdCard size={22} />}
           </Avatar>
           <Box>
             <Typography variant="h5" fontWeight="700">
-              Create New Debtor
+              {!shopName ? "Shop Not Selected" : "Create New Debtor"}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.95, mt: 0.5 }}>
-              Add a new debtor to the system
+              {!shopName ? "Please select a shop first" : "Add a new debtor to the system"}
             </Typography>
           </Box>
         </Box>
@@ -135,303 +147,394 @@ function DebtorForm({ open, handleClose, onSubmit }: DebtorFormProps) {
       </DialogTitle>
 
       <DialogContent sx={{ p: 4, bgcolor: '#f8f9fc' }}>
-        <form onSubmit={formSubmit(createDebtor)}>
-          <Paper
-            elevation={0}
+        {!shopName ? (
+          <Box
             sx={{
-              p: 3,
-              borderRadius: 3,
-              mb: 3,
-              bgcolor: 'white',
-              border: '1px solid',
-              borderColor: 'divider',
+              textAlign: 'center',
+              py: 6,
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={3}>
-              <Box
-                sx={{
-                  bgcolor: '#e3f2fd',
-                  color: '#1976d2',
-                  p: 1,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <FaUser size={16} />
+            <Avatar
+              sx={{
+                width: 80,
+                height: 80,
+                bgcolor: 'warning.main',
+                color: 'white',
+                mx: 'auto',
+                mb: 3,
+              }}
+            >
+              <FaStore size={36} />
+            </Avatar>
+            <Typography variant="h6" color="warning.main" fontWeight="700" gutterBottom>
+              Shop Selection Required
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              You need to select a shop before creating a new debtor.
+            </Typography>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<FaStore />}
+              onClick={handleCloseDialog}
+              sx={{
+                borderRadius: 2.5,
+                px: 4,
+                py: 1.5,
+                textTransform: 'none',
+                fontWeight: '700',
+              }}
+            >
+              Close and Select Shop
+            </Button>
+          </Box>
+        ) : (
+          <>
+            {/* Shop Info Card */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                mb: 3,
+                bgcolor: '#e3f2fd',
+                border: '2px solid',
+                borderColor: '#2196f3',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <Avatar
+                  sx={{
+                    bgcolor: '#2196f3',
+                    color: 'white',
+                    width: 40,
+                    height: 40,
+                  }}
+                >
+                  <FaStore size={18} />
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle2" color="#1976d2" fontWeight="600">
+                    Selected Shop
+                  </Typography>
+                  <Typography variant="body1" fontWeight="700" color="text.primary">
+                    Shop Name: {shopName}
+                  </Typography>
+                </Box>
               </Box>
-              <Typography variant="subtitle1" fontWeight="700" color="text.primary">
-                Personal Information
-              </Typography>
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* Full Name Field */}
-            <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                label="Full Name"
-                variant="outlined"
-                error={!!errors.full_name}
-                helperText={errors.full_name?.message || "Enter the debtor's complete name"}
-                placeholder="e.g., John Doe Smith"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          bgcolor: '#f5f5f5',
-                          borderRadius: 1.5,
-                          p: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <FaUser color="#666" size={16} />
-                      </Box>
-                    </InputAdornment>
-                  ),
-                }}
-                {...register("full_name", {
-                  required: "Full name is required",
-                  minLength: {
-                    value: 3,
-                    message: "Full name must be at least 3 characters",
-                  }
-                })}
+              <Chip
+                label="Active"
+                size="small"
                 sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2.5,
-                    bgcolor: 'white',
-                    '&:hover': {
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                    },
-                    '&.Mui-focused': {
-                      boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontWeight: 500,
-                  },
-                }}
-              />
-            </Box>
-
-            {/* Phone Number Field */}
-            <Box>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                variant="outlined"
-                error={!!errors.phone_number}
-                helperText={errors.phone_number?.message || "Format: +998 XX XXX XX XX"}
-                placeholder="+998 90 123 45 67"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          bgcolor: '#f5f5f5',
-                          borderRadius: 1.5,
-                          p: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <FaPhone color="#666" size={16} />
-                      </Box>
-                    </InputAdornment>
-                  ),
-                  inputProps: {
-                    maxLength: 13,
-                  },
-                }}
-                {...register("phone_number", {
-                  required: "Phone number is required",
-                  pattern: {
-                    value: /^\+998\d{2}\d{3}\d{2}\d{2}$/,
-                    message: "Phone number must match the format +998 XX XXX XX XX",
-                  },
-                })}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2.5,
-                    bgcolor: 'white',
-                    '&:hover': {
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'primary.main',
-                      },
-                    },
-                    '&.Mui-focused': {
-                      boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontWeight: 500,
-                  },
-                }}
-              />
-            </Box>
-          </Paper>
-
-          {/* Live Preview */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              bgcolor: '#e3f2fd',
-              borderRadius: 3,
-              border: '2px dashed',
-              borderColor: '#1976d2',
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-              <Box
-                sx={{
-                  bgcolor: '#1976d2',
+                  bgcolor: '#4caf50',
                   color: 'white',
-                  p: 1,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  fontWeight: '600',
                 }}
-              >
-                <FaEye size={14} />
-              </Box>
-              <Typography variant="subtitle2" fontWeight="700" color="primary.main">
-                Preview
-              </Typography>
-            </Box>
-            <Box display="flex" flexDirection="column" gap={1.5}>
-              <Box
-                sx={{
-                  bgcolor: 'white',
-                  p: 2,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: '#f5f5f5',
-                    borderRadius: 1.5,
-                    p: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <FaUser color="#666" size={14} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="caption" color="textSecondary" fontWeight="500">
-                    Full Name
-                  </Typography>
-                  <Typography variant="body2" fontWeight="600" color="text.primary">
-                    {fullName || "Not specified"}
-                  </Typography>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  bgcolor: 'white',
-                  p: 2,
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                <Box
-                  sx={{
-                    bgcolor: '#f5f5f5',
-                    borderRadius: 1.5,
-                    p: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <FaPhone color="#666" size={14} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="caption" color="textSecondary" fontWeight="500">
-                    Phone Number
-                  </Typography>
-                  <Typography variant="body2" fontWeight="600" color="text.primary">
-                    {phoneNumber || "Not specified"}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
+              />
+            </Paper>
 
-          <DialogActions sx={{ px: 0, pt: 3, pb: 0 }}>
-            <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
-              <Button
-                onClick={handleCloseDialog}
-                variant="outlined"
-                startIcon={<FaTimes />}
+            <form onSubmit={formSubmit(createDebtor)}>
+              <Paper
+                elevation={0}
                 sx={{
-                  flex: 1,
-                  borderRadius: 2.5,
-                  py: 1.5,
-                  textTransform: "none",
-                  fontWeight: "700",
-                  fontSize: "1rem",
-                  borderWidth: 2,
-                  '&:hover': {
-                    borderWidth: 2,
-                    bgcolor: 'rgba(102, 126, 234, 0.05)',
-                  },
+                  p: 3,
+                  borderRadius: 3,
+                  mb: 3,
+                  bgcolor: 'white',
+                  border: '1px solid',
+                  borderColor: 'divider',
                 }}
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                startIcon={<FaPlus />}
-                disabled={!isFormValid}
+                <Box display="flex" alignItems="center" gap={1.5} mb={3}>
+                  <Box
+                    sx={{
+                      bgcolor: '#e3f2fd',
+                      color: '#1976d2',
+                      p: 1,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <FaUser size={16} />
+                  </Box>
+                  <Typography variant="subtitle1" fontWeight="700" color="text.primary">
+                    Personal Information
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 3 }} />
+
+                {/* Full Name Field */}
+                <Box sx={{ mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    label="Full Name"
+                    variant="outlined"
+                    error={!!errors.full_name}
+                    helperText={errors.full_name?.message || "Enter the debtor's complete name"}
+                    placeholder="e.g., John Doe Smith"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Box
+                            sx={{
+                              bgcolor: '#f5f5f5',
+                              borderRadius: 1.5,
+                              p: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <FaUser color="#666" size={16} />
+                          </Box>
+                        </InputAdornment>
+                      ),
+                    }}
+                    {...register("full_name", {
+                      required: "Full name is required",
+                      minLength: {
+                        value: 3,
+                        message: "Full name must be at least 3 characters",
+                      }
+                    })}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2.5,
+                        bgcolor: 'white',
+                        '&:hover': {
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                        '&.Mui-focused': {
+                          boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontWeight: 500,
+                      },
+                    }}
+                  />
+                </Box>
+
+                {/* Phone Number Field */}
+                <Box>
+                  <TextField
+                    fullWidth
+                    label="Phone Number"
+                    variant="outlined"
+                    error={!!errors.phone_number}
+                    helperText={errors.phone_number?.message || "Format: +998 XX XXX XX XX"}
+                    placeholder="+998 90 123 45 67"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Box
+                            sx={{
+                              bgcolor: '#f5f5f5',
+                              borderRadius: 1.5,
+                              p: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <FaPhone color="#666" size={16} />
+                          </Box>
+                        </InputAdornment>
+                      ),
+                      inputProps: {
+                        maxLength: 13,
+                      },
+                    }}
+                    {...register("phone_number", {
+                      required: "Phone number is required",
+                      pattern: {
+                        value: /^\+998\d{2}\d{3}\d{2}\d{2}$/,
+                        message: "Phone number must match the format +998 XX XXX XX XX",
+                      },
+                    })}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2.5,
+                        bgcolor: 'white',
+                        '&:hover': {
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                        '&.Mui-focused': {
+                          boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontWeight: 500,
+                      },
+                    }}
+                  />
+                </Box>
+              </Paper>
+
+              {/* Live Preview */}
+              <Paper
+                elevation={0}
                 sx={{
-                  flex: 1,
-                  borderRadius: 2.5,
-                  py: 1.5,
-                  textTransform: "none",
-                  fontWeight: "700",
-                  fontSize: "1rem",
-                  background: isFormValid 
-                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                    : undefined,
-                  boxShadow: isFormValid ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
-                  "&:hover": {
-                    background: isFormValid
-                      ? "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)"
-                      : undefined,
-                    transform: isFormValid ? 'translateY(-2px)' : 'none',
-                    boxShadow: isFormValid ? '0 6px 16px rgba(102, 126, 234, 0.5)' : 'none',
-                  },
-                  "&:disabled": {
-                    background: 'grey.300',
-                    color: 'grey.500',
-                  },
-                  transition: 'all 0.3s ease',
+                  p: 3,
+                  bgcolor: '#e3f2fd',
+                  borderRadius: 3,
+                  border: '2px dashed',
+                  borderColor: '#1976d2',
                 }}
               >
-                Create Debtor
-              </Button>
-            </Box>
-          </DialogActions>
-        </form>
+                <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                  <Box
+                    sx={{
+                      bgcolor: '#1976d2',
+                      color: 'white',
+                      p: 1,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <FaEye size={14} />
+                  </Box>
+                  <Typography variant="subtitle2" fontWeight="700" color="primary.main">
+                    Preview
+                  </Typography>
+                </Box>
+                <Box display="flex" flexDirection="column" gap={1.5}>
+                  <Box
+                    sx={{
+                      bgcolor: 'white',
+                      p: 2,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        bgcolor: '#f5f5f5',
+                        borderRadius: 1.5,
+                        p: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FaUser color="#666" size={14} />
+                    </Box>
+                    <Box flex={1}>
+                      <Typography variant="caption" color="textSecondary" fontWeight="500">
+                        Full Name
+                      </Typography>
+                      <Typography variant="body2" fontWeight="600" color="text.primary">
+                        {fullName || "Not specified"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      bgcolor: 'white',
+                      p: 2,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        bgcolor: '#f5f5f5',
+                        borderRadius: 1.5,
+                        p: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FaPhone color="#666" size={14} />
+                    </Box>
+                    <Box flex={1}>
+                      <Typography variant="caption" color="textSecondary" fontWeight="500">
+                        Phone Number
+                      </Typography>
+                      <Typography variant="body2" fontWeight="600" color="text.primary">
+                        {phoneNumber || "Not specified"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Paper>
+
+              <DialogActions sx={{ px: 0, pt: 3, pb: 0 }}>
+                <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
+                  <Button
+                    onClick={handleCloseDialog}
+                    variant="outlined"
+                    startIcon={<FaTimes />}
+                    sx={{
+                      flex: 1,
+                      borderRadius: 2.5,
+                      py: 1.5,
+                      textTransform: "none",
+                      fontWeight: "700",
+                      fontSize: "1rem",
+                      borderWidth: 2,
+                      '&:hover': {
+                        borderWidth: 2,
+                        bgcolor: 'rgba(102, 126, 234, 0.05)',
+                      },
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    startIcon={<FaPlus />}
+                    disabled={!isFormValid}
+                    sx={{
+                      flex: 1,
+                      borderRadius: 2.5,
+                      py: 1.5,
+                      textTransform: "none",
+                      fontWeight: "700",
+                      fontSize: "1rem",
+                      background: isFormValid 
+                        ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        : undefined,
+                      boxShadow: isFormValid ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
+                      "&:hover": {
+                        background: isFormValid
+                          ? "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)"
+                          : undefined,
+                        transform: isFormValid ? 'translateY(-2px)' : 'none',
+                        boxShadow: isFormValid ? '0 6px 16px rgba(102, 126, 234, 0.5)' : 'none',
+                      },
+                      "&:disabled": {
+                        background: 'grey.300',
+                        color: 'grey.500',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    Create Debtor
+                  </Button>
+                </Box>
+              </DialogActions>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

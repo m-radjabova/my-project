@@ -1,21 +1,32 @@
-// import { Navigate } from "react-router-dom";
-// import useContextPro from "../hooks/useContextPro";
+import { Navigate } from "react-router-dom";
+import useContextPro from "../hooks/useContextPro";
+import { Box, Container, LinearProgress, Typography } from "@mui/material";
 
-// interface Props {
-//   role: string;
-//   children: React.ReactNode;
-// }
-// function ProtectedRoute({ role, children }: Props) {
+interface Props {
+  children: React.ReactNode;
+}
 
-//   const { state: { user,isLoading } } = useContextPro();
+function ProtectedRoute({ children }: Props) {
+  const { state: { shop, isLoading } } = useContextPro();
 
-//   if (!isLoading && !user?.roles.includes(role)) {
-//     return <Navigate to="/" replace />;
-//   }
+  if (isLoading) {
+    return <Container sx={{ py: 4 }}>
+            <Box sx={{ width: "100%" }}>
+              <LinearProgress sx={{ height: 3, borderRadius: 2 }} />
+              <Box sx={{ textAlign: "center", mt: 4 }}>
+                <Typography variant="h6" color="textSecondary">
+                  Loading...
+                </Typography>
+              </Box>
+            </Box>
+          </Container>
+  }
 
-//   return (
-//     children
-//   )
-// }
+  if (!shop) {
+    return <Navigate to="/" replace />;
+  }
 
-// export default ProtectedRoute
+  return <>{children}</>;
+}
+
+export default ProtectedRoute;

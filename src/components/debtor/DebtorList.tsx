@@ -23,23 +23,30 @@ import type {
 import {
   FaUserPlus,
   FaUser,
-  FaMoneyBillWave,
   FaIdCard,
-  FaSortAmountDown,
   FaSearch,
   FaTimes,
+  FaStore,
+  FaMoneyBillWave,
+  FaSortAmountDown,
+  FaHome,
 } from "react-icons/fa";
-import {
-  formatCurrency,
-} from "../../utils";
+
 import { useDebounce } from "../../hooks/useDebounce";
 import DebtorTable from "./DebtorTable";
+import useContextPro from "../../hooks/useContextPro";
+import { formatCurrency } from "../../utils";
+import { useNavigate } from "react-router-dom";
 
 function DebtorList() {
+  const {
+    state: { shop },
+  } = useContextPro();
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     name: "",
   });
+  const navigate = useNavigate();
 
   const debouncedSearch = useDebounce(filters.name, 400);
 
@@ -49,7 +56,7 @@ function DebtorList() {
     };
   }, [debouncedSearch]);
 
-  const { debtors, debtorsLoading, addDebtor, page, setPage, limit } =
+  const { debtors, debtorsLoading, addDebtor, page, setPage, limit, shopId } =
     useDebtor(undefined, filterParams);
 
   const handleClose = () => {
@@ -57,12 +64,16 @@ function DebtorList() {
   };
 
   const handleSubmit = (data: ReqDebtor) => {
+    if (!shopId) {
+      alert("Shop tanlanmagan!");
+      return;
+    }
     addDebtor(data);
     handleClose();
   };
 
   const totalDebtors = debtors.data.length;
-  
+
   const totalDebt = debtors.data.reduce(
     (sum: number, debtor: Debtor) => sum + (debtor.total_debt || 0),
     0
@@ -72,10 +83,7 @@ function DebtorList() {
     (d: Debtor) => (d.total_debt || 0) > 5000
   ).length;
 
-  const handlePageChange = (
-    event: ChangeEvent<unknown>,
-    value: number
-  ) => {
+  const handlePageChange = (event: ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
 
@@ -93,6 +101,7 @@ function DebtorList() {
       </Container>
     );
   }
+
   return (
     <Container maxWidth="xl" sx={{ p: 4 }}>
       {/* Header Section */}
@@ -113,7 +122,7 @@ function DebtorList() {
             color: "white",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-start",
             flexWrap: "wrap",
             gap: 3,
           }}
@@ -143,9 +152,37 @@ function DebtorList() {
                 </Typography>
                 <Typography variant="body1" sx={{ opacity: 0.95 }}>
                   Track and manage all debtor accounts
+                  {shop && (
+                    <Box component="span" sx={{ ml: 2, fontWeight: 600 }}>
+                      | Store: {shop.shop_name}
+                    </Box>
+                  )}
                 </Typography>
               </Box>
             </Box>
+
+            {/* Shop Information Chip */}
+            {shop && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderRadius: 2,
+                  p: 1.5,
+                  maxWidth: "fit-content",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <FaStore size={16} />
+                <Typography variant="body2" fontWeight={500}>
+                  {shop.shop_name} • ID: {shop.shop_id}
+                </Typography>
+              </Box>
+            )}
+
             <Box
               sx={{
                 position: "relative",
@@ -257,10 +294,52 @@ function DebtorList() {
               )}
             </Box>
           </Box>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+            variant="contained"
+            onClick={() => {
+              if (!shopId) {
+                alert("Please select a shop first!");
+                return;
+              }
+              setOpen(true);
+            }}
+            size="large"
+            disabled={!shopId}
+            sx={{
+              bgcolor: "white",
+              color: "#667eea",
+              "&:hover": {
+                bgcolor: "rgba(255, 255, 255, 0.95)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+              },
+              "&:disabled": {
+                bgcolor: "rgba(255, 255, 255, 0.5)",
+                color: "rgba(102, 126, 234, 0.5)",
+              },
+              px: 4,
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: "600",
+              textTransform: "none",
+              fontSize: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              transition: "all 0.3s ease",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}
+            startIcon={<FaUserPlus />}
+          >
+            Add New Debtor
+            {!shopId && " (Select Shop First)"}
+          </Button>
           <Button
             variant="contained"
-            onClick={() => setOpen(true)}
             size="large"
+            onClick={() => navigate("/home")}
+            startIcon={<FaHome />}
             sx={{
               bgcolor: "white",
               color: "#667eea",
@@ -281,441 +360,590 @@ function DebtorList() {
               transition: "all 0.3s ease",
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             }}
-            startIcon={<FaUserPlus />}
-          >
-            Add New Debtor
-          </Button>
+            >
+              Back to Home
+            </Button>
+          </Box>
         </Box>
 
         {/* Statistics Cards */}
         <Box sx={{ p: 4, bgcolor: "#f8f9fc" }}>
-          <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {/* Total Debtors Card */}
-            <Card
-      sx={{
-        borderRadius: 3,
-        background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(33, 150, 243, 0.05) 100%)',
-        border: '1px solid rgba(25, 118, 210, 0.15)',
-        boxShadow: '0 8px 32px rgba(25, 118, 210, 0.1)',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-          transform: 'translateY(-8px)',
-          boxShadow: '0 20px 40px rgba(25, 118, 210, 0.2)',
-          '& .icon-wrapper': {
-            transform: 'scale(1.1) rotate(5deg)',
-          },
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
-        },
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mb: 2 }}
-        >
-          <Box>
-            <Typography
-              variant="subtitle2"
+          {!shopId ? (
+            <Box
               sx={{
-                mb: 1,
-                fontWeight: 600,
-                color: '#1976d2',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontSize: '0.75rem',
+                textAlign: "center",
+                py: 6,
+                backgroundColor: "rgba(255, 152, 0, 0.05)",
+                borderRadius: 3,
+                border: "1px solid rgba(255, 152, 0, 0.2)",
               }}
             >
-              Total Debtors
-            </Typography>
-            <Typography
-              variant="h2"
-              fontWeight="800"
-              sx={{
-                color: '#1976d2',
-                textShadow: '0 2px 4px rgba(25, 118, 210, 0.2)',
-                mb: 0.5,
-              }}
-            >
-              {totalDebtors}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#1976d2',
-                opacity: 0.8,
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              }}
-            >
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#1976d2', opacity: 0.6 }} />
-              Active accounts in system
-            </Typography>
-          </Box>
-          <Box
-            className="icon-wrapper"
-            sx={{
-              position: 'relative',
-              width: 72,
-              height: 72,
-              borderRadius: '18px',
-              background: 'linear-gradient(135deg, #1976d2 0%, #2196f3 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(25, 118, 210, 0.4)',
-              color: 'white',
-              transition: 'transform 0.4s ease',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: 1,
-                borderRadius: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              },
-            }}
-          >
-            <FaUser size={28} />
-          </Box>
-        </Box>
-        <Box sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: '#1976d2', fontWeight: 600 }}>
-              Accounts Status
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#1976d2', fontWeight: 700 }}>
-              100%
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            height: 8, 
-            borderRadius: 4,
-            backgroundColor: 'rgba(25, 118, 210, 0.15)',
-            overflow: 'hidden',
-          }}>
-            <Box sx={{ 
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
-              borderRadius: 4,
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                animation: 'shine 2s infinite',
-              },
-            }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
+              <FaStore
+                size={48}
+                style={{ color: "#ff9800", marginBottom: 16 }}
+              />
+              <Typography variant="h6" color="warning.main" fontWeight={600}>
+                Shop tanlanmagan!
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 1, maxWidth: 400, mx: "auto" }}
+              >
+                Debtor ma'lumotlarini ko'rish va boshqarish uchun avval shop
+                tanlang.
+              </Typography>
+            </Box>
+          ) : (
+            <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Total Debtors Card */}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  background:
+                    "linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(33, 150, 243, 0.05) 100%)",
+                  border: "1px solid rgba(25, 118, 210, 0.15)",
+                  boxShadow: "0 8px 32px rgba(25, 118, 210, 0.1)",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "translateY(-8px)",
+                    boxShadow: "0 20px 40px rgba(25, 118, 210, 0.2)",
+                    "& .icon-wrapper": {
+                      transform: "scale(1.1) rotate(5deg)",
+                    },
+                  },
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background:
+                      "linear-gradient(90deg, #1976d2 0%, #2196f3 100%)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ mb: 2 }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          mb: 1,
+                          fontWeight: 600,
+                          color: "#1976d2",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        Total Debtors
+                      </Typography>
+                      <Typography
+                        variant="h2"
+                        fontWeight="800"
+                        sx={{
+                          color: "#1976d2",
+                          textShadow: "0 2px 4px rgba(25, 118, 210, 0.2)",
+                          mb: 0.5,
+                        }}
+                      >
+                        {totalDebtors}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#1976d2",
+                          opacity: 0.8,
+                          fontWeight: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            bgcolor: "#1976d2",
+                            opacity: 0.6,
+                          }}
+                        />
+                        Active accounts in system
+                      </Typography>
+                    </Box>
+                    <Box
+                      className="icon-wrapper"
+                      sx={{
+                        position: "relative",
+                        width: 72,
+                        height: 72,
+                        borderRadius: "18px",
+                        background:
+                          "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 8px 24px rgba(25, 118, 210, 0.4)",
+                        color: "white",
+                        transition: "transform 0.4s ease",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          inset: 1,
+                          borderRadius: "16px",
+                          background: "rgba(255, 255, 255, 0.1)",
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
+                        },
+                      }}
+                    >
+                      <FaUser size={28} />
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 3 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#1976d2", fontWeight: 600 }}
+                      >
+                        Accounts Status
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#1976d2", fontWeight: 700 }}
+                      >
+                        100%
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: "rgba(25, 118, 210, 0.15)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, #1976d2 0%, #2196f3 100%)",
+                          borderRadius: 4,
+                          position: "relative",
+                          "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: "-100%",
+                            width: "100%",
+                            height: "100%",
+                            background:
+                              "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+                            animation: "shine 2s infinite",
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  background:
+                    "linear-gradient(135deg, rgba(211, 47, 47, 0.05) 0%, rgba(244, 67, 54, 0.05) 100%)",
+                  border: "1px solid rgba(211, 47, 47, 0.15)",
+                  boxShadow: "0 8px 32px rgba(211, 47, 47, 0.1)",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "translateY(-8px)",
+                    boxShadow: "0 20px 40px rgba(211, 47, 47, 0.2)",
+                    "& .icon-wrapper": {
+                      transform: "scale(1.1) rotate(5deg)",
+                    },
+                  },
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background:
+                      "linear-gradient(90deg, #d32f2f 0%, #f44336 100%)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box className="flex items-center justify-between mb-2">
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          mb: 1,
+                          fontWeight: 600,
+                          color: "#d32f2f",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        Total Debt
+                      </Typography>
+                      <Typography
+                        variant="h2"
+                        fontWeight="800"
+                        sx={{
+                          color: "#d32f2f",
+                          textShadow: "0 2px 4px rgba(211, 47, 47, 0.2)",
+                          mb: 0.5,
+                        }}
+                      >
+                        {formatCurrency(totalDebt)}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#d32f2f",
+                          opacity: 0.8,
+                          fontWeight: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            bgcolor: "#d32f2f",
+                            opacity: 0.6,
+                          }}
+                        />
+                        Outstanding balance
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        position: "relative",
+                        width: 72,
+                        height: 72,
+                        borderRadius: "18px",
+                        background:
+                          "linear-gradient(135deg, #d32f2f 0%, #f44336 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 8px 24px rgba(211, 47, 47, 0.4)",
+                        color: "white",
+                        transition: "transform 0.4s ease",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          inset: 1,
+                          borderRadius: "16px",
+                          background: "rgba(255, 255, 255, 0.1)",
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
+                        },
+                      }}
+                    >
+                      <FaMoneyBillWave size={28} />
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 3 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#d32f2f", fontWeight: 600 }}
+                      >
+                        Debt Utilization
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#d32f2f", fontWeight: 700 }}
+                      >
+                        {Math.min((totalDebt / 100000) * 100, 100).toFixed(1)}%
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: "rgba(211, 47, 47, 0.15)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${Math.min(
+                            (totalDebt / 100000) * 100,
+                            100
+                          )}%`,
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, #d32f2f 0%, #f44336 100%)",
+                          borderRadius: 4,
+                          position: "relative",
+                          transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
+                          "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: "-100%",
+                            width: "100%",
+                            height: "100%",
+                            background:
+                              "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+                            animation: "shine 2s infinite",
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
 
-    {/* Total Debt Card */}
-    <Card
-      sx={{
-        borderRadius: 3,
-        background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.05) 0%, rgba(244, 67, 54, 0.05) 100%)',
-        border: '1px solid rgba(211, 47, 47, 0.15)',
-        boxShadow: '0 8px 32px rgba(211, 47, 47, 0.1)',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-          transform: 'translateY(-8px)',
-          boxShadow: '0 20px 40px rgba(211, 47, 47, 0.2)',
-          '& .icon-wrapper': {
-            transform: 'scale(1.1) rotate(5deg)',
-          },
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #d32f2f 0%, #f44336 100%)',
-        },
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Box className="flex items-center justify-between mb-2"
-        >
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                mb: 1,
-                fontWeight: 600,
-                color: '#d32f2f',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontSize: '0.75rem',
-              }}
-            >
-              Total Debt
-            </Typography>
-            <Typography
-              variant="h2"
-              fontWeight="800"
-              sx={{
-                color: '#d32f2f',
-                textShadow: '0 2px 4px rgba(211, 47, 47, 0.2)',
-                mb: 0.5,
-              }}
-            >
-              {formatCurrency(totalDebt)}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#d32f2f',
-                opacity: 0.8,
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              }}
-            >
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#d32f2f', opacity: 0.6 }} />
-              Outstanding balance
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              position: 'relative',
-              width: 72,
-              height: 72,
-              borderRadius: '18px',
-              background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(211, 47, 47, 0.4)',
-              color: 'white',
-              transition: 'transform 0.4s ease',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: 1,
-                borderRadius: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              },
-            }}
-          >
-            <FaMoneyBillWave size={28} />
-          </Box>
-        </Box>
-        <Box sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 600 }}>
-              Debt Utilization
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 700 }}>
-              {Math.min((totalDebt / 100000) * 100, 100).toFixed(1)}%
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            height: 8, 
-            borderRadius: 4,
-            backgroundColor: 'rgba(211, 47, 47, 0.15)',
-            overflow: 'hidden',
-          }}>
-            <Box sx={{ 
-              width: `${Math.min((totalDebt / 100000) * 100, 100)}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #d32f2f 0%, #f44336 100%)',
-              borderRadius: 4,
-              position: 'relative',
-              transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                animation: 'shine 2s infinite',
-              },
-            }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-
-    {/* High Debt Accounts Card */}
-    <Card
-      sx={{
-        borderRadius: 3,
-        background: 'linear-gradient(135deg, rgba(245, 124, 0, 0.05) 0%, rgba(255, 152, 0, 0.05) 100%)',
-        border: '1px solid rgba(245, 124, 0, 0.15)',
-        boxShadow: '0 8px 32px rgba(245, 124, 0, 0.1)',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-          transform: 'translateY(-8px)',
-          boxShadow: '0 20px 40px rgba(245, 124, 0, 0.2)',
-          '& .icon-wrapper': {
-            transform: 'scale(1.1) rotate(5deg)',
-          },
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #f57c00 0%, #ff9800 100%)',
-        },
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mb: 2 }}
-        >
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                mb: 1,
-                fontWeight: 600,
-                color: '#f57c00',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontSize: '0.75rem',
-              }}
-            >
-              High Debt Accounts
-            </Typography>
-            <Typography
-              variant="h2"
-              fontWeight="800"
-              sx={{
-                color: '#f57c00',
-                textShadow: '0 2px 4px rgba(245, 124, 0, 0.2)',
-                mb: 0.5,
-              }}
-            >
-              {highDebtCount}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#f57c00',
-                opacity: 0.8,
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              }}
-            >
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#f57c00', opacity: 0.6 }} />
-              Accounts over $5,000
-            </Typography>
-          </Box>
-          <Box
-            className="icon-wrapper"
-            sx={{
-              position: 'relative',
-              width: 72,
-              height: 72,
-              borderRadius: '18px',
-              background: 'linear-gradient(135deg, #f57c00 0%, #ff9800 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(245, 124, 0, 0.4)',
-              color: 'white',
-              transition: 'transform 0.4s ease',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                inset: 1,
-                borderRadius: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              },
-            }}
-          >
-            <FaSortAmountDown size={28} />
-          </Box>
-        </Box>
-        <Box sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: '#f57c00', fontWeight: 600 }}>
-              High Risk Ratio
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#f57c00', fontWeight: 700 }}>
-              {totalDebtors > 0 ? ((highDebtCount / totalDebtors) * 100).toFixed(1) : 0}%
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            height: 8, 
-            borderRadius: 4,
-            backgroundColor: 'rgba(245, 124, 0, 0.15)',
-            overflow: 'hidden',
-          }}>
-            <Box sx={{ 
-              width: `${totalDebtors > 0 ? (highDebtCount / totalDebtors) * 100 : 0}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #f57c00 0%, #ff9800 100%)',
-              borderRadius: 4,
-              position: 'relative',
-              transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                animation: 'shine 2s infinite',
-              },
-            }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-          </Box>
+              {/* High Debt Accounts Card */}
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  background:
+                    "linear-gradient(135deg, rgba(245, 124, 0, 0.05) 0%, rgba(255, 152, 0, 0.05) 100%)",
+                  border: "1px solid rgba(245, 124, 0, 0.15)",
+                  boxShadow: "0 8px 32px rgba(245, 124, 0, 0.1)",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "translateY(-8px)",
+                    boxShadow: "0 20px 40px rgba(245, 124, 0, 0.2)",
+                    "& .icon-wrapper": {
+                      transform: "scale(1.1) rotate(5deg)",
+                    },
+                  },
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background:
+                      "linear-gradient(90deg, #f57c00 0%, #ff9800 100%)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{ mb: 2 }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          mb: 1,
+                          fontWeight: 600,
+                          color: "#f57c00",
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        High Debt Accounts
+                      </Typography>
+                      <Typography
+                        variant="h2"
+                        fontWeight="800"
+                        sx={{
+                          color: "#f57c00",
+                          textShadow: "0 2px 4px rgba(245, 124, 0, 0.2)",
+                          mb: 0.5,
+                        }}
+                      >
+                        {highDebtCount}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#f57c00",
+                          opacity: 0.8,
+                          fontWeight: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            bgcolor: "#f57c00",
+                            opacity: 0.6,
+                          }}
+                        />
+                        Accounts over $5,000
+                      </Typography>
+                    </Box>
+                    <Box
+                      className="icon-wrapper"
+                      sx={{
+                        position: "relative",
+                        width: 72,
+                        height: 72,
+                        borderRadius: "18px",
+                        background:
+                          "linear-gradient(135deg, #f57c00 0%, #ff9800 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 8px 24px rgba(245, 124, 0, 0.4)",
+                        color: "white",
+                        transition: "transform 0.4s ease",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          inset: 1,
+                          borderRadius: "16px",
+                          background: "rgba(255, 255, 255, 0.1)",
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
+                        },
+                      }}
+                    >
+                      <FaSortAmountDown size={28} />
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 3 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#f57c00", fontWeight: 600 }}
+                      >
+                        High Risk Ratio
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#f57c00", fontWeight: 700 }}
+                      >
+                        {totalDebtors > 0
+                          ? ((highDebtCount / totalDebtors) * 100).toFixed(1)
+                          : 0}
+                        %
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: "rgba(245, 124, 0, 0.15)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${
+                            totalDebtors > 0
+                              ? (highDebtCount / totalDebtors) * 100
+                              : 0
+                          }%`,
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, #f57c00 0%, #ff9800 100%)",
+                          borderRadius: 4,
+                          position: "relative",
+                          transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
+                          "&::after": {
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: "-100%",
+                            width: "100%",
+                            height: "100%",
+                            background:
+                              "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+                            animation: "shine 2s infinite",
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
         </Box>
       </Paper>
 
-      {/* Debtors Table */}
-      <DebtorTable debtors={debtors} handlePageChange={handlePageChange} setOpen={setOpen} page={page}
-      limit={limit} totalDebt={totalDebt} />
+      {shopId ? (
+        <DebtorTable
+          debtors={debtors}
+          handlePageChange={handlePageChange}
+          setOpen={setOpen}
+          page={page}
+          limit={limit}
+          totalDebt={totalDebt}
+        />
+      ) : (
+        <Paper
+          sx={{
+            p: 6,
+            textAlign: "center",
+            borderRadius: 3,
+            backgroundColor: "background.paper",
+            border: "1px dashed",
+            borderColor: "divider",
+          }}
+        >
+          <FaStore size={48} style={{ color: "#ccc", marginBottom: 16 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No shop selected
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Please select a shop from the sidebar to view debtor information
+          </Typography>
+        </Paper>
+      )}
+
       {/* Debtor Form Modal */}
       <DebtorForm
         open={open}
         handleClose={handleClose}
         onSubmit={handleSubmit}
+        shopName={shop?.shop_name} 
       />
     </Container>
   );
