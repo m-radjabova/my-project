@@ -15,8 +15,6 @@ import {
   FaUserShield,
 } from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase";
 
 function Header() {
   const {
@@ -32,6 +30,7 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
@@ -44,18 +43,15 @@ function Header() {
     setAnchorEl(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      localStorage.removeItem("token");
-      dispatch({ type: "LOGOUT" });
-      localStorage.removeItem("role");
-      handleMenuClose();
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
+    dispatch({ type: "LOGOUT" });
+    handleMenuClose();
+    navigate("/login");
   };
+
 
   return (
     <header className="header">
@@ -256,7 +252,7 @@ function Header() {
                     <span>Profile</span>
                   </div>
                 </MenuItem>
-                {user?.roles?.includes("ADMIN") && (
+                {user?.roles?.includes("admin") && (
                   <MenuItem
                     onClick={handleMenuClose}
                     sx={{

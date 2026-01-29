@@ -21,18 +21,19 @@ function AdminCategories() {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   const onSubmit = (data: FieldValues) => {
-    if (editingCategory) {
-      updateCategory(editingCategory.id!, { name: data.name });
+    const name = String(data.name);
+
+    if (editingCategory?.id) {
+      updateCategory({ id: editingCategory.id, name });
     } else {
-      addCategory({
-        name: data.name,
-        createdAt: new Date().toISOString(),
-      });
+      addCategory(name);
     }
+
     setIsOpen(false);
     reset();
     setEditingCategory(null);
   };
+
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);

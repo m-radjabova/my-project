@@ -39,8 +39,10 @@ function FilterCategories({selectedCategory, setSelectedCategory}: Props) {
         {categories.map((category: Category) => (
           <div
             key={category.id}
-            className={`category-item-product ${category.id === selectedCategory ? "active" : ""}`}
-            onClick={() => setSelectedCategory(category.id)}
+            className={`category-item-product ${
+              String(category.id) === selectedCategory ? "active" : ""
+            }`}
+            onClick={() => setSelectedCategory(String(category.id))}
           >
             <span className="category-icon">
               {categoryIcons[category.name.toLowerCase()] || <GiFrenchFries />} 

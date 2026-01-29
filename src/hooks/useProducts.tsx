@@ -1,23 +1,9 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Product, Reviews } from "../types/types";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  getDoc,
-} from "firebase/firestore";
-import { db } from "../firebase";
-import type { FieldValues } from "react-hook-form";
+import apiClient from "../apiClient/apiClient";
 
 export type ReviewWithUser = Reviews & {
-  id: string;
   user?: {
     id: string;
     name?: string;
@@ -25,168 +11,157 @@ export type ReviewWithUser = Reviews & {
   } | null;
 };
 
+
+type ProductPayload = {
+  name: string;
+  price: number;        // swagger: integer
+  category_id: number;  // swagger: integer
+  description?: string;
+  weight?: string;
+  image?: File;         // swagger: binary
+};
+
+function buildProductFormData(p: ProductPayload) {
+  const fd = new FormData();
+  fd.append("name", p.name);
+  fd.append("price", String(p.price));
+  fd.append("category_id", String(p.category_id));
+  if (p.description) fd.append("description", p.description);
+  if (p.weight) fd.append("weight", p.weight);
+  if (p.image) fd.append("image", p.image);
+  return fd;
+}
+
+type AddReviewPayload = { title: string; rating: number };
+
 function useProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
+  const queryClient = useQueryClient();
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeProductId, setActiveProductId] = useState<string>("");
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    const unsubscribe = getProduct();
-    return unsubscribe;
-  }, [selectedCategory]);
+  const {
+    data: products = [],
+    isLoading: loading,
+    isError: isProductsError,
+    error: productsError,
+  } = useQuery<Product[]>({
+    queryKey: ["products", selectedCategory],
+    queryFn: async () => {
+      const { data } = await apiClient.get<Product[]>("/products", {
+        params: selectedCategory ? { category_id: Number(selectedCategory) } : {},
+      });
+      return data;
+    },
+  });
 
-  const getProduct = () => {
-    try {
-      const queryIf =
-        selectedCategory === ""
-          ? orderBy("createdAt", "desc")
-          : where("categoryId", "==", selectedCategory);
+  const {
+    data: reviewsRaw = [],
+    isLoading: loadingReviews,
+    isError: isReviewsError,
+    error: reviewsError,
+  } = useQuery<Reviews[]>({
+    queryKey: ["productReviews", activeProductId],
+    enabled: !!activeProductId,
+    queryFn: async () => (await apiClient.get(`/products/${activeProductId}/reviews`)).data,
+  });
 
-      const q = query(collection(db, "products"), queryIf);
+  const userIds = useMemo(() => {
+    const ids = reviewsRaw
+      .map((r: any) => r.user_id ?? r.userId)
+      .filter(Boolean);
+    return Array.from(new Set(ids));
+  }, [reviewsRaw]);
 
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          try {
-            const getProducts: Product[] = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            })) as Product[];
-
-            setProducts(getProducts);
-            setLoading(false);
-          } catch (mapError) {
-            console.error("Mapping error:", mapError);
-            setError("Error processing products");
-            setLoading(false);
-          }
-        },
-        (firestoreError) => {
-          console.error("Firestore error:", firestoreError);
-          setError("Error loading products");
-          setLoading(false);
-        }
+  const { data: usersMap = {}, isLoading: loadingUsers } = useQuery<Record<string, any>>({
+    queryKey: ["reviewUsers", userIds],
+    enabled: userIds.length > 0,
+    queryFn: async () => {
+      const results = await Promise.all(
+        userIds.map(async (id) => {
+          const { data } = await apiClient.get(`/users/${id}`);
+          return [id, data] as const;
+        })
       );
+      return Object.fromEntries(results);
+    },
+  });
 
-      return unsubscribe;
-    } catch (err) {
-      console.error("Query error:", err);
-      setError("Failed to load products");
-      setLoading(false);
-      return () => {};
-    }
-  };
-
-  const addProduct = async (newProduct: FieldValues) => {
-    try {
-      await addDoc(collection(db, "products"), {
-        ...newProduct,
-        createdAt: serverTimestamp(),
-      });
-    } catch (err) {
-      console.error("Add product error:", err);
-      setError("Failed to add product");
-    }
-  };
-
-  const updateProduct = async (id: string, updatedData: Partial<Product>) => {
-    try {
-      const docRef = doc(db, "products", id);
-      await updateDoc(docRef, updatedData);
-    } catch (err) {
-      console.error("Update product error:", err);
-      setError("Failed to update product");
-    }
-  };
-
-  const deleteProduct = async (id: string) => {
-    try {
-      const docRef = doc(db, "products", id);
-      await deleteDoc(docRef);
-    } catch (err) {
-      console.error("Delete product error:", err);
-      setError("Failed to delete product");
-    }
-  };
-
-  const getUserById = async (userId: string) => {
-    try {
-      const docRef = doc(db, "users", userId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() };
-      }
-      return null;
-    } catch (err) {
-      console.error("Get user error:", err);
-      setError("Failed to get user");
-      return null;
-    }
-  };
-
-  const listenProductReviews = (productId: string) => {
-    const reviewsRef = collection(db, "products", productId, "reviews");
-
-    return onSnapshot(reviewsRef, async (snapshot) => {
-      try {
-        const reviewsWithUser: ReviewWithUser[] = await Promise.all(
-          snapshot.docs.map(async (docSnap) => {
-            const reviewData = docSnap.data() as Reviews;
-
-            let user = null;
-            if (reviewData.userId) {
-              user = await getUserById(reviewData.userId);
-            }
-
-            return {
-              id: docSnap.id, 
-              ...reviewData,
-              user,
-            };
-          })
-        );
-
-        setReviews(reviewsWithUser);
-      } catch (err) {
-        console.error("Error mapping reviews with user:", err);
-        setError("Failed to load reviews with user");
-      }
+  const reviews: ReviewWithUser[] = useMemo(() => {
+    return reviewsRaw.map((r: any) => {
+      const uid = r.user_id ?? r.userId;
+      return { ...r, user: uid ? usersMap[uid] ?? null : null };
     });
-  };
+  }, [reviewsRaw, usersMap]);
 
+  const addReviewMutation = useMutation({
+    mutationFn: async ({ productId, payload }: { productId: string; payload: AddReviewPayload }) => {
+      const { data } = await apiClient.post<Reviews>(`/products/${productId}/reviews`, payload);
+      return data;
+    },
+    onSuccess: (_created, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["productReviews", variables.productId] });
+    },
+  });
 
-  const addReview = async (
-    productId: string,
-    review: Omit<Reviews, "id" | "createdAt">
-  ) => {
-    try {
-      const reviewsRef = collection(db, "products", productId, "reviews");
-      await addDoc(reviewsRef, {
-        ...review,
-        createdAt: serverTimestamp(),
+  const addProduct = useMutation({
+    mutationFn: async (payload: ProductPayload) => {
+      const fd = buildProductFormData(payload);
+      const { data } = await apiClient.post("/products", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-    } catch (err) {
-      console.error("Add review error:", err);
-      setError("Failed to add review");
-    }
-  };
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+  });
+
+  const updateProduct = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: ProductPayload }) => {
+      const fd = buildProductFormData(payload);
+      const { data } = await apiClient.put(`/products/${id}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+  });
+
+  const deleteProduct = useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/products/${id}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+  });
 
   return {
-    reviews,
-    addReview,
-    listenProductReviews,
     products,
+    loadingProducts: loading,
+    isProductsError,
+    productsError,
+
     selectedCategory,
     setSelectedCategory,
-    loading,
-    error,
-    addProduct,
-    updateProduct,
-    deleteProduct,
+
+    activeProductId,
+    setActiveProductId,
+
+    reviews,
+    loadingReviews: loadingReviews || loadingUsers,
+    isReviewsError,
+    reviewsError,
+
+    addReview: (productId: string, payload: AddReviewPayload) =>
+      addReviewMutation.mutateAsync({ productId, payload }),
+    isAddingReview: addReviewMutation.isPending,
+
+    addProduct: addProduct.mutateAsync,
+    updateProduct: (id: string, payload: ProductPayload) =>
+      updateProduct.mutateAsync({ id, payload }),
+    deleteProduct: deleteProduct.mutateAsync,
+
+    isAdding: addProduct.isPending,
+    isUpdating: updateProduct.isPending,
+    isDeleting: deleteProduct.isPending,
   };
 }
 

@@ -2,12 +2,10 @@ import { FaShoppingCart, FaTrash, FaArrowLeft,  FaTag, FaTruck, FaCreditCard } f
 import { IoBagCheckOutline } from 'react-icons/io5';
 import useContextPro from '../../hooks/useContextPro';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { getAuth } from 'firebase/auth';
 import type { Product } from '../../types/types';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useOrders } from '../../hooks/useOrders';
 
 function CartPage() {
     const { state: { cart }, dispatch } = useContextPro();
@@ -16,10 +14,10 @@ function CartPage() {
         const n = Number(value);
         return Number.isFinite(n) ? n : 0;
     };
-
+    const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
+    const { createOrder } = useOrders();
     const formatMoney = (value: unknown) => toNumber(value).toFixed(2);
 
-    const totalPrice = cart.reduce((total, item) => total + toNumber(item.price) * toNumber(item.quantity ?? 1), 0);
     const navigate = useNavigate();
 
     const deleteProduct = (cart : Product) => {
@@ -30,55 +28,38 @@ function CartPage() {
         }
     }
 
-    const handleAddOrder = async () => {
-        if (cart.length === 0) return;
+  const totalPrice = cart.reduce(
+    (total, item) => total + toNumber(item.price) * toNumber(item.quantity ?? 1),
+    0
+  );
 
-        const auth = getAuth();
-        const user = auth.currentUser;
+  const handleAddOrder = async () => {
+    if (cart.length === 0) return;
 
-        if (!user) {
-            toast.error('You must be logged in to place an order!!');
-            navigate("/sign-up"); 
-            return;
-        }
+    try {
+      const payload = {
+        payment_method: "cash",
+        shipping_address: "",  // delivery page’dan olasiz
+        phone: "",             // delivery page’dan olasiz
+        notes: "",
+        location: null,
+        items: cart.map((item: Product) => ({
+          product_id: String(item.id),
+          quantity: Number(item.quantity ?? 1),
+        })),
+      };
 
-        try {
-            setIsSaving(true);
-            const orderRef = await addDoc(collection(db, 'orders'), {
-                userId: user.uid,
-                totalPrice: totalPrice,
-                createdAt: new Date(),
-                status: 'pending',
-                paymentMethod: 'cash',
-                shippingAddress: '',
-                notes: '',
-                deliveryDate: ''
-            });
+      await createOrder(payload);
 
-            for (const item of cart) {
-                const priceNum = Number(item.price) || 0;
-                const qtyNum = Number(item.quantity ?? 1) || 0;
-                await addDoc(collection(db, 'orders', orderRef.id, 'orderProducts'), {
-                    productId: String(item.id ?? ""),
-                    name: String(item.name ?? ""),
-                    imageUrl: item.imageUrl ?? "",
-                    description: String(item.description ?? ""),
-                    weight: String(item.weight ?? ""),
-                    price: priceNum,
-                    quantity: qtyNum,
-                    totalPrice: priceNum * qtyNum,
-                    createdAt: new Date()
-                });
-            }
-
-            navigate('/cart/order-status');
-            dispatch({ type: 'CLEAR_CART' });
-        } catch (e) {
-            console.error('Failed to place order', e);
-        } finally {
-            setIsSaving(false);
-        }
-    };
+      toast.success("Order created!");
+      dispatch({ type: "CLEAR_CART" });
+      navigate("/cart/order-status");
+    } catch (e: any) {
+      // agar token yo‘q bo‘lsa backend 401 qaytaradi
+      toast.error(e?.response?.data?.detail || "Failed to place order");
+      console.error(e);
+    }
+  };
 
     return (
         <div className="cart-page">
@@ -117,7 +98,7 @@ function CartPage() {
                             {cart.map((item) => (
                                 <div key={item.id} className="cart-item">
                                     <div className="item-image">
-                                        <img src={item.imageUrl} alt={item.name} />
+                                        <img src={`${API_ORIGIN}${item.image}`} alt={item.name} />
                                     </div>
                                     <div className="item-details">
                                         <h2 className="item-name">{item.name}</h2>

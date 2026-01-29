@@ -15,6 +15,7 @@ import ProductsSlider from "./ProductsSlider";
 function Hero() {
   const { carousel, loading } = useCarousel();
   
+  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
   if (loading) { return <div className="products-loading">
                             <div className="loading-spinner">   
                             </div>
@@ -64,7 +65,7 @@ function Hero() {
                 <span className="hero-title-accent">{item.title2}</span>
               </h1>
               <p className="hero-para">
-                {item.descreption}
+                {item.description}
               </p>
               <div className="hero-buttons">
                 <button className="cta-button primary">
@@ -80,7 +81,7 @@ function Hero() {
             
             <div className="right-side">
               <div className="hero-image-container">
-                <img src={item.imgUrl} alt="Delicious breakfast items" className="hero-main-image" />
+                <img src={`${API_ORIGIN}${item.img}`} alt="Delicious breakfast items" className="hero-main-image" />
                 <div className="floating-element floating-element-1"></div>
                 <div className="floating-element floating-element-2"></div>
                 <div className="floating-element floating-element-3"></div>

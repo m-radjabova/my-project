@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { addDoc, collection } from "firebase/firestore";
-import {db } from "../../firebase";
-import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import useContextPro from "../../hooks/useContextPro";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import LocateControl from "./LocationMarker";
 import UseModal from "../../hooks/UseModal";
+import { toast } from "react-toastify";
+import { useOrders } from "../../hooks/useOrders";
+import type { Product } from "../../types/types";
 
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -32,7 +32,7 @@ function LocationPicker({
 
 interface DeliveryFormValues {
   address: string;
-  deliveryDate: string;
+  deliveryDate: string; 
   notes: string;
 }
 
@@ -41,7 +41,10 @@ function DeliveryPage() {
     state: { cart },
     dispatch,
   } = useContextPro();
+
   const navigate = useNavigate();
+  const { createOrder } = useOrders();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -54,83 +57,83 @@ function DeliveryPage() {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors }
   } = useForm<DeliveryFormValues>();
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setSelectedLocation(
-            (prev) => prev ?? { lat: latitude, lng: longitude }
-          );
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-        }
-      );
-    }
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setSelectedLocation((prev) => prev ?? { lat: latitude, lng: longitude });
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+      }
+    );
   }, []);
 
   const handleCloseModal = () => setIsModalOpen(false);
-  const handleOpenModal = () => setIsModalOpen(true);
-
-  const onSubmit: SubmitHandler<DeliveryFormValues> = async (data) => {
-    if (!selectedLocation) {
-      alert("Please select a location from the map!");
+  const handleOpenModal = () => {
+    if (cart.length === 0) {
+      toast.info("Cart is empty");
       return;
     }
+    setIsModalOpen(true);
+  };
+
+  const onSubmit: SubmitHandler<DeliveryFormValues> = async (data) => {
     if (cart.length === 0) return;
-    if (!phoneNumber) {
-      alert("Please enter phone number");
+
+    if (!selectedLocation) {
+      toast.error("Please select a location from the map!");
+      return;
+    }
+
+    const phone = phoneNumber.trim();
+    if (!phone) {
+      toast.error("Please enter phone number");
       return;
     }
 
     try {
       setIsSaving(true);
-      const auth = getAuth();
-      const userId = auth.currentUser?.uid || "";
 
-      const orderRef = await addDoc(collection(db, "orders"), {
-        userId,
-        totalPrice: cart.reduce(
-          (t, i) => t + Number(i.price) * Number(i.quantity ?? 1),
-          0 as number
-        ),
-        createdAt: new Date(),
-        status: "pending",
-        paymentMethod: "cash",
-        phone: phoneNumber,
-        shippingAddress: data.address,
-        notes: data.notes,
-        deliveryDate: data.deliveryDate,
+      // deliveryDate backend schema’da yo‘q — notes ichiga qo‘shib yuboryapmiz
+      const notesMerged = [
+        data.notes?.trim(),
+        data.deliveryDate ? `Delivery date: ${data.deliveryDate}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      const payload = {
+        payment_method: "cash",
+        shipping_address: data.address,
+        phone,
+        notes: notesMerged,
         location: selectedLocation,
-      });
-
-      for (const item of cart) {
-        await addDoc(collection(db, "orders", orderRef.id, "orderProducts"), {
-          productId: String(item.id ?? ""),
-          name: String(item.name ?? ""),
-          imageUrl: item.imageUrl ?? "",
-          description: String(item.description ?? ""),
-          weight: String(item.weight ?? ""),
-          price: Number(item.price),
+        items: cart.map((item: Product) => ({
+          product_id: String(item.id),
           quantity: Number(item.quantity ?? 1),
-          totalPrice: Number(item.price) * Number(item.quantity ?? 1),
-          createdAt: new Date(),
-        });
-      }
+        })),
+      };
 
+      await createOrder(payload);
+
+      toast.success("Order created!");
       dispatch({ type: "CLEAR_CART" });
       reset();
       setPhoneNumber("");
+      setIsModalOpen(false);
       navigate("/cart/order-status");
-    } catch (err) {
-      console.error("Error saving order:", err);
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { detail?: string } } };
+      toast.error(error?.response?.data?.detail || "Failed to place order");
+      console.error(e);
     } finally {
       setIsSaving(false);
-      setIsModalOpen(false);
     }
   };
 
@@ -139,17 +142,13 @@ function DeliveryPage() {
       <div className="delivery-container">
         <div className="delivery-header">
           <h1>📍 Delivery Information</h1>
-          <p className="subtitle">
-            Fill in the following information to complete your order
-          </p>
+          <p className="subtitle">Fill in the following information to complete your order</p>
         </div>
 
         <div className="delivery-content">
           <div className="map-section">
             <h2>Select Location on Map</h2>
-            <p className="map-instruction">
-              Click on the map to mark your delivery location
-            </p>
+            <p className="map-instruction">Click on the map to mark your delivery location</p>
 
             <div className="map-container">
               <MapContainer
@@ -189,7 +188,8 @@ function DeliveryPage() {
           <div className="form-section">
             <h2>Delivery Details</h2>
 
-            <form className="delivery-form">
+            {/* MUHIM: form submitni modal tugmasidan handleSubmit orqali yuboryapmiz */}
+            <form className="delivery-form" onSubmit={(e) => e.preventDefault()}>
               <div className="form-group">
                 <label htmlFor="address" className="form-label">
                   Delivery Address
@@ -201,9 +201,7 @@ function DeliveryPage() {
                   placeholder="Enter your complete address"
                   {...register("address", { required: "Address is required" })}
                 />
-                {errors.address && (
-                  <p className="error-message">{errors.address.message}</p>
-                )}
+                {errors.address && <p className="error-message">{errors.address.message}</p>}
               </div>
 
               <div className="form-group">
@@ -212,13 +210,9 @@ function DeliveryPage() {
                 </label>
                 <input
                   id="deliveryDate"
-                  className={`form-control ${
-                    errors.deliveryDate ? "error" : ""
-                  }`}
+                  className={`form-control ${errors.deliveryDate ? "error" : ""}`}
                   type="date"
-                  {...register("deliveryDate", {
-                    required: "Delivery date is required",
-                  })}
+                  {...register("deliveryDate", { required: "Delivery date is required" })}
                 />
                 {errors.deliveryDate && (
                   <p className="error-message">{errors.deliveryDate.message}</p>
@@ -237,13 +231,14 @@ function DeliveryPage() {
                   {...register("notes")}
                 />
               </div>
+
               <button
                 type="button"
                 onClick={handleOpenModal}
                 className="delivery-checkout-btn"
                 disabled={isSaving}
               >
-                Place Order
+                {isSaving ? "Placing..." : "Place Order"}
               </button>
             </form>
           </div>
@@ -257,25 +252,31 @@ function DeliveryPage() {
         size="md"
       >
         <div className="modal-content">
-          <input type="phone" 
-            value={phoneNumber} 
-            onChange={(e) => setPhoneNumber(e.target.value)} 
+          <input
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
             placeholder="Enter your phone number"
             className="form-control"
           />
-          <div className="d-flex  gap-2">
-            <button 
+
+          <div className="d-flex gap-2">
+            <button
+              type="button"
               className="delivery-checkout-btn"
               onClick={handleCloseModal}
+              disabled={isSaving}
             >
               Cancel
             </button>
+
             <button
+              type="button"
               className="delivery-checkout-btn"
               onClick={handleSubmit(onSubmit)}
               disabled={isSaving}
             >
-              {isSaving ? "Placing Order..." : "Place Order"}
+              {isSaving ? "Placing Order..." : "Confirm"}
             </button>
           </div>
         </div>

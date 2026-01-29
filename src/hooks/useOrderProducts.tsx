@@ -1,65 +1,56 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase"; 
-import type { OrderProduct } from "../types/types";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import apiClient from "../apiClient/apiClient";
+import type { GroupedOrderProduct, OrderProductApi } from "../types/types";
 
 function useOrderProducts() {
-  const [allProducts, setAllProducts] = useState<OrderProduct[]>([]);
-  const [groupedProducts, setGroupedProducts] = useState<OrderProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, error } = useQuery<OrderProductApi[]>({
+    queryKey: ["orderProductsAll"],
+    queryFn: async () => (await apiClient.get<OrderProductApi[]>("/orders/products/all")).data,
+    refetchInterval: 5000,
+  });
 
-  const getAllOrderProducts = async () => {
-    try {
-      const ordersRef = collection(db, "orders");
-      const ordersSnapshot = await getDocs(ordersRef);
+  const allProducts = Array.isArray(data) ? data : [];
 
-      let products: OrderProduct[] = [];
+  const groupedProducts = useMemo(() => {
+    const map = new Map<string, GroupedOrderProduct>();
 
-      for (const orderDoc of ordersSnapshot.docs) {
-        const productsRef = collection(db, "orders", orderDoc.id, "orderProducts");
-        const productsSnapshot = await getDocs(productsRef);
+    for (const p of allProducts) {
+      if (!p) continue;
 
-        const productsData: OrderProduct[] = productsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as OrderProduct[];
+      const key = String(p.product_id ?? p.name ?? p.id ?? "");
 
-        products = [...products, ...productsData];
-      }
+      const quantity = Number(p.quantity ?? 0) || 0;
+      const unitPrice = Number(p.price ?? 0) || 0;
 
-      setAllProducts(products);
-      return products;
-    } catch (error) {
-      console.error("Error fetching all order products:", error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+      const lineRevenue = Number(p.total_price ?? 0) || unitPrice * quantity;
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "orders"), () => {
-      getAllOrderProducts();
-    });
-    return () => unsubscribe();
-  }, []);
+      const prev = map.get(key);
 
-  useEffect(() => {
-    const productMap: { [key: string]: OrderProduct } = {};
-
-    allProducts.forEach((product) => {
-      if (!productMap[product.name]) {
-        productMap[product.name] = { ...product };
+      if (!prev) {
+        map.set(key, {
+          ...p,
+          quantity,
+          total_price: lineRevenue,
+        });
       } else {
-        productMap[product.name].quantity += product.quantity;
-        productMap[product.name].price += product.price;
+        map.set(key, {
+          ...prev,
+          quantity: prev.quantity + quantity,
+          total_price: prev.total_price + lineRevenue,
+        });
       }
-    });
+    }
 
-    setGroupedProducts(Object.values(productMap));
+    return Array.from(map.values());
   }, [allProducts]);
 
-  return { allProducts, groupedProducts, loading };
+  return {
+    allProducts,
+    groupedProducts,
+    loading: isLoading,
+    error,
+  };
 }
 
 export default useOrderProducts;

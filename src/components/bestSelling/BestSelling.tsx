@@ -7,10 +7,10 @@ import type { Product } from "../../types/types";
 function BestSelling() {
     const { products, selectedCategory, setSelectedCategory} = useProducts();
     const { state: {cart}, dispatch } = useContextPro();
-
+    const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
 
     function handleCartToggle(product: Product) {
-        const isInCart = cart.some((p) => p.id === product.id);
+        const isInCart = cart.some((p : Product) => p.id === product.id);
 
         if (isInCart) {
             dispatch({ type: "REMOVE_FROM_CART", payload: product.id })
@@ -18,7 +18,7 @@ function BestSelling() {
             dispatch({ type: "ADD_TO_CART", payload: product })
         }
     }
-
+ 
   return (
     <div className="best-selling" data-aos="fade-up">
         <div className="best-selling-container">
@@ -31,13 +31,13 @@ function BestSelling() {
                     {products.map((product) => (
                         <div key={product.id} className="best-selling-product-card">
                             <div className="best-selling-product-image">
-                                <img src={product.imageUrl} alt={product.name} />
+                                <img src={`${API_ORIGIN}${product.image}`} alt={product.name} />
                             </div>
                             <div className="best-selling-product-info">
                                 <h6>{product.name}</h6>
-                                <p><span className="old-price">${product.oldPrice}</span>${product.price}</p>
+                                <p><span className="old-price">${product.price * 2 }</span>${product.price}</p>
                                 <button onClick={() => handleCartToggle(product)}>
-                                    {cart.some((p) => p.id === product.id) ? "Delete from Cart" : "Buy Now"}
+                                    {cart.some((p : Product) => p.id === product.id) ? "Delete from Cart" : "Buy Now"}
                                 </button>
                                 <div className="rating-container">
                                     <Rating className="rating" name="read-only" value={product.rating} size="small" />

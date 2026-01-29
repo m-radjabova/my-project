@@ -8,7 +8,6 @@ export interface User {
   uid: string;
 }
 
-
 export interface Category {
   id: string;
   name: string;
@@ -19,12 +18,12 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  price: number;
-  oldPrice: number; 
-  categoryId: string;
-  imageUrl: string;
+  price: number; 
+  category_id: string;
+  image: string;
   weight: string;
   rating: number;
+  rating_count: number;
   createdAt: string;
   quantity: number;
 }
@@ -33,8 +32,8 @@ export interface CarouselItem {
   id: string;
   title1: string;
   title2: string;
-  descreption: string;
-  imgUrl: string;
+  description: string;
+  img: string;
   createdAt: string;
 }
 
@@ -51,6 +50,25 @@ export interface OrderProduct {
   rating: number;
   description: string;
   createdAt: Date;
+}
+
+export interface OrderProductApi {
+  id?: string | number;
+  product_id?: string | number;
+  name?: string;
+  quantity?: number;
+  price?: number;
+  total_price?: number;
+  image?: string;
+  weight?: string;
+  description?: string;
+  rating?: number;
+  created_at?: string | number | Date;
+}
+
+export interface GroupedOrderProduct extends OrderProductApi {
+  quantity: number;
+  total_price: number;
 }
 
 export interface Order {
@@ -77,5 +95,5 @@ export interface Reviews {
   title: string;
   rating: number;
   userId: string;
-  createdAt: number;
+  created_at: number;
 }

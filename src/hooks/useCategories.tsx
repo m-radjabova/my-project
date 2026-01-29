@@ -1,79 +1,48 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "../types/types";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../firebase";
+import apiClient from "../apiClient/apiClient";
 
 function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const q = query(collection(db, "categories"), orderBy("createdAt", "asc"));
+  const {
+    data: categories = [],
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: async () => (await apiClient.get("/categories")).data,
+  });
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const categoryList: Category[] = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        })) as Category[];
-        setCategories(categoryList);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Error fetching categories:", err);
-        setError("Failed to fetch categories");
-        setLoading(false);
-      }
-    );
+  const addCategory = useMutation({
+    mutationFn: async (name: string) =>
+      (await apiClient.post("/categories", { name })).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+  });
 
-    return () => unsubscribe();
-  }, []);
+  const updateCategory = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) =>
+      (await apiClient.put(`/categories/${id}`, { name })).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+  });
 
-  const addCategory = async (newCategory: Omit<Category, "id">) => {
-    try {
-      await addDoc(collection(db, "categories"), {
-        ...newCategory,
-        createdAt: serverTimestamp(),
-      });
-    } catch (err) {
-      console.error("Add category error:", err);
-      setError("Failed to add category");
-    }
+  const deleteCategory = useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/categories/${id}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+  });
+
+  return {
+    categories,
+    loading,
+    isError,
+    error,
+    addCategory: addCategory.mutateAsync,
+    updateCategory: updateCategory.mutateAsync,
+    deleteCategory: deleteCategory.mutateAsync,
   };
-
-  const updateCategory = async (id: string, updatedData: Partial<Category>) => {
-    try {
-      const docRef = doc(db, "categories", id);
-      await updateDoc(docRef, updatedData);
-    } catch (err) {
-      console.error("Update category error:", err);
-      setError("Failed to update category");
-    }
-  };
-
-  const deleteCategory = async (id: string) => {
-    try {
-      const docRef = doc(db, "categories", id);
-      await deleteDoc(docRef);
-    } catch (err) {
-      console.error("Delete category error:", err);
-      setError("Failed to delete category");
-    }
-  };
-
-  return { categories, error, addCategory, updateCategory, deleteCategory, loading };
 }
 
 export default useCategories;

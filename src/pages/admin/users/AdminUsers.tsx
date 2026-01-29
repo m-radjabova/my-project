@@ -28,10 +28,10 @@ function AdminUsers() {
   const [isOpen, setIsOpen] = useState(false);
 
   const roleOptions = (): RoleOption[] => [
-    { value: "ADMIN", label: "ADMIN" },
-    { value: "CHEF", label: "CHEF" },
-    { value: "WAITER", label: "WAITER" },
-    { value: "USER", label: "USER" },
+    { value: "admin", label: "admin" },
+    { value: "chef", label: "chef" },
+    { value: "waiter", label: "waiter" },
+    { value: "user", label: "user" },
   ];
 
   const handleRoleChange = (
@@ -71,129 +71,165 @@ function AdminUsers() {
     );
   }
 
+  const getUserInitial = (name?: string) => {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  };
+
   return (
-    <div className="container py-4">
-      <div className="mb-4 text-center">
-        <h2 className="fw-bold text-center text-gradient text-primary">
-          <FaUser className="w-100 me-2" />
+    <div className="container py-4 admin-users-container">
+      <div className="admin-users-header text-white text-center">
+        <div>
+          <h2 className="fw-bold display-6 d-flex align-items-center justify-content-center mb-3">
+          <FaUser className="me-3" />
           User Management
         </h2>
-        <p className="text-muted">Manage user roles and permissions</p>
+        <p className="lead mb-4">Manage user roles and permissions</p>
+        </div>
         <input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-control"
+          className="form-control search-input"
           placeholder="Search users..."
           type="search"
         />
       </div>
 
-      <div className="card shadow-soft border-0 rounded-3 overflow-hidden">
+      <div className="card shadow-soft border-0 rounded-4 overflow-hidden user-management-card">
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-hover table-striped align-middle mb-0 h-100">
-              <thead className="bg-light">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="table-header">
                 <tr>
-                  <th className="ps-4 py-3 text-uppercase small fw-bold">
-                    User Information
-                  </th>
-                  <th className="py-3 text-uppercase small fw-bold">
-                    Current Roles
-                  </th>
-                  <th className="py-3 text-uppercase small fw-bold">
-                    Assign Roles
-                  </th>
-                  <th className="pe-4 py-3 text-uppercase small fw-bold text-end">
-                    Actions
-                  </th>
+                  <th className="ps-4 py-3 fw-bold">User Information</th>
+                  <th className="py-3 fw-bold">Current Roles</th>
+                  <th className="py-3 fw-bold">Assign Roles</th>
+                  <th className="pe-4 py-3 fw-bold text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => {
-                  const currentRoles =
-                    selectedRoles[user.id] ?? user.roles ?? [];
-                  return (
-                    <tr key={user.id}>
-                      <td className="ps-4 py-3">
-                        <div className="d-flex flex-column">
-                          <span className="fw-semibold">{user.name}</span>
-                          <small className="text-muted">{user.email}</small>
-                        </div>
-                      </td>
-                      <td className="py-3">
-                        {user.roles?.length ? (
-                          <span className="badge bg-info-subtle text-info">
-                            {user.roles.join(", ")}
-                          </span>
-                        ) : (
-                          <span className="badge bg-secondary-subtle text-secondary">
-                            No roles
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3" style={{ maxWidth: "220px" }}>
-                        <Select
-                          isMulti
-                          options={roleOptions()}
-                          value={currentRoles.map((r: string) => ({
-                            value: r,
-                            label: r,
-                          }))}
-                          styles={customSelectStyles}
-                          onChange={(selected) =>
-                            handleRoleChange(user.id, selected)
-                          }
-                          className="basic-multi-select"
-                          classNamePrefix="select"
-                        />
-                      </td>
-                      <td className="pe-4 py-3">
-                        <div className="btn-group-vertical w-100" role="group">
-                          <button
-                            className="btn btn-success btn-sm rounded-pill d-flex align-items-center justify-content-center"
-                            onClick={() => saveRoleChange(user.id)}
-                            disabled={isSaving[user.id]}
-                          >
-                            {isSaving[user.id] ? (
-                              <span className="spinner-border spinner-border-sm"></span>
+                {users.length > 0 ? (
+                  users.map((user) => {
+                    const currentRoles = selectedRoles[user.id] ?? user.roles ?? [];
+                    return (
+                      <tr key={user.id} className="user-row">
+                        <td className="ps-4">
+                          <div className="user-info-container">
+                            <div className="user-avatar">
+                              {getUserInitial(user.name)}
+                            </div>
+                            <div className="d-flex flex-column">
+                              <span className="fw-semibold fs-6">{user.name}</span>
+                              <small className="text-muted">{user.email}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex flex-wrap gap-1">
+                            {user.roles?.length ? (
+                              user.roles.map((role) => (
+                                <span 
+                                  key={role} 
+                                  className={`role-badge role-${role.toLowerCase()}`}
+                                >
+                                  {role}
+                                </span>
+                              ))
                             ) : (
-                              <>
-                                <FaSave className="me-1" /> Save
-                              </>
+                              <span className="badge bg-soft-secondary text-secondary">
+                                No roles
+                              </span>
                             )}
-                          </button>
-
-                          <button
-                            className="btn btn-danger btn-sm rounded-pill d-flex align-items-center justify-content-center mt-2"
-                            onClick={() => {
-                              setDeleteTarget(user.id);
-                              setIsOpen(true);
+                          </div>
+                        </td>
+                        <td className="role-select-container">
+                          <Select
+                            isMulti
+                            options={roleOptions()}
+                            value={currentRoles.map((r) => ({
+                              value: r,
+                              label: r,
+                            }))}
+                            styles={{
+                              ...customSelectStyles,
+                              control: (base) => ({
+                                ...base,
+                                border: '1px solid rgba(102, 126, 234, 0.3)',
+                                borderRadius: '12px',
+                                padding: '4px 8px',
+                                '&:hover': {
+                                  borderColor: 'rgba(102, 126, 234, 0.5)',
+                                }
+                              }),
                             }}
-                          >
-                            <FaTrash className="me-1" /> Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                            onChange={(selected) =>
+                              handleRoleChange(user.id, selected)
+                            }
+                            className="basic-multi-select"
+                            classNamePrefix="select"
+                          />
+                        </td>
+                        <td className="pe-4 actions-container">
+                          <div className="d-flex gap-2 justify-content-end">
+                            <button
+                              className="btn btn-soft-save d-flex align-items-center"
+                              onClick={() => saveRoleChange(user.id)}
+                              disabled={isSaving[user.id]}
+                            >
+                              {isSaving[user.id] ? (
+                                <span className="spinner-border spinner-border-sm me-2"></span>
+                              ) : (
+                                <FaSave className="me-2" />
+                              )}
+                              Save
+                            </button>
+
+                            <button
+                              className="btn btn-soft-delete d-flex align-items-center"
+                              onClick={() => {
+                                setDeleteTarget(user.id);
+                                setIsOpen(true);
+                              }}
+                            >
+                              <FaTrash className="me-2" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center py-5">
+                      <div className="no-results">
+                        <FaUser className="no-results-icon" />
+                        <h5 className="text-muted">No users found</h5>
+                        <p className="text-muted">
+                          {searchTerm ? 'Try a different search term' : 'No users available'}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
         <UseModal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <div className="p-3 text-center">
-            <h5>Are you sure?</h5>
-            <p className="text-muted">This action cannot be undone.</p>
-            <div className="d-flex justify-content-center mt-3">
+          <div className="modal-confirm">
+            <h5 className="mb-3">Confirm Deletion</h5>
+            <p className="text-muted mb-4">
+              Are you sure you want to delete this user? This action cannot be undone.
+            </p>
+            <div className="d-flex justify-content-center gap-3">
               <button
-                className="btn btn-secondary me-2"
+                className="btn btn-cancel"
                 onClick={() => setIsOpen(false)}
               >
                 Cancel
               </button>
-              <button className="btn btn-danger" onClick={confirmDelete}>
+              <button className="btn btn-confirm" onClick={confirmDelete}>
                 Yes, Delete
               </button>
             </div>

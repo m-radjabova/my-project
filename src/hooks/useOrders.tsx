@@ -1,123 +1,101 @@
-import { useState, useEffect, useCallback } from "react"
-import { db } from "../firebase"
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  orderBy,
-  type QueryDocumentSnapshot,
-  type DocumentData,
-} from "firebase/firestore"
-import type { Order, OrderProduct, User } from "../types/types"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import apiClient from "../apiClient/apiClient";
 
-export const useOrders = () => {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+type OrderItemPayload = {
+  product_id: string;
+  quantity: number;
+};
 
-  const subscribeOrders = useCallback(() => {
-    setLoading(true)
-    setError(null)
-    
-    const ordersRef = query(
-      collection(db, "orders"),
-      orderBy("createdAt", "desc")
-    )
+export type OrderLocation = {
+  lat: number;
+  lng: number;
+};
 
-    const unsubscribe = onSnapshot(
-      ordersRef,
-      async snapshot => {
-        try {
-          const allOrders = await Promise.all(
-            snapshot.docs.map(async (orderDoc: QueryDocumentSnapshot<DocumentData>) => {
-              const orderData = orderDoc.data()
-              const orderId = orderDoc.id
+export type OrderItem = {
+  id?: number | string;
+  image?: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  quantity?: number;
+  weight?: string | number;
+};
 
-              // user fetch
-              let user: User | null = null
-              if (orderData.userId) {
-                try {
-                  const userSnap = await getDoc(doc(db, "users", orderData.userId))
-                  if (userSnap.exists()) {
-                    user = { id: userSnap.id, ...userSnap.data() } as User
-                  }
-                } catch (err) {
-                  console.warn(`User ${orderData.userId} not found:`, err)
-                }
-              }
+type CreateOrderPayload = {
+  payment_method: string;
+  shipping_address: string;
+  phone: string;
+  notes?: string;
+  location?: OrderLocation | null;
+  items: OrderItemPayload[];
+};
 
-              // products fetch
-              let products: OrderProduct[] = []
-              try {
-                const productsSnap = await getDocs(
-                  collection(db, "orders", orderId, "orderProducts")
-                )
-                products = productsSnap.docs.map(p => ({
-                  id: p.id,
-                  ...p.data(),
-                })) as OrderProduct[]
-              } catch (err) {
-                console.warn(`Products for order ${orderId} not found:`, err)
-              }
+export type OrderStatus = "pending" | "completed" | "delivered";
 
-              return {
-                id: orderId,
-                userId: orderData.userId,
-                user,
-                totalPrice: orderData.totalPrice || 0,
-                products,
-                createdAt: orderData.createdAt,
-                status: orderData.status || "",
-                paymentMethod: orderData.paymentMethod || "",
-                shippingAddress: orderData.shippingAddress || "",
-                notes: orderData.notes || "",
-                deliveryDate: orderData.deliveryDate || "",
-                location: orderData.location,
-                phone: orderData.phone
-              } as Order
-            })
-          )
+export type Order = {
+  id: number | string;
+  status?: OrderStatus | string;
+  user?: { name?: string };
+  shipping_address?: string;
+  total_price?: number | string;
+  payment_method?: string;
+  created_at?: string | number | Date;
+  notes?: string;
+  location?: OrderLocation | null;
+  phone?: string;
+  items?: OrderItem[];
+  products?: OrderItem[];
+};
 
-          setOrders(allOrders)
-          // console.log(`Real-time: ${allOrders.length} ta order yangilandi`)
-          setLoading(false)
-        } catch (err) {
-          setError(err instanceof Error ? err.message : "An error occurred")
-          setLoading(false)
-        }
-      },
-      err => {
-        console.error("Real-time listener error:", err)
-        setError(err.message)
-        setLoading(false)
-      }
-    )
+export function useOrders() {
+  const qc = useQueryClient();
 
-    return unsubscribe
-  }, [])
+  const ordersQuery = useQuery({
+    queryKey: ["adminOrders"],
+    queryFn: async () => (await apiClient.get("/orders")).data, 
+  });
 
-  useEffect(() => {
-    const unsub = subscribeOrders()
-    return () => unsub && unsub()
-  }, [subscribeOrders])
+  const createOrder = useMutation({
+    mutationFn: async (payload: CreateOrderPayload) => {
+      const { data } = await apiClient.post("/orders", payload);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myOrders"] });
+    },
+  });
 
-  const getAllOrders = (): Order[] => orders
-  const getOrdersByStatus = (status: string): Order[] =>
-    orders.filter(order => order.status === status)
-  
-  const getOrdersByUser = (userId: string): Order[] =>
-    orders.filter(order => order.userId === userId)
+  const myOrders = useQuery({
+    queryKey: ["myOrders"],
+    queryFn: async () => (await apiClient.get("/orders/my")).data,
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async (params: { orderId: number; status: OrderStatus }) => {
+      const { data } = await apiClient.patch(`/orders/${params.orderId}/status`, {
+        status: params.status,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminOrders"] });
+      qc.invalidateQueries({ queryKey: ["myOrders"] });
+    },
+  });
 
   return {
-    orders,
-    loading,
-    error,
-    refetch: subscribeOrders,
-    getAllOrders,
-    getOrdersByStatus,
-    getOrdersByUser,
-  }
+    orders: (ordersQuery.data ?? []) as Order[],
+    loading: ordersQuery.isLoading,
+    ordersError: ordersQuery.error,
+    createOrder: createOrder.mutateAsync,
+    isCreating: createOrder.isPending,
+    
+    updateStatus: updateStatus.mutateAsync,
+    updatingId: updateStatus.variables?.orderId ?? null,
+    isUpdating: updateStatus.isPending,
+
+    myOrders: (myOrders.data ?? []) as Order[],
+    isLoadingMyOrders: myOrders.isLoading,
+    myOrdersError: myOrders.error,
+  };
 }

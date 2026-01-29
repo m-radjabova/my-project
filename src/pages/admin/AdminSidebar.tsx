@@ -15,13 +15,13 @@ function AdminSidebar() {
     } = useContextPro()
 
     const menuItems = [
-        { name: "Dashboard", icon: <House />, path: "/admin/dashboard", role: "ADMIN" },
-        { name: "Products", icon: <FileText />, path: "/admin/products", role: "ADMIN" },
-        { name: "Categories", icon: <Gear />, path: "/admin/categories", role: "ADMIN" },
-        { name: "Carousel/Slider", icon: <FaHeart />, path: "/admin/carousel", role: "ADMIN" },
-        { name: "Users", icon: <People />, path: "/admin/users", role: "ADMIN" },
-        { name: "Orders", icon: <FaBox />, path: "/admin/orders", role: "CHEF" },
-    { name: "Waiter", icon: <SiWine />, path: "/admin/waiter", role: "WAITER" },
+        { name: "Dashboard", icon: <House />, path: "/admin/dashboard", role: "admin" },
+        { name: "Products", icon: <FileText />, path: "/admin/products", role: "admin" },
+        { name: "Categories", icon: <Gear />, path: "/admin/categories", role: "admin" },
+        { name: "Carousel/Slider", icon: <FaHeart />, path: "/admin/carousel", role: "admin" },
+        { name: "Users", icon: <People />, path: "/admin/users", role: "admin" },
+        { name: "Orders", icon: <FaBox />, path: "/admin/orders", role: "chef" },
+        { name: "Waiter", icon: <SiWine />, path: "/admin/waiter", role: "waiter" },
     ]
 
     const canAccess = (itemRole: string) => {

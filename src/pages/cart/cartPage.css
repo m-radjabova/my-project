@@ -200,7 +200,6 @@
     height: 3px;
     background: linear-gradient(90deg, #E21A43, #FF4D6D, #E21A43);
     background-size: 200% 100%;
-    animation: shimmer 3s infinite linear;
     opacity: 0;
     transition: opacity 0.3s;
 }

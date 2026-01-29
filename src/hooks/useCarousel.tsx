@@ -1,63 +1,80 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CarouselItem } from "../types/types";
-import { addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import apiClient from "../apiClient/apiClient";
+
+type CarouselPayload = {
+  title1: string;
+  title2: string;
+  description?: string;
+  img?: File; 
+};
+
+function buildFormData(payload: CarouselPayload) {
+  const fd = new FormData();
+  fd.append("title1", payload.title1);
+  fd.append("title2", payload.title2);
+  if (payload.description) fd.append("description", payload.description);
+  if (payload.img) fd.append("img", payload.img);
+  return fd;
+}
 
 function useCarousel() {
-  const [carousel, setCarousel] = useState<CarouselItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const q = query(collection(db, "carousel"), orderBy("createdAt", "asc"));
+  const {
+    data: carousel = [],
+    isLoading: loading,
+    isError,
+    error,
+  } = useQuery<CarouselItem[]>({
+    queryKey: ["carousel"],
+    queryFn: async () => (await apiClient.get("/carousels")).data,
+  });
 
-  useEffect(() => {
-    getCarousel();
-  }, []);
-
-  const getCarousel = async () => {
-    setLoading(true);
-    try {
-      const snapshot = await getDocs(q);
-      const carouselItems: CarouselItem[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as CarouselItem[];
-      setCarousel(carouselItems);
-    } catch (error) {
-      console.error("Error fetching carousel items:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addCarousel = async (newItem: CarouselItem) => {
-    try {
-      await addDoc(collection(db, "carousel"), {
-        ...newItem,
-        createdAt: serverTimestamp(),
+  const addCarousel = useMutation({
+    mutationFn: async (payload: CarouselPayload) => {
+      const fd = buildFormData(payload);
+      const { data } = await apiClient.post("/carousels", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-    } catch (err) {
-      console.error("Add category error:", err);
-    }
-  };
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carousel"] }),
+  });
 
-  const updateCarousel = async (id: string, updatedData: Partial<CarouselItem>) => {
-    try {
-      const docRef = doc(db, "carousel", id);
-      await updateDoc(docRef, updatedData);
-    } catch (err) {
-      console.error("Update category error:", err);
-    }
-  };
+  const updateCarousel = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: CarouselPayload }) => {
+      const fd = buildFormData(payload);
+      const { data } = await apiClient.put(`/carousels/${id}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carousel"] }),
+  });
 
-  const deleteCarousel = async (id: string) => {
-    try {
-      const docRef = doc(db, "categories", id);
-      await deleteDoc(docRef);
-    } catch (err) {
-      console.error("Delete category error:", err);
-    }
+  const deleteCarousel = useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/carousels/${id}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carousel"] }),
+  });
+
+  return {
+    carousel,
+    loading,
+    isError,
+    error,
+
+    addCarousel: addCarousel.mutateAsync,
+    updateCarousel: (id: string, payload: CarouselPayload) =>
+      updateCarousel.mutateAsync({ id, payload }),
+    deleteCarousel: deleteCarousel.mutateAsync,
+
+    isAdding: addCarousel.isPending,
+    isUpdating: updateCarousel.isPending,
+    isDeleting: deleteCarousel.isPending,
   };
-  return { carousel, loading, addCarousel, updateCarousel, deleteCarousel };
 }
 
 export default useCarousel;

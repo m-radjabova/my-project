@@ -1,0 +1,277 @@
+@keyframes gradientShift {
+            0% { 
+              background-position: 0% 50%;
+              filter: hue-rotate(0deg);
+            }
+            50% { 
+              background-position: 100% 50%;
+              filter: hue-rotate(10deg);
+            }
+            100% { 
+              background-position: 0% 50%;
+              filter: hue-rotate(0deg);
+            }
+          }
+
+          @keyframes diagonalShimmer {
+            0%, 100% { opacity: 0.3; transform: translateX(-10%); }
+            50% { opacity: 0.6; transform: translateX(10%); }
+          }
+
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes slideInLeft {
+            from {
+              opacity: 0;
+              transform: translateX(-50px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(50px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes bounceIn {
+            0% {
+              opacity: 0;
+              transform: scale(0.3);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.05);
+            }
+            70% {
+              transform: scale(0.9);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+
+          @keyframes float {
+            0%, 100% {
+              transform: translateY(0) translateX(0);
+            }
+            25% {
+              transform: translateY(-20px) translateX(10px);
+            }
+            50% {
+              transform: translateY(-10px) translateX(-10px);
+            }
+            75% {
+              transform: translateY(-30px) translateX(5px);
+            }
+          }
+
+          @keyframes pulse {
+            0%, 100% {
+              box-shadow: 0 4px 15px rgba(226, 26, 67, 0.3);
+            }
+            50% {
+              box-shadow: 0 6px 20px rgba(226, 26, 67, 0.5);
+            }
+          }
+
+          @keyframes shine {
+            0% {
+              transform: translateX(-100%) rotate(45deg);
+            }
+            100% {
+              transform: translateX(200%) rotate(45deg);
+            }
+          }
+
+          .shine-effect {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.3),
+              transparent
+            );
+            animation: shine 3s infinite;
+          }
+
+          @keyframes slideInFromTop {
+            from {
+              transform: translateY(-100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes progressBar {
+            from {
+              transform: scaleX(0);
+            }
+            to {
+              transform: scaleX(1);
+            }
+          }
+
+          /* Custom Toast Styles */
+          .custom-toast {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            border: 1px solid rgba(226, 26, 67, 0.1) !important;
+            padding: 16px 20px !important;
+            animation: slideInFromTop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+            backdrop-filter: blur(10px) !important;
+            min-height: 80px !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+          }
+
+          .custom-toast-success {
+            border-left: 4px solid #10b981 !important;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+          }
+
+          .custom-toast-error {
+            border-left: 4px solid #ef4444 !important;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+          }
+
+          .custom-toast-warning {
+            border-left: 4px solid #f59e0b !important;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+          }
+
+          .Toastify__toast-body {
+            padding: 0 !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            color: #1f2937 !important;
+            line-height: 1.6 !important;
+          }
+
+          .custom-toast-progress {
+            height: 4px !important;
+            background: linear-gradient(90deg, #E21A43 0%, #FF6B9D 100%) !important;
+            border-radius: 0 0 16px 16px !important;
+            animation: progressBar 5s linear !important;
+            transform-origin: left !important;
+          }
+
+          .custom-toast-success .custom-toast-progress {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%) !important;
+          }
+
+          .custom-toast-error .custom-toast-progress {
+            background: linear-gradient(90deg, #ef4444 0%, #f87171 100%) !important;
+          }
+
+          .custom-toast-warning .custom-toast-progress {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%) !important;
+          }
+
+          .Toastify__close-button {
+            opacity: 0.5 !important;
+            transition: all 0.3s ease !important;
+          }
+
+          .Toastify__close-button:hover {
+            opacity: 1 !important;
+            transform: rotate(90deg) !important;
+          }
+
+          .Toastify__close-button > svg {
+            height: 18px !important;
+            width: 18px !important;
+          }
+
+          /* Input Focus Styles */
+          .form-control:focus {
+            border-color: rgba(226, 26, 67, 0.6) !important;
+            box-shadow: 0 0 0 4px rgba(226, 26, 67, 0.1) !important;
+            transform: translateY(-1px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .input-group-text:has(+ .form-control:focus) {
+            border-color: rgba(226, 26, 67, 0.6) !important;
+            background: rgba(226, 26, 67, 0.02) !important;
+          }
+
+          /* Button Hover Effect */
+          .btn-login {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+          }
+
+          .btn-login:hover::before {
+            width: 300px;
+            height: 300px;
+          }
+
+          /* Link Underline Animation */
+          .nav-link-animated {
+            position: relative;
+            display: inline-block;
+          }
+
+          .nav-link-animated::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #E21A43 0%, #FF6B9D 100%);
+            transition: width 0.3s ease;
+          }
+
+          .nav-link-animated:hover::after {
+            width: 100%;
+          }
+
+          /* Glassmorphism Effect */
+          .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+          }
+
+          

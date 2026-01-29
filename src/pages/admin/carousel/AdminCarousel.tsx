@@ -1,73 +1,112 @@
-import { useForm, type FieldValues } from "react-hook-form"
-import { useState } from "react"
-import UseModal from "../../../hooks/UseModal"
-import UseDeleteModal from "../../../hooks/UseDeleteModal"
-import type { CarouselItem } from "../../../types/types"
-import useCarousel from "../../../hooks/useCarousel"
+import { useForm, type FieldValues } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import UseModal from "../../../hooks/UseModal";
+import UseDeleteModal from "../../../hooks/UseDeleteModal";
+import type { CarouselItem } from "../../../types/types";
+import useCarousel from "../../../hooks/useCarousel";
+
+type FormShape = {
+  title1: string;
+  title2: string;
+  description: string;
+  img: FileList;
+};
 
 function AdminCarousel() {
-  const {register, handleSubmit, formState: {errors}, reset, setValue} = useForm()
-  const {carousel, loading, addCarousel, updateCarousel, deleteCarousel} = useCarousel()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<FormShape>();
+
+  const {
+    carousel,
+    loading,
+    addCarousel,
+    updateCarousel,
+    deleteCarousel,
+    isAdding,
+    isUpdating,
+    isDeleting,
+  } = useCarousel();
+
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingCarousel, setEditingCarousel] = useState<CarouselItem | null>(null);
   const [carouselToDelete, setCarouselToDelete] = useState<CarouselItem | null>(null);
-  
-  const onSubmit = (data: FieldValues) => {
-    const carouselData = {
-      title1: data.title1,
-      title2: data.title2,
-      imgUrl: data.imgUrl,
-      descreption: data.descreption
+  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
+  const watchedFiles = watch("img");
+  const previewUrl = useMemo(() => {
+    const file = watchedFiles?.[0];
+    return file ? URL.createObjectURL(file) : "";
+  }, [watchedFiles]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const onSubmit = async (data: FieldValues) => {
+    const title1 = String(data.title1 ?? "");
+    const title2 = String(data.title2 ?? "");
+    const description = String(data.description ?? "");
+
+    const fileList = data.img as FileList | undefined;
+    const imgFile = fileList?.[0]; // File
+
+    // ✅ create uchun rasm required, update uchun ixtiyoriy
+    const payload = {
+      title1,
+      title2,
+      description,
+      ...(imgFile ? { img: imgFile } : {}),
     };
 
-    if (editingCarousel) {
-      updateCarousel(editingCarousel.id, carouselData);
+    if (editingCarousel?.id) {
+      await updateCarousel(editingCarousel.id, payload);
     } else {
-      addCarousel({
-        id: Date.now().toString(),
-        ...carouselData,
-        createdAt: new Date().toISOString()
-      });
+      if (!imgFile) return; // create da rasm bo‘lishi kerak
+      await addCarousel(payload);
     }
-    setIsOpen(false);
-    reset();
-    setEditingCarousel(null);
-  }
 
-  const handleEdit = (carouselItem: CarouselItem) => {
-    setEditingCarousel(carouselItem);
-    setValue("title1", carouselItem.title1);
-    setValue("title2", carouselItem.title2);
-    setValue("imgUrl", carouselItem.imgUrl);
-    setValue("descreption", carouselItem.descreption);
+    handleCloseModal();
+  };
+
+  const handleEdit = (item: CarouselItem) => {
+    setEditingCarousel(item);
+    setValue("title1", item.title1);
+    setValue("title2", item.title2);
+    setValue("description", item.description ?? ""); // type'ingizga qarab
+    // file input'ni set qilmaymiz (browser ruxsat bermaydi)
     setIsOpen(true);
-  }
+  };
 
-  const handleDeleteClick = (carouselItem: CarouselItem) => {
-    setCarouselToDelete(carouselItem);
+  const handleDeleteClick = (item: CarouselItem) => {
+    setCarouselToDelete(item);
     setDeleteModalOpen(true);
-  }
+  };
 
-  const confirmDelete = () => {
-    if (carouselToDelete) {
-      deleteCarousel(carouselToDelete.id);
-    }
+  const confirmDelete = async () => {
+    if (carouselToDelete?.id) await deleteCarousel(carouselToDelete.id);
     setDeleteModalOpen(false);
     setCarouselToDelete(null);
-  }
+  };
 
   const handleAddNew = () => {
     setEditingCarousel(null);
     reset();
     setIsOpen(true);
-  }
+  };
 
   const handleCloseModal = () => {
     setIsOpen(false);
     setEditingCarousel(null);
     reset();
-  }
+  };
 
   if (loading) {
     return (
@@ -86,12 +125,19 @@ function AdminCarousel() {
         <div className="header-content">
           <h1>Carousel Management</h1>
         </div>
+
         <button onClick={handleAddNew} className="add-product-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path
+              d="M12 5v14m-7-7h14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
           <span>Create Slide</span>
         </button>
+
         <div className="divider"></div>
       </div>
 
@@ -110,38 +156,32 @@ function AdminCarousel() {
             {carousel.map((item) => (
               <div key={item.id} className="carousel-card">
                 <div className="carousel-image">
-                  <img src={item.imgUrl} alt={item.title1} />
+                  <img
+                    src={`${API_ORIGIN}${item.img}`} 
+                    alt={item.title1}
+                  />
                   <div className="carousel-overlay">
                     <span className="slide-badge">Slide Preview</span>
                   </div>
                 </div>
-                
+
                 <div className="carousel-content">
                   <div className="carousel-text">
                     <h3 className="carousel-title1">{item.title1}</h3>
                     <h4 className="carousel-title2">{item.title2}</h4>
-                    <p className="carousel-description">{item.descreption}</p>
+                    <p className="carousel-description">{item.description}</p>
                   </div>
-                  
+
                   <div className="carousel-actions">
-                    <button 
-                      className="action-btn edit-btn" 
-                      onClick={() => handleEdit(item)}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
-                      Edit
+                    <button className="action-btn edit-btn" onClick={() => handleEdit(item)}>
+                      ✏️ Edit
                     </button>
-                    <button 
-                      className="action-btn delete-btn" 
+                    <button
+                      className="action-btn delete-btn"
                       onClick={() => handleDeleteClick(item)}
+                      disabled={isDeleting}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2"/>
-                      </svg>
-                      Delete
+                      🗑 Delete
                     </button>
                   </div>
                 </div>
@@ -149,90 +189,101 @@ function AdminCarousel() {
             ))}
           </div>
         )}
-        <UseModal 
-          isOpen={isOpen} 
+
+        <UseModal
+          isOpen={isOpen}
           onClose={handleCloseModal}
           title={editingCarousel ? "Update Carousel Slide" : "Create New Slide"}
           size="lg"
         >
-          <div className="modal-content-custom">
-            <form onSubmit={handleSubmit(onSubmit)} className="carousel-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="title1">Main Title</label>
-                  <input 
-                    type="text" 
-                    id="title1" 
-                    placeholder="Enter main title"
-                    {...register("title1", { required: "Main title is required" })} 
-                  />
-                  {errors.title1 && <span className="error">Main title is required</span>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="title2">Subtitle</label>
-                  <input 
-                    type="text" 
-                    id="title2" 
-                    placeholder="Enter subtitle"
-                    {...register("title2", { required: "Subtitle is required" })} 
-                  />
-                  {errors.title2 && <span className="error">Subtitle is required</span>}
-                </div>
-              </div>
-              
+          <form onSubmit={handleSubmit(onSubmit)} className="carousel-form">
+            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="imgUrl">Image URL</label>
-                <input 
-                  type="text" 
-                  id="imgUrl" 
-                  placeholder="https://example.com/image.jpg"
-                  {...register("imgUrl", { required: "Image URL is required" })} 
+                <label htmlFor="title1">Main Title</label>
+                <input
+                  id="title1"
+                  placeholder="Enter main title"
+                  {...register("title1", { required: "Main title is required" })}
                 />
-                {errors.imgUrl && <span className="error">Image URL is required</span>}
+                {errors.title1 && <span className="error">{errors.title1.message}</span>}
               </div>
-              
+
               <div className="form-group">
-                <label htmlFor="descreption">Descreption</label>
-                <textarea 
-                  id="descreption" 
-                  rows={3}
-                  placeholder="Enter slide descreption"
-                  {...register("descreption", { required: "Descreption is required" })} 
+                <label htmlFor="title2">Subtitle</label>
+                <input
+                  id="title2"
+                  placeholder="Enter subtitle"
+                  {...register("title2", { required: "Subtitle is required" })}
                 />
-                {errors.descreption && <span className="error">Descreption is required</span>}
+                {errors.title2 && <span className="error">{errors.title2.message}</span>}
               </div>
-              
-              {editingCarousel && (
-                <div className="image-preview">
-                  <label>Image Preview</label>
-                  <div className="preview-container">
-                    <img src={editingCarousel.imgUrl} alt="Preview" />
-                  </div>
-                </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                rows={3}
+                placeholder="Enter slide description"
+                {...register("description", { required: "Description is required" })}
+              />
+              {errors.description && (
+                <span className="error">{errors.description.message}</span>
               )}
-              
-              <div className="form-actions">
-                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
-                  Cancel
-                </button>
-                <button type="submit" className="submit-btn">
-                  {editingCarousel ? "Update Slide" : "Create Slide"}
-                </button>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="img">Image</label>
+              <input
+                id="img"
+                type="file"
+                accept="image/*"
+                {...register("img", {
+                  validate: (files) => {
+                    if (!editingCarousel && (!files || files.length === 0))
+                      return "Image is required";
+                    return true;
+                  },
+                })}
+              />
+              {errors.img && <span className="error">{String(errors.img.message)}</span>}
+            </div>
+
+            <div className="image-preview">
+              <label>Preview</label>
+              <div className="preview-container">
+                <img
+                  src={previewUrl || (editingCarousel ? `${API_ORIGIN}${editingCarousel.img}` : "")}
+                  alt="Preview"
+                />
               </div>
-            </form>
-          </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                Cancel
+              </button>
+              <button type="submit" className="submit-btn" disabled={isAdding || isUpdating}>
+                {editingCarousel ? (isUpdating ? "Updating..." : "Update Slide") : (isAdding ? "Creating..." : "Create Slide")}
+              </button>
+            </div>
+          </form>
         </UseModal>
 
-        <UseDeleteModal 
-          isOpen={deleteModalOpen} 
-          onClose={() => setDeleteModalOpen(false)} 
+        <UseDeleteModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
           onConfirm={confirmDelete}
           title="Delete Carousel Slide"
-          message={carouselToDelete ? `Are you sure you want to delete the slide "${carouselToDelete.title1}"? This action cannot be undone.` : "Are you sure you want to delete this slide?"}
+          message={
+            carouselToDelete
+              ? `Are you sure you want to delete "${carouselToDelete.title1}"?`
+              : "Are you sure you want to delete this slide?"
+          }
         />
       </div>
     </div>
-  )
+  );
 }
 
 export default AdminCarousel;

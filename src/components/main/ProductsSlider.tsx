@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 
 function ProductsSlider() {
   const { products } = useProducts();
+  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
 
   const settings = {
     dots: false,
@@ -14,12 +15,12 @@ function ProductsSlider() {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
-    pauseOnHover: false,   // 🔥 autoplayni to‘xtatmaydi
+    pauseOnHover: false,  
     cssEase: "ease-in-out",
     swipe: true,
     draggable: true,
     fade: false,
-    waitForAnimate: false, // 🔥 autoplay ishlashi uchun
+    waitForAnimate: false, 
     adaptiveHeight: false,
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 5 } },
@@ -37,7 +38,7 @@ function ProductsSlider() {
           <div key={product.id} className="product-slide">
             <div className="product-slider-card">
               <img
-                src={product.imageUrl}
+                src={`${API_ORIGIN}${product.image}`}
                 alt={product.name}
                 className="product-slider-image"
               />

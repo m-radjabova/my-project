@@ -1,82 +1,75 @@
-import { useEffect, useState } from "react";
-import type { User } from "../types/types";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../firebase";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import apiClient from "../apiClient/apiClient";
 
-function useUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); 
+export type User = {
+  id: string;
+  name?: string;
+  email?: string;
+  roles?: string[];
+};
 
-  const q = query(collection(db, "users"), orderBy("createdAt", "asc"));
+async function fetchUsers(): Promise<User[]> {
+  const { data } = await apiClient.get("/users/");
+  return data;
+}
 
-  useEffect(() => {
-    getUsers();
-  }, []);
+async function patchUserRoles(userId: string, roles: string[]) {
+  await apiClient.patch(`/users/${userId}/roles`, roles);
+}
 
-  const getUsers = async () => {
-    setLoading(true);
-    try {
-      const snapshot = await getDocs(q);
-      const users: User[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as User[];
-      setUsers(users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
- 
-  const updateUserRole = async (userId: string, newRoles: string[]) => {
-    try {
-      const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, { roles: newRoles });
+async function removeUser(userId: string) {
+  await apiClient.delete(`/users/${userId}`);
+}
+
+export default function useUsers() {
+  const qc = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const usersQuery = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ userId, roles }: { userId: string; roles: string[] }) =>
+      patchUserRoles(userId, roles),
+    onSuccess: async () => {
       toast.success("User roles updated!");
-      await getUsers();
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      toast.error("Failed to update roles");
-    }
-  };
+      await qc.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: () => toast.error("Failed to update roles"),
+  });
 
-  const deleteUser = async (userId: string) => {
-    try {
-      await deleteDoc(doc(db, "users", userId));
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => removeUser(userId),
+    onSuccess: async () => {
       toast.success("User deleted!");
-      setUsers((prev) => prev.filter((u) => u.id !== userId)); 
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Failed to delete user");
-    }
-  };
+      await qc.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: () => toast.error("Failed to delete user"),
+  });
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = useMemo(() => {
+    const list = usersQuery.data ?? [];
+    const t = searchTerm.trim().toLowerCase();
+    if (!t) return list;
+    return list.filter(
+      (u) =>
+        u.name?.toLowerCase().includes(t) ||
+        u.email?.toLowerCase().includes(t)
+    );
+  }, [usersQuery.data, searchTerm]);
 
   return {
     users: filteredUsers,
-    loading,
-    updateUserRole,
-    deleteUser,
+    loading: usersQuery.isLoading,
+    updateUserRole: (userId: string, newRoles: string[]) =>
+      updateRoleMutation.mutateAsync({ userId, roles: newRoles }),
+    deleteUser: (userId: string) => deleteMutation.mutateAsync(userId),
     searchTerm,
     setSearchTerm,
   };
 }
-
-export default useUsers;
