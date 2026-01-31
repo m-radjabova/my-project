@@ -16,7 +16,10 @@ import useContextPro from "../../hooks/useContextPro";
 import { SiWine } from "react-icons/si";
 import UseModal from "../../hooks/UseModal";
 import RouteMap from "./RouteMap";
-import { useOrders } from "../../hooks/useOrders";
+import { useOrders, type Order} from "../../hooks/useOrders";
+import { API_ORIGIN } from "../../utils";
+import type { OrderProduct } from "../../types/types";
+
 
 function WaiterPage() {
   const {
@@ -26,8 +29,7 @@ function WaiterPage() {
 
   const { orders, loading, updateStatus } = useOrders();
 
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
+  
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "completed" | "delivered">(
     "all"
   );
@@ -41,10 +43,10 @@ function WaiterPage() {
     const byStatus =
       filterStatus === "all"
         ? orders
-        : orders.filter((o: any) => String(o.status).toLowerCase() === filterStatus);
+        : orders.filter((o) => String(o.status).toLowerCase() === filterStatus);
 
     return byStatus.filter(
-      (o: any) =>
+      (o) =>
         o?.location &&
         typeof o.location.lat === "number" &&
         typeof o.location.lng === "number"
@@ -152,9 +154,9 @@ function WaiterPage() {
             </div>
           ) : (
             <div className="orders-grid">
-              {filteredOrders.map((order: any) => {
+              {filteredOrders.map((order: Order) => {
                 const orderIdNum = Number(order.id); 
-                const items = (order.items ?? order.products ?? []) as any[];
+                const items: OrderProduct[] = order.items ?? order.products ?? [];
 
                 return (
                   <div className="order-card" key={order.id}>
@@ -170,7 +172,7 @@ function WaiterPage() {
                           </span>
                         </div>
                       </div>
-                      <div className={getStatusBadgeClass(order.status)}>{order.status}</div>
+                      <div className={getStatusBadgeClass(String(order.status))}>{order.status}</div>
                     </div>
 
                     <div className="order-status-details p-2">
@@ -204,10 +206,10 @@ function WaiterPage() {
                         </div>
                       )}
 
-                      {order.location && (
+                      {order.location && typeof order.location.lat === "number" && typeof order.location.lng === "number" && (
                         <div
                           className="status-detail-item clickable order-ohone"
-                          onClick={() => handleShowRoute(order.location)}
+                          onClick={() => handleShowRoute(order.location as { lat: number; lng: number })}
                         >
                           <FaMapMarkerAlt className="detail-icon" />
                           <span>
@@ -236,7 +238,7 @@ function WaiterPage() {
 
                       <div className="chef-product-cards">
                         {Array.isArray(items) &&
-                          items.map((product: any, index: number) => (
+                          items.map((product: OrderProduct, index: number) => (
                             <div className="chef-product-card" key={product.id ?? index}>
                               <div className="chef-product-image-container">
                                 <img

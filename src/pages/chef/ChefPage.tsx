@@ -10,8 +10,10 @@ import {
 import { GiKnifeFork } from "react-icons/gi";
 import { useMemo, useState } from "react";
 import useContextPro from "../../hooks/useContextPro";
-import { useOrders } from "../../hooks/useOrders";
-import type { Order } from "../../types/types";
+import { useOrders, type Order } from "../../hooks/useOrders";
+import { API_ORIGIN } from "../../utils";
+import type { OrderProduct } from "../../types/types";
+
 
 function ChefPage() {
   const {
@@ -23,11 +25,9 @@ function ChefPage() {
 
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "completed">("all");
   const [submittingId, setSubmittingId] = useState<number | null>(null);
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
   const filteredOrders = useMemo(() => {
     if (filterStatus === "all") return orders;
-    return orders.filter((o: Order) => String(o.status).toLowerCase() === filterStatus);
+    return orders.filter((o) => String(o.status).toLowerCase() === filterStatus);
   }, [orders, filterStatus]);
 
   const getStatusBadgeClass = (status: string) => {
@@ -125,8 +125,8 @@ function ChefPage() {
             </div>
           ) : (
             <div className="orders-grid">
-              {filteredOrders.map((order: any) => {
-                const items = (order.items ?? order.products ?? []) as any[];
+              {filteredOrders.map((order: Order) => {
+                const items: OrderProduct[] = order.items ?? order.products ?? [];
 
                 const orderIdNum = Number(order.id);
 
@@ -145,7 +145,7 @@ function ChefPage() {
                         </div>
                       </div>
 
-                      <div className={getStatusBadgeClass(order.status)}>{order.status}</div>
+                      <div className={getStatusBadgeClass(String(order.status))}>{order.status}</div>
                     </div>
 
                     <div className="order-details">
@@ -201,7 +201,7 @@ function ChefPage() {
 
                       <div className="chef-product-cards">
                         {Array.isArray(items) &&
-                          items.map((it: any, index: number) => (
+                          items.map((it: OrderProduct, index: number) => (
                             <div className="chef-product-card" key={it.id ?? index}>
                               <div className="chef-product-image-container">
                                 <img

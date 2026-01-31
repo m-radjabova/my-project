@@ -1,4 +1,4 @@
-import {
+﻿import {
   FaArrowRight,
   FaEnvelope,
   FaEye,
@@ -12,6 +12,7 @@ import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import apiClient from "../../apiClient/apiClient";
 
 type RegisterFormInputs = {
@@ -63,12 +64,13 @@ function Register() {
       toast.success("🎉 Registration successful!");
       reset();
       navigate("/login");
-    } catch (error: any) {
-      const status = error?.response?.status;
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        "Registration failed. Please try again.";
+    } catch (error: unknown) {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Registration failed. Please try again."
+        : "Registration failed. Please try again.";
 
       if (status === 409) {
         toast.error("📧 Email is already registered.");

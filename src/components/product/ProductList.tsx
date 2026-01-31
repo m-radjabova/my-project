@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import type { Product } from "../../types/types";
 import useContextPro from "../../hooks/useContextPro";
 import { useNavigate } from "react-router-dom";
+import { API_ORIGIN } from "../../utils";
 
 type Props = {
   products: Product[];
@@ -16,8 +19,7 @@ function ProductList({ products, loading }: Props) {
 
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const navigate = useNavigate();
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
+  
   function handleCartToggle(product: Product) {
     const isInCart = cart.some((p: Product) => p.id === product.id);
     dispatch({
@@ -51,7 +53,15 @@ function ProductList({ products, loading }: Props) {
             }}
           >
             <div className="product-image-container">
-              <img src={`${API_ORIGIN}${product.image}`} alt={product.name} />
+              <LazyLoadImage
+                src={`${API_ORIGIN}${product.image}`}
+                alt={product.name}
+                effect="blur"
+                loading="lazy"
+                wrapperClassName="product-img-wrap"
+              />
+
+              {/* <img src={`${API_ORIGIN}${product.image}`} alt={product.name} /> */}
 
               {isHovered && (
                 <div className="product-overlay active">
@@ -78,7 +88,9 @@ function ProductList({ products, loading }: Props) {
                   <span className="current-price">${product.price}</span>
                   <span className="old-price">${product.price * 2}</span>
                 </div>
-                <span className="product-weight">{product.weight || "500g"}</span>
+                <span className="product-weight">
+                  {product.weight || "500g"}
+                </span>
               </div>
             </div>
           </div>

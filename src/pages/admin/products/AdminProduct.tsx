@@ -5,6 +5,7 @@ import UseModal from "../../../hooks/UseModal";
 import UseDeleteModal from "../../../hooks/UseDeleteModal";
 import useProducts from "../../../hooks/useProducts";
 import type { Product } from "../../../types/types";
+import { API_ORIGIN } from "../../../utils";
 
 type FormShape = {
   name: string;
@@ -20,7 +21,6 @@ function AdminProduct() {
     useProducts();
   const { categories } = useCategories();
 
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
   const {
     register,
     handleSubmit,

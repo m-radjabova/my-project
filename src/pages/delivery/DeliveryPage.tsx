@@ -100,7 +100,6 @@ function DeliveryPage() {
     try {
       setIsSaving(true);
 
-      // deliveryDate backend schema’da yo‘q — notes ichiga qo‘shib yuboryapmiz
       const notesMerged = [
         data.notes?.trim(),
         data.deliveryDate ? `Delivery date: ${data.deliveryDate}` : "",

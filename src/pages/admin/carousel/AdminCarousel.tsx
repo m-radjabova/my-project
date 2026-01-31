@@ -4,6 +4,7 @@ import UseModal from "../../../hooks/UseModal";
 import UseDeleteModal from "../../../hooks/UseDeleteModal";
 import type { CarouselItem } from "../../../types/types";
 import useCarousel from "../../../hooks/useCarousel";
+import { API_ORIGIN } from "../../../utils";
 
 type FormShape = {
   title1: string;
@@ -37,7 +38,7 @@ function AdminCarousel() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingCarousel, setEditingCarousel] = useState<CarouselItem | null>(null);
   const [carouselToDelete, setCarouselToDelete] = useState<CarouselItem | null>(null);
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
+  
   const watchedFiles = watch("img");
   const previewUrl = useMemo(() => {
     const file = watchedFiles?.[0];

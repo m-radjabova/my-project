@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../apiClient/apiClient";
+import type { OrderProduct } from "../types/types";
 
 type OrderItemPayload = {
   product_id: string;
@@ -9,16 +10,6 @@ type OrderItemPayload = {
 export type OrderLocation = {
   lat: number;
   lng: number;
-};
-
-export type OrderItem = {
-  id?: number | string;
-  image?: string;
-  name?: string;
-  description?: string;
-  price?: number;
-  quantity?: number;
-  weight?: string | number;
 };
 
 type CreateOrderPayload = {
@@ -43,8 +34,8 @@ export type Order = {
   notes?: string;
   location?: OrderLocation | null;
   phone?: string;
-  items?: OrderItem[];
-  products?: OrderItem[];
+  items?: OrderProduct[];
+  products?: OrderProduct[];
 };
 
 export function useOrders() {

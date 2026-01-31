@@ -1,24 +1,32 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import type { Product, Reviews } from "../types/types";
 import apiClient from "../apiClient/apiClient";
+import { toast } from "react-toastify";
 
-export type ReviewWithUser = Reviews & {
-  user?: {
-    id: string;
-    name?: string;
-    email?: string;
-  } | null;
+type ReviewUser = {
+  id?: string | number;
+  name?: string;
+  email?: string;
 };
 
+export type ReviewWithUser = Reviews & {
+  user?: ReviewUser | null;
+};
+
+type ReviewApi = Omit<Reviews, "userId"> & {
+  userId?: string;
+  user_id?: string | number;
+};
 
 type ProductPayload = {
   name: string;
-  price: number;        // swagger: integer
-  category_id: number;  // swagger: integer
+  price: number;        
+  category_id: number;  
   description?: string;
   weight?: string;
-  image?: File;         // swagger: binary
+  image?: File;        
 };
 
 function buildProductFormData(p: ProductPayload) {
@@ -60,7 +68,7 @@ function useProducts() {
     isLoading: loadingReviews,
     isError: isReviewsError,
     error: reviewsError,
-  } = useQuery<Reviews[]>({
+  } = useQuery<ReviewApi[]>({
     queryKey: ["productReviews", activeProductId],
     enabled: !!activeProductId,
     queryFn: async () => (await apiClient.get(`/products/${activeProductId}/reviews`)).data,
@@ -68,12 +76,13 @@ function useProducts() {
 
   const userIds = useMemo(() => {
     const ids = reviewsRaw
-      .map((r: any) => r.user_id ?? r.userId)
-      .filter(Boolean);
+      .map((r) => r.user_id ?? r.userId)
+      .filter((id): id is string | number => id != null)
+      .map((id) => String(id));
     return Array.from(new Set(ids));
   }, [reviewsRaw]);
 
-  const { data: usersMap = {}, isLoading: loadingUsers } = useQuery<Record<string, any>>({
+  const { data: usersMap = {}, isLoading: loadingUsers } = useQuery<Record<string, ReviewUser>>({
     queryKey: ["reviewUsers", userIds],
     enabled: userIds.length > 0,
     queryFn: async () => {
@@ -88,16 +97,24 @@ function useProducts() {
   });
 
   const reviews: ReviewWithUser[] = useMemo(() => {
-    return reviewsRaw.map((r: any) => {
-      const uid = r.user_id ?? r.userId;
-      return { ...r, user: uid ? usersMap[uid] ?? null : null };
+    return reviewsRaw.map((r) => {
+      const uid = r.userId ?? (r.user_id != null ? String(r.user_id) : undefined);
+      return { ...r, userId: uid ?? "", user: uid ? usersMap[uid] ?? null : null };
     });
   }, [reviewsRaw, usersMap]);
 
   const addReviewMutation = useMutation({
     mutationFn: async ({ productId, payload }: { productId: string; payload: AddReviewPayload }) => {
-      const { data } = await apiClient.post<Reviews>(`/products/${productId}/reviews`, payload);
-      return data;
+      try{
+        const { data } = await apiClient.post<Reviews>(`/products/${productId}/reviews`, payload);
+        return data;
+      } catch (err: unknown) {
+        const message = isAxiosError(err)
+          ? err.response?.data?.message ?? "Failed to submit review"
+          : "Failed to submit review";
+        toast.error(message);
+      }
+
     },
     onSuccess: (_created, variables) => {
       queryClient.invalidateQueries({ queryKey: ["productReviews", variables.productId] });

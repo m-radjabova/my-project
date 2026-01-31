@@ -2,11 +2,13 @@ import Slider from "react-slick";
 import useProducts from "../../hooks/useProducts";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
+import { API_ORIGIN } from "../../utils";
 
 function ProductsSlider() {
   const { products } = useProducts();
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
+  
   const settings = {
     dots: false,
     infinite: true,
@@ -37,7 +39,9 @@ function ProductsSlider() {
         {products.map((product) => (
           <div key={product.id} className="product-slide">
             <div className="product-slider-card">
-              <img
+              <LazyLoadImage
+                effect="blur"
+                loading="lazy"
                 src={`${API_ORIGIN}${product.image}`}
                 alt={product.name}
                 className="product-slider-image"

@@ -45,7 +45,7 @@ export interface OrderProduct {
   quantity: number;
   totalPrice: number;
   name: string;
-  imageUrl: string;
+  image: string;
   weight: string;
   rating: number;
   description: string;

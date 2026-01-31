@@ -1,4 +1,4 @@
-import {
+﻿import {
   FaEnvelope,
   FaLock,
   FaArrowRight,
@@ -10,6 +10,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { type FieldValues, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import apiClient from "../../apiClient/apiClient";
 import type { User } from "../../types/types";
 import useContextPro from "../../hooks/useContextPro";
@@ -53,12 +54,13 @@ const LoginForm = () => {
 
       toast.success("Welcome back!");
       navigate("/", { replace: true });
-    } catch (error : any) {
-      const status = error?.response?.status;
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring.";
+    } catch (error: unknown) {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring."
+        : "Kirishda xatolik yuz berdi. Qayta urinib ko‘ring.";
 
       if (status === 401) {
         toast.error("Email yoki parol noto‘g‘ri.");

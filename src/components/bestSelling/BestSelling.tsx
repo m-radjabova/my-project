@@ -3,12 +3,14 @@ import useProducts from "../../hooks/useProducts";
 import { Rating } from "@mui/material";
 import useContextPro from "../../hooks/useContextPro";
 import type { Product } from "../../types/types";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
+import { API_ORIGIN } from "../../utils";
 
 function BestSelling() {
     const { products, selectedCategory, setSelectedCategory} = useProducts();
     const { state: {cart}, dispatch } = useContextPro();
-    const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
+    
     function handleCartToggle(product: Product) {
         const isInCart = cart.some((p : Product) => p.id === product.id);
 
@@ -31,7 +33,7 @@ function BestSelling() {
                     {products.map((product) => (
                         <div key={product.id} className="best-selling-product-card">
                             <div className="best-selling-product-image">
-                                <img src={`${API_ORIGIN}${product.image}`} alt={product.name} />
+                                <LazyLoadImage src={`${API_ORIGIN}${product.image}`} alt={product.name} effect="blur" />
                             </div>
                             <div className="best-selling-product-info">
                                 <h6>{product.name}</h6>

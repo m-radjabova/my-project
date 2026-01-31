@@ -7,10 +7,10 @@ import type { Product } from "../../types/types";
 import ReviewForm from "../ReviewForm";
 import BestSelling from "../bestSelling/BestSelling";
 import { useEffect } from "react";
+import { API_ORIGIN, formatDateTime } from "../../utils";
 
 function ProductDisplay() {
   const { id } = useParams();
-    const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
 
   const {
     products,
@@ -30,7 +30,6 @@ function ProductDisplay() {
     if (id) setActiveProductId(id);
   }, [id, setActiveProductId]);
 
-  // ✅ productni topamiz
   const product = products.find((p) => p.id === id);
 
   const category = categories.find((c) => c.id === product?.category_id);
@@ -55,19 +54,7 @@ function ProductDisplay() {
     }
   }
 
-  const formatDateTime = (iso?: string) => {
-    if (!iso) return "";
-    const d = new Date(iso);
 
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-
-    const hh = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-
-    return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
-    };
 
 
   return (

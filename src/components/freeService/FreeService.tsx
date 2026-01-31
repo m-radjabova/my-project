@@ -3,6 +3,7 @@ import freeDelivery from "../../assets/Free Delivery.svg";
 import group from "../../assets/Group 9.svg";
 import { useNavigate } from "react-router-dom";
 import { FaArrowAltCircleRight } from "react-icons/fa";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 function FreeService() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ function FreeService() {
       <div className="free-service-container">
         <div className="left-side">
           <div className="free-image-container">
-            <img className="bg" src={bgfree} alt="Special offer background" />
+            <img loading="lazy" className="bg" src={bgfree} alt="Special offer background" />
             <img 
               className="free-delivery" 
               src={freeDelivery} 

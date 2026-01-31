@@ -10,15 +10,16 @@ import {
 import { useState, useMemo } from "react";
 import { GiKnifeFork } from "react-icons/gi";
 import { useOrders } from "../../hooks/useOrders";
-import type { Order } from "../../types/types";
+import type { Order } from "../../hooks/useOrders";
+import { API_ORIGIN } from "../../utils";
+import type { OrderProduct } from "../../types/types";
 
 function CartStatus() {
   const { myOrders: orders, isLoadingMyOrders: loading } = useOrders();
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "completed" | "delivered">(
     "all"
   );
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
-
+  
   const filteredOrders = useMemo(() => {
     if (filterStatus === "all") return orders;
     return orders.filter((o: Order) => String(o.status).toLowerCase() === filterStatus);
@@ -91,8 +92,8 @@ function CartStatus() {
                   </div>
                 ) : (
                   <div className="orders-status-grid">
-                    {filteredOrders.map((order : any) => {
-                      const items = (order.items ?? order.products ?? []) as any[];
+                    {filteredOrders.map((order: Order) => {
+                      const items: OrderProduct[] = order.items ?? order.products ?? [];
 
                       return (
                         <div className="order-status-card" key={order.id}>
@@ -109,7 +110,7 @@ function CartStatus() {
                                 </span>
                               </div>
                             </div>
-                            <div className={getStatusBadgeClass(order.status)}>
+                            <div className={getStatusBadgeClass(String(order.status))}>
                               {String(order.status)}
                             </div>
                           </div>
@@ -170,7 +171,7 @@ function CartStatus() {
 
                             <div className="status-product-cards">
                               {Array.isArray(items) &&
-                                items.map((it: any, index: number) => (
+                                items.map((it: OrderProduct, index: number) => (
                                   <div className="status-product-card" key={it.id ?? index}>
                                     <div className="status-product-image-container">
                                       <img

@@ -11,11 +11,13 @@ import "slick-carousel/slick/slick-theme.css";
 import useCarousel from "../../hooks/useCarousel";
 import type { CarouselItem } from "../../types/types";
 import ProductsSlider from "./ProductsSlider";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
+import { API_ORIGIN } from "../../utils";
 
 function Hero() {
   const { carousel, loading } = useCarousel();
   
-  const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
   if (loading) { return <div className="products-loading">
                             <div className="loading-spinner">   
                             </div>
@@ -81,7 +83,13 @@ function Hero() {
             
             <div className="right-side">
               <div className="hero-image-container">
-                <img src={`${API_ORIGIN}${item.img}`} alt="Delicious breakfast items" className="hero-main-image" />
+                <LazyLoadImage
+                  src={`${API_ORIGIN}${item.img}`}
+                  alt="Delicious breakfast items"
+                  effect="blur"
+                  loading="lazy"
+                />
+                {/* <img src={`${API_ORIGIN}${item.img}`} alt="Delicious breakfast items" className="hero-main-image" /> */}
                 <div className="floating-element floating-element-1"></div>
                 <div className="floating-element floating-element-2"></div>
                 <div className="floating-element floating-element-3"></div>

@@ -1,11 +1,13 @@
-import { FaShoppingCart, FaTrash, FaArrowLeft,  FaTag, FaTruck, FaCreditCard } from 'react-icons/fa';
+﻿import { FaShoppingCart, FaTrash, FaArrowLeft,  FaTag, FaTruck, FaCreditCard } from 'react-icons/fa';
 import { IoBagCheckOutline } from 'react-icons/io5';
 import useContextPro from '../../hooks/useContextPro';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types/types';
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { useOrders } from '../../hooks/useOrders';
+import { API_ORIGIN } from '../../utils';
 
 function CartPage() {
     const { state: { cart }, dispatch } = useContextPro();
@@ -14,7 +16,6 @@ function CartPage() {
         const n = Number(value);
         return Number.isFinite(n) ? n : 0;
     };
-    const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
     const { createOrder } = useOrders();
     const formatMoney = (value: unknown) => toNumber(value).toFixed(2);
 
@@ -29,7 +30,7 @@ function CartPage() {
     }
 
   const totalPrice = cart.reduce(
-    (total, item) => total + toNumber(item.price) * toNumber(item.quantity ?? 1),
+    (total: number, item : Product) => total + toNumber(item.price) * toNumber(item.quantity ?? 1),
     0
   );
 
@@ -39,8 +40,8 @@ function CartPage() {
     try {
       const payload = {
         payment_method: "cash",
-        shipping_address: "",  // delivery page’dan olasiz
-        phone: "",             // delivery page’dan olasiz
+        shipping_address: "", 
+        phone: "",           
         notes: "",
         location: null,
         items: cart.map((item: Product) => ({
@@ -54,9 +55,11 @@ function CartPage() {
       toast.success("Order created!");
       dispatch({ type: "CLEAR_CART" });
       navigate("/cart/order-status");
-    } catch (e: any) {
-      // agar token yo‘q bo‘lsa backend 401 qaytaradi
-      toast.error(e?.response?.data?.detail || "Failed to place order");
+    } catch (e: unknown) {
+      const message = isAxiosError(e)
+        ? e.response?.data?.detail || "Failed to place order"
+        : "Failed to place order";
+      toast.error(message);
       console.error(e);
     }
   };
@@ -95,7 +98,7 @@ function CartPage() {
                 ) : (
                     <div className="cart-content">
                         <div className="cart-items">
-                            {cart.map((item) => (
+                            {cart.map((item : Product) => (
                                 <div key={item.id} className="cart-item">
                                     <div className="item-image">
                                         <img src={`${API_ORIGIN}${item.image}`} alt={item.name} />
@@ -105,8 +108,8 @@ function CartPage() {
                                         <p className="item-description">{item.description}</p>
                                         <div className="price-container">
                                             <span className="current-price">${formatMoney(toNumber(item.price) * toNumber(item.quantity ?? 1))}</span>
-                                            {toNumber(item.oldPrice) > toNumber(item.price) && (
-                                                <span className="old-price">${formatMoney(toNumber(item.oldPrice) * toNumber(item.quantity ?? 1))}</span>
+                                            {toNumber(item.price * 2) > toNumber(item.price) && (
+                                                <span className="old-price">${formatMoney(toNumber(item.price * 2) * toNumber(item.quantity ?? 1))}</span>
                                             )}
                                         </div>
                                         <div className="quantity-score">

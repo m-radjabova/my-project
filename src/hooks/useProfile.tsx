@@ -1,14 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { toast } from "react-toastify";
 import apiClient from "../apiClient/apiClient";
-import useContextPro from "./useContextPro"; // sizdagi hook
+import useContextPro from "./useContextPro";
 
 type UpdateProfilePayload = { name?: string; email?: string };
 type ChangePasswordPayload = { old_password: string; new_password: string };
 
 async function updateUser(userId: string, payload: UpdateProfilePayload) {
   const { data } = await apiClient.put(`/users/${userId}`, payload);
-  return data; // backend updated user qaytarsa yaxshi
+  return data; 
 }
 
 async function updatePassword(userId: string, payload: ChangePasswordPayload) {
@@ -18,25 +19,22 @@ async function updatePassword(userId: string, payload: ChangePasswordPayload) {
 
 export function useProfile() {
   const qc = useQueryClient();
-  const { dispatch } = useContextPro(); // ✅ context dispatch
+  const { dispatch } = useContextPro(); 
 
   const updateProfileMutation = useMutation({
     mutationFn: ({ userId, payload }: { userId: string; payload: UpdateProfilePayload }) =>
       updateUser(userId, payload),
 
     onSuccess: async (data, vars) => {
-      // ✅ UI darrov o'zgarsin: dispatch bilan state.user ni update qilamiz
       dispatch({ type: "UPDATE_USER", payload: vars.payload });
 
-      // agar backend updated user qaytarsa, shuni ham ishlatsangiz bo'ladi:
-      // dispatch({ type: "SET_USER", payload: data });
-
       toast.success("Profile updated successfully!");
-      await qc.invalidateQueries({ queryKey: ["me"] }); // agar siz 'me' query qo'ysangiz
+      await qc.invalidateQueries({ queryKey: ["me"] }); 
     },
 
-    onError: (err: any) => {
-      console.log("Update profile error:", err?.response?.data);
+    onError: (err: unknown) => {
+      const responseData = isAxiosError(err) ? err.response?.data : undefined;
+      console.log("Update profile error:", responseData);
       toast.error("Failed to update profile");
     },
   });
@@ -47,8 +45,9 @@ export function useProfile() {
 
     onSuccess: () => toast.success("🔐 Parol muvaffaqiyatli o‘zgartirildi!"),
 
-    onError: (err: any) => {
-      console.log("Update password error:", err?.response?.data);
+    onError: (err: unknown) => {
+      const responseData = isAxiosError(err) ? err.response?.data : undefined;
+      console.log("Update password error:", responseData);
       toast.error("Failed to update password");
     },
   });

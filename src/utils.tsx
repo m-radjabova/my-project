@@ -1,16 +1,32 @@
 import type { StylesConfig } from "react-select";
 
-export function getDateFromTimeStamp(timestamp: number): string {
-  const date = new Date(timestamp * 1000);
+export const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
 
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); 
-  const year = date.getFullYear();
+// export function getDateFromTimeStamp(timestamp: number): string {
+//   const date = new Date(timestamp * 1000);
 
-  return `${hours}:${minutes} ${day}.${month}.${year}`;
-}
+//   const hours = date.getHours().toString().padStart(2, "0");
+//   const minutes = date.getMinutes().toString().padStart(2, "0");
+//   const day = date.getDate().toString().padStart(2, "0");
+//   const month = (date.getMonth() + 1).toString().padStart(2, "0"); 
+//   const year = date.getFullYear();
+
+//   return `${hours}:${minutes} ${day}.${month}.${year}`;
+// }
+
+export const formatDateTime = (iso?: string) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+
+    const hh = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+
+    return `${dd}.${mm}.${yyyy} ${hh}:${min}`;
+    };
 
 
 type RoleOption = {
