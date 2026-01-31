@@ -34,8 +34,8 @@ function Hero() {
     pauseOnHover: true,
     arrows: true, 
     fade: true, 
-    adaptiveHeight: true,
-    centerMode: true,
+    adaptiveHeight: false,
+    centerMode: false, 
     centerPadding: "40px",
     responsive: [
       {
@@ -84,11 +84,14 @@ function Hero() {
             <div className="right-side">
               <div className="hero-image-container">
                 <LazyLoadImage
-                  src={`${API_ORIGIN}${item.img}`}
-                  alt="Delicious breakfast items"
-                  effect="blur"
-                  loading="lazy"
-                />
+  src={`${API_ORIGIN}${item.img}`}
+  alt={item.title2}
+  effect="blur"
+  loading="lazy"
+  className="hero-main-image"
+  wrapperClassName="hero-image-wrapper"
+/>
+
                 {/* <img src={`${API_ORIGIN}${item.img}`} alt="Delicious breakfast items" className="hero-main-image" /> */}
                 <div className="floating-element floating-element-1"></div>
                 <div className="floating-element floating-element-2"></div>
