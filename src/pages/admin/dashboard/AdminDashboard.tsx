@@ -10,57 +10,47 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useMemo } from "react";
-import useOrderProducts from "../../../hooks/useOrderProducts";
-import { useOrders } from "../../../hooks/useOrders";
-import type { GroupedOrderProduct, Order } from "../../../types/types";
+import useDashboart from "../../../hooks/useDashboart";
+import { IoFastFood } from "react-icons/io5";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 function AdminDashboard() {
-  const { groupedProducts, loading } = useOrderProducts();
-  const { orders, loading: ordersLoading } = useOrders();
-
-  const toNum = (v: unknown): number => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  };
-
-  const getRevenue = (p: GroupedOrderProduct): number => {
-    const tp = toNum(p.total_price);
-    if (tp > 0) return tp;
-    return toNum(p.price) * toNum(p.quantity);
-  };
-
-  const totalRevenue = useMemo(() => {
-    return groupedProducts.reduce((acc, p) => acc + getRevenue(p), 0);
-  }, [groupedProducts]);
-
-  const totalProducts = useMemo(() => {
-    return groupedProducts.reduce((acc, p) => acc + toNum(p.quantity), 0);
-  }, [groupedProducts]);
-
-  const activeOrders = useMemo(() => {
-    const list = (orders ?? []) as Order[];
-    return list.filter((o) => {
-      const s = String(o.status).toLowerCase();
-      return s === "pending" || s === "completed";
-    }).length;
-  }, [orders]);
+  const {
+    range,
+    setRange,
+    list,
+    chartLabels,
+    chartValues,
+    totalRevenue,
+    totalProducts,
+    activeOrders,
+    loading,
+    fetching,
+    error,
+  } = useDashboart();
 
   const chartData = useMemo(() => {
     return {
-      labels: groupedProducts.map((p) => String(p.name ?? "")),
+      labels: chartLabels,
       datasets: [
         {
           label: "Revenue ($)",
-          data: groupedProducts.map((p) => getRevenue(p)),
+          data: chartValues,
           backgroundColor: "rgba(220, 53, 69, 0.7)",
           borderColor: "rgba(220, 53, 69, 1)",
           borderWidth: 1,
         },
       ],
     };
-  }, [groupedProducts]);
+  }, [chartLabels, chartValues]);
 
   const chartOptions: ChartOptions<"bar"> = {
     responsive: true,
@@ -69,14 +59,14 @@ function AdminDashboard() {
       title: { display: true, text: "Revenue by Product" },
       tooltip: {
         callbacks: {
-          label: (ctx) => `$${toNum(ctx.raw).toFixed(2)}`,
+          label: (ctx) => `$${Number(ctx.raw ?? 0).toFixed(2)}`,
         },
       },
     },
     scales: { y: { beginAtZero: true } },
   };
 
-  if (loading || ordersLoading) {
+  if (loading) {
     return (
       <div className="admin-loading">
         <div className="dash-loading-spinner"></div>
@@ -85,29 +75,67 @@ function AdminDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="admin-loading">
+        <p style={{ color: "crimson" }}>
+          Dashboard error: {(error as Error)?.message ?? "Unknown error"}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="admin-dashboard">
-      <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
+    <div className="chef-page">
+      <div className="chef-page-header">
+        <div className="chef-page-title">
+          <div className="title-container">
+            <IoFastFood className="chef-icon" />
+            <div>
+              <h1>Admin Dashboard</h1>
+              <p>Overview of key metrics and performance</p>
+            </div>
+          </div>
+          <div className="admin-product-filters">
+            <button
+              className={`cat-pill ${range === "week" ? "active" : ""}`}
+              onClick={() => setRange("week")}
+            >
+              Week
+            </button>
+            <button
+              className={`cat-pill ${range === "month" ? "active" : ""}`}
+              onClick={() => setRange("month")}
+            >
+              Month
+            </button>
+            <button
+              className={`cat-pill ${range === "year" ? "active" : ""}`}
+              onClick={() => setRange("year")}
+            >
+              Year
+            </button>
+            {fetching && (
+              <span className="dashboard-updating">Updating...</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Revenue</h3>
-          <div className="stat-value">{totalRevenue.toFixed(2)} $</div>
-          <div className="stat-trend positive">+12% from last month</div>
+          <div className="stat-value">{Number(totalRevenue).toFixed(2)} $</div>
         </div>
 
         <div className="stat-card">
           <h3>Total Products</h3>
           <div className="stat-value">{totalProducts}</div>
-          <div className="stat-trend positive">+5% from last month</div>
         </div>
 
         <div className="stat-card">
           <h3>Active Orders</h3>
           <div className="stat-value">{activeOrders}</div>
-          <div className="stat-trend negative">-2% from last month</div>
         </div>
       </div>
 
@@ -122,29 +150,31 @@ function AdminDashboard() {
         <div className="dash-products-list">
           <div className="dash-list-header">
             <h2>Products List</h2>
-            <span className="dash-product-count">{groupedProducts.length} products</span>
+            <span className="dash-product-count">{list.length} products</span>
           </div>
 
           <div className="dash-products-scroll">
-            {groupedProducts.map((p, index) => {
-              const revenue = getRevenue(p); 
-              return (
-                <div key={p.product_id ?? p.id ?? p.name ?? index} className="dash-product-item">
-                  <div className="dash-product-info">
-                    <span className="dash-product-name">{p.name ?? "Unnamed product"}</span>
-                    <span className="dash-product-quantity">{toNum(p.quantity)} units</span>
-                  </div>
-
-                  {/* ✅ oldin price chiqardi, endi revenue chiqadi */}
-                  <div className="dash-product-price">{revenue.toFixed(2)} $</div>
+            {list.map((p, index) => (
+              <div key={p.product_id ?? index} className="dash-product-item">
+                <div className="dash-product-info">
+                  <span className="dash-product-name">
+                    {p.name ?? "Unnamed product"}
+                  </span>
+                  <span className="dash-product-quantity">
+                    {Number(p.units ?? 0)} units
+                  </span>
                 </div>
-              );
-            })}
+
+                <div className="dash-product-price">
+                  {Number(p.revenue ?? 0).toFixed(2)} $
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="dash-list-footer">
             <div className="dash-total-price">
-              Total: <strong>{totalRevenue.toFixed(2)} $</strong>
+              Total: <strong>{Number(totalRevenue).toFixed(2)} $</strong>
             </div>
           </div>
         </div>

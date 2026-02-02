@@ -116,10 +116,10 @@
   height: auto;
   border-radius: 30px;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-  animation: float 6s ease-in-out infinite;
+  animation: float_mobile 6s ease-in-out infinite;
 }
 
-@keyframes float {
+@keyframes float_mobile {
   0%, 100% {
     transform: translateY(0);
   }

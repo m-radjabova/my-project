@@ -5,6 +5,7 @@
   FaUtensils,
   FaEyeSlash,
   FaEye,
+  FaUserCheck,
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { type FieldValues, useForm } from "react-hook-form";
@@ -52,7 +53,29 @@ const LoginForm = () => {
         localStorage.removeItem("role");
       }
 
-      toast.success("Welcome back!");
+      const CustomToast = () => (
+    <div className="elegant-toast">
+      <div className="elegant-icon">
+        <FaUserCheck />
+      </div>
+      <div className="elegant-content">
+        <h5 className="elegant-title">Welcome Back! ✨</h5>
+        <p className="elegant-message">You have successfully logged in to your account</p>
+      </div>
+    </div>
+  );
+
+  toast(CustomToast, {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "light",
+    className: 'custom-toast-container',
+    progressClassName: 'custom-progress'
+  });
       navigate("/", { replace: true });
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;

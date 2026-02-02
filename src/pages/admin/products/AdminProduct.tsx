@@ -6,19 +6,38 @@ import UseDeleteModal from "../../../hooks/UseDeleteModal";
 import useProducts from "../../../hooks/useProducts";
 import type { Product } from "../../../types/types";
 import { API_ORIGIN } from "../../../utils";
+import { FaHamburger } from "react-icons/fa";
 
 type FormShape = {
   name: string;
   price: number;
-  category_id: number;     
+  category_id: number;
   description?: string;
   weight?: string;
-  image: FileList;      
+  image: FileList;
 };
 
 function AdminProduct() {
-  const { products, addProduct, updateProduct, deleteProduct, loadingProducts, isAdding, isUpdating, isDeleting } =
-    useProducts();
+  const {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    loadingProducts,
+    isAdding,
+    isUpdating,
+    isDeleting,
+
+    selectedCategory,
+    setSelectedCategory,
+    page,
+    setPage,
+    pages,
+    hasPrev,
+    hasNext,
+    total
+  } = useProducts();
+
   const { categories } = useCategories();
 
   const {
@@ -61,7 +80,7 @@ function AdminProduct() {
   };
 
   const onSubmit = async (data: FormShape) => {
-    const file = data.image?.[0]; 
+    const file = data.image?.[0];
 
     const payload = {
       name: data.name,
@@ -105,11 +124,17 @@ function AdminProduct() {
   }
 
   return (
-    <div className="admin-product">
-      <div className="admin-product-header">
-        <h1>Product Management</h1>
-
-        <button
+    <div className="chef-page">
+      <div className="chef-page-header">
+        <div className="chef-page-title">
+          <div className="title-container">
+            <FaHamburger className="chef-icon" />
+            <div>
+              <h1>Product Management</h1>
+              <p>Manage your product listings</p>
+            </div>
+          </div>
+           <button
           onClick={() => {
             setEditingProduct(null);
             reset();
@@ -119,8 +144,26 @@ function AdminProduct() {
         >
           <span>Create Product</span>
         </button>
+        </div>
+      </div>
 
-        <div className="divider"></div>
+      <div className="admin-product-filters">
+        <button
+          className={`cat-pill ${selectedCategory === "" ? "active" : ""}`}
+          onClick={() => setSelectedCategory("")}
+        >
+          All
+        </button>
+
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            className={`cat-pill ${String(c.id) === selectedCategory ? "active" : ""}`}
+            onClick={() => setSelectedCategory(String(c.id))}
+          >
+            {c.name}
+          </button>
+        ))}
       </div>
 
       <div className="admin-product-body">
@@ -133,7 +176,10 @@ function AdminProduct() {
                   alt={product.name}
                 />
                 <div className="product-actions">
-                  <button className="action-btn edit" onClick={() => handleEditClick(product)}>
+                  <button
+                    className="action-btn edit"
+                    onClick={() => handleEditClick(product)}
+                  >
                     Edit
                   </button>
                   <button
@@ -163,6 +209,34 @@ function AdminProduct() {
           ))}
         </div>
 
+        <div className="pagination-bar">
+          <div className="pagination-info">
+            Showing <b>{products.length}</b> of <b>{total}</b>
+          </div>
+
+          <div className="pagination-controls">
+            <button
+              className="page-btn"
+              disabled={!hasPrev}
+              onClick={() => setPage(page - 1)}
+            >
+              Prev
+            </button>
+
+            <span className="page-state">
+              Page <b>{page}</b> / <b>{pages}</b>
+            </span>
+
+            <button
+              className="page-btn"
+              disabled={!hasNext}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
         <UseModal
           isOpen={isOpen}
           onClose={handleCloseModal}
@@ -175,8 +249,13 @@ function AdminProduct() {
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="name">Product Name</label>
-                  <input id="name" {...register("name", { required: "Name is required" })} />
-                  {errors.name && <span className="error">{errors.name.message}</span>}
+                  <input
+                    id="name"
+                    {...register("name", { required: "Name is required" })}
+                  />
+                  {errors.name && (
+                    <span className="error">{errors.name.message}</span>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -184,9 +263,14 @@ function AdminProduct() {
                   <input
                     type="number"
                     id="price"
-                    {...register("price", { required: "Price is required", valueAsNumber: true })}
+                    {...register("price", {
+                      required: "Price is required",
+                      valueAsNumber: true,
+                    })}
                   />
-                  {errors.price && <span className="error">{errors.price.message}</span>}
+                  {errors.price && (
+                    <span className="error">{errors.price.message}</span>
+                  )}
                 </div>
               </div>
 
@@ -207,7 +291,9 @@ function AdminProduct() {
                       </option>
                     ))}
                   </select>
-                  {errors.category_id && <span className="error">{errors.category_id.message}</span>}
+                  {errors.category_id && (
+                    <span className="error">{errors.category_id.message}</span>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -221,9 +307,13 @@ function AdminProduct() {
                 <textarea
                   id="description"
                   rows={3}
-                  {...register("description", { required: "Description is required" })}
+                  {...register("description", {
+                    required: "Description is required",
+                  })}
                 />
-                {errors.description && <span className="error">{errors.description.message}</span>}
+                {errors.description && (
+                  <span className="error">{errors.description.message}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -235,37 +325,53 @@ function AdminProduct() {
                   {...register("image", {
                     validate: (files) => {
                       // create da rasm required, update da optional
-                      if (!editingProduct && (!files || files.length === 0)) return "Image is required";
+                      if (!editingProduct && (!files || files.length === 0))
+                        return "Image is required";
                       return true;
                     },
                   })}
                 />
-                {errors.image && <span className="error">{String(errors.image.message)}</span>}
+                {errors.image && (
+                  <span className="error">{String(errors.image.message)}</span>
+                )}
               </div>
 
               <div className="image-preview">
                 <label>Preview</label>
                 <div className="preview-container">
                   <img
-                    src={previewUrl || (editingProduct ? `${API_ORIGIN}${editingProduct.image}` : "")}
+                    src={
+                      previewUrl ||
+                      (editingProduct
+                        ? `${API_ORIGIN}${editingProduct.image}`
+                        : "")
+                    }
                     alt="Preview"
                   />
                 </div>
               </div>
 
               <div className="form-actions">
-                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={handleCloseModal}
+                >
                   Cancel
                 </button>
 
-                <button type="submit" className="submit-btn" disabled={isAdding || isUpdating}>
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isAdding || isUpdating}
+                >
                   {editingProduct
                     ? isUpdating
                       ? "Updating..."
                       : "Update Product"
                     : isAdding
-                    ? "Creating..."
-                    : "Create Product"}
+                      ? "Creating..."
+                      : "Create Product"}
                 </button>
               </div>
             </form>

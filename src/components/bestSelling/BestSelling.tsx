@@ -30,7 +30,7 @@ function BestSelling() {
                </div>
                 <FilterCategories selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
                 <div className="best-selling-products">
-                    {products.map((product) => (
+                    {products.map((product : Product) => (
                         <div key={product.id} className="best-selling-product-card">
                             <div className="best-selling-product-image">
                                 <LazyLoadImage src={`${API_ORIGIN}${product.image}`} alt={product.name} effect="blur" />

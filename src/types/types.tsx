@@ -14,6 +14,15 @@ export interface Category {
   createdAt: string;
 }
 
+export type PaginatedResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+
 export interface Product {
   id: string;
   name: string;

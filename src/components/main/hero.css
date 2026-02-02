@@ -143,14 +143,14 @@
   width: 100%;
   min-height: 450px;
   /* filter: drop-shadow(0px 15px 30px rgba(0, 0, 0, 0.15)); */
-  animation: float 6s ease-in-out;
+  animation: float_hero 6s ease-in-out;
 }
 
 .floating-element {
   position: absolute;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(226, 26, 67, 0.1) 0%, rgba(255, 107, 107, 0.1) 100%);
-  animation: float 4s ease-in-out infinite;
+  animation: float_hero 4s ease-in-out infinite;
   animation-direction: alternate;
   z-index: 3;
 }
@@ -327,7 +327,7 @@
 }
 
 
-@keyframes float {
+@keyframes float_hero {
   0%, 100% {
     transform: translateY(0);
   }

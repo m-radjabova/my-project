@@ -40,7 +40,7 @@
   height: auto;
   filter: drop-shadow(0px 15px 30px rgba(0, 0, 0, 0.15));
   border-radius: 20px;
-  animation: float 6s ease-in-out infinite;
+  animation: float_fresh 6s ease-in-out infinite;
 }
 
 .floating-badge {
@@ -193,7 +193,7 @@
 }
 
 /* Animations */
-@keyframes float {
+@keyframes float_fresh {
   0%, 100% {
     transform: translateY(0);
   }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import UseModal from "../../../hooks/UseModal";
 import UseDeleteModal from "../../../hooks/UseDeleteModal";
 import type { Category } from "../../../types/types";
+import { BiCategoryAlt } from "react-icons/bi";
 
 function AdminCategories() {
   const {
@@ -13,12 +14,15 @@ function AdminCategories() {
     reset,
     setValue,
   } = useForm();
-  const { categories, loading, addCategory, updateCategory, deleteCategory } =useCategories();
+  const { categories, loading, addCategory, updateCategory, deleteCategory } =
+    useCategories();
 
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null,
+  );
 
   const onSubmit = (data: FieldValues) => {
     const name = String(data.name);
@@ -33,7 +37,6 @@ function AdminCategories() {
     reset();
     setEditingCategory(null);
   };
-
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
@@ -78,18 +81,28 @@ function AdminCategories() {
   }
 
   return (
-    <div className="admin-categories">
-      <div className="admin-category-header">
-        <div className="header-content">
-          <h1>Category Management</h1>
+    <div className="chef-page">
+      <div className="chef-page-header">
+        <div className="chef-page-title">
+          <div className="title-container">
+            <BiCategoryAlt className="chef-icon" />
+            <div>
+              <h1>Category Management</h1>
+              <p>Manage product categories</p>
+            </div>
+          </div>
+          <button onClick={handleAddNew} className="add-product-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 5v14m-7-7h14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span>Create Category</span>
+            </button>
         </div>
-        <button onClick={handleAddNew} className="add-product-btn">
-         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          <span>Create Category</span>
-        </button>
-        <div className="divider"></div>
       </div>
 
       <div className="admin-category-body">
@@ -103,7 +116,7 @@ function AdminCategories() {
             </button>
           </div>
         ) : (
-          <div className="categories-grid">
+          <div className="categories-grid mt-4">
             {categories.map((category) => (
               <div key={category.id} className="category-card">
                 <div className="category-header">
@@ -154,7 +167,11 @@ function AdminCategories() {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="cancel-btn" onClick={handleCloseModal}>
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={handleCloseModal}
+              >
                 Cancel
               </button>
               <button type="submit" className="submit-btn">

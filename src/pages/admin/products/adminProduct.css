@@ -316,6 +316,96 @@
   box-shadow: 0 4px 8px rgba(226, 26, 67, 0.3);
 }
 
+.admin-product-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.cat-pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #eee;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cat-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(220, 53, 69, 0.4);
+}
+
+.cat-pill.active {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+  box-shadow: 0 8px 18px rgba(220, 53, 69, 0.25);
+}
+
+/* pagination */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #555;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.page-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.page-state {
+  font-size: 13px;
+  color: #333;
+}
+
+.page-size {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
 @media (max-width: 768px) {
   .admin-product-header {
     padding: 16px 20px;

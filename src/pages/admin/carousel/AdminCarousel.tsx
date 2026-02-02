@@ -5,6 +5,7 @@ import UseDeleteModal from "../../../hooks/UseDeleteModal";
 import type { CarouselItem } from "../../../types/types";
 import useCarousel from "../../../hooks/useCarousel";
 import { API_ORIGIN } from "../../../utils";
+import { CgCarousel } from "react-icons/cg";
 
 type FormShape = {
   title1: string;
@@ -121,13 +122,17 @@ function AdminCarousel() {
   }
 
   return (
-    <div className="admin-carousel">
-      <div className="admin-carousel-header">
-        <div className="header-content">
-          <h1>Carousel Management</h1>
-        </div>
-
-        <button onClick={handleAddNew} className="add-product-btn">
+    <div className="chef-page">
+      <div className="chef-page-header">
+        <div className="chef-page-title">
+          <div className="title-container">
+            <CgCarousel  className="chef-icon" />
+            <div>
+              <h1>Carousel Management</h1>
+              <p>Manage homepage carousel slides</p>
+            </div>
+          </div>
+          <button onClick={handleAddNew} className="add-product-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 5v14m-7-7h14"
@@ -138,8 +143,9 @@ function AdminCarousel() {
           </svg>
           <span>Create Slide</span>
         </button>
+        </div>
 
-        <div className="divider"></div>
+        {/* <div className="divider"></div> */}
       </div>
 
       <div className="admin-carousel-body">

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import type { Product, Reviews } from "../types/types";
+import type { Reviews, Product } from "../types/types";
+import type { PaginatedResponse } from "../types/types";
 import apiClient from "../apiClient/apiClient";
 import { toast } from "react-toastify";
 
@@ -22,11 +23,11 @@ type ReviewApi = Omit<Reviews, "userId"> & {
 
 type ProductPayload = {
   name: string;
-  price: number;        
-  category_id: number;  
+  price: number;
+  category_id: number;
   description?: string;
   weight?: string;
-  image?: File;        
+  image?: File;
 };
 
 function buildProductFormData(p: ProductPayload) {
@@ -48,20 +49,39 @@ function useProducts() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [activeProductId, setActiveProductId] = useState<string>("");
 
+  // ✅ pagination state
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(12);
+
+  // category o'zgarsa page 1 ga qaytarish (foydali UX)
+  const onChangeCategory = (val: string) => {
+    setSelectedCategory(val);
+    setPage(1);
+  };
+
+  // ✅ Products query (paginated)
   const {
-    data: products = [],
-    isLoading: loading,
+    data: productsRes,
+    isLoading: loadingProducts,
     isError: isProductsError,
     error: productsError,
-  } = useQuery<Product[]>({
-    queryKey: ["products", selectedCategory],
+  } = useQuery({
+    queryKey: ["products", selectedCategory, page, limit],
     queryFn: async () => {
-      const { data } = await apiClient.get<Product[]>("/products", {
-        params: selectedCategory ? { category_id: Number(selectedCategory) } : {},
+      const params: Record<string, any> = { page, limit };
+      if (selectedCategory) params.category_id = Number(selectedCategory);
+
+      const { data } = await apiClient.get<PaginatedResponse<Product>>("/products", {
+        params,
       });
+
       return data;
-    },
+    }
   });
+
+  const products = productsRes?.items ?? [];
+  const total = productsRes?.total ?? 0;
+  const pages = productsRes?.pages ?? 1;
 
   const {
     data: reviewsRaw = [],
@@ -105,16 +125,16 @@ function useProducts() {
 
   const addReviewMutation = useMutation({
     mutationFn: async ({ productId, payload }: { productId: string; payload: AddReviewPayload }) => {
-      try{
+      try {
         const { data } = await apiClient.post<Reviews>(`/products/${productId}/reviews`, payload);
         return data;
       } catch (err: unknown) {
         const message = isAxiosError(err)
-          ? err.response?.data?.message ?? "Failed to submit review"
+          ? (err.response?.data as any)?.detail ?? (err.response?.data as any)?.message ?? "Failed to submit review"
           : "Failed to submit review";
         toast.error(message);
+        throw err;
       }
-
     },
     onSuccess: (_created, variables) => {
       queryClient.invalidateQueries({ queryKey: ["productReviews", variables.productId] });
@@ -129,7 +149,9 @@ function useProducts() {
       });
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 
   const updateProduct = useMutation({
@@ -151,22 +173,37 @@ function useProducts() {
   });
 
   return {
+    // ✅ products
     products,
-    loadingProducts: loading,
+    productsRes, // agar UIga to'liq kerak bo'lsa
+
+    loadingProducts,
     isProductsError,
     productsError,
 
+    // ✅ filters
     selectedCategory,
-    setSelectedCategory,
+    setSelectedCategory: onChangeCategory,
 
+    // ✅ pagination
+    page,
+    setPage,
+    limit,
+    setLimit,
+    total,
+    pages,
+    hasPrev: page > 1,
+    hasNext: page < pages,
+
+    // ✅ reviews
     activeProductId,
     setActiveProductId,
-
     reviews,
     loadingReviews: loadingReviews || loadingUsers,
     isReviewsError,
     reviewsError,
 
+    // ✅ mutations
     addReview: (productId: string, payload: AddReviewPayload) =>
       addReviewMutation.mutateAsync({ productId, payload }),
     isAddingReview: addReviewMutation.isPending,

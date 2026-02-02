@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { API_ORIGIN } from "../../utils";
+import type { Product } from "../../types/types";
 
 function ProductsSlider() {
   const { products } = useProducts();
@@ -36,7 +37,7 @@ function ProductsSlider() {
   return (
     <div className="products-slider-container max-w-[1800px] mx-auto ">
       <Slider {...settings}>
-        {products.map((product) => (
+        {products.map((product :Product) => (
           <div key={product.id} className="product-slide">
             <div className="product-slider-card">
               <LazyLoadImage

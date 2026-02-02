@@ -468,7 +468,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fef6ed 0%, #fff9f2 50%, #fef3e8 100%);
+  /* background: linear-gradient(135deg, #fef6ed 0%, #fff9f2 50%, #fef3e8 100%); */
 }
 
 .profile-loading-state {

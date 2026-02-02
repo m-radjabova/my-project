@@ -127,7 +127,7 @@
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  animation: float 20s infinite linear;
+  animation: float_loading 20s infinite linear;
 }
 
 .not-bg-1 {
@@ -254,38 +254,38 @@
 .not-icon-1 {
   top: 5%;
   left: 10%;
-  animation: float 8s ease-in-out infinite;
+  animation: float_loading 8s ease-in-out infinite;
 }
 
 .not-icon-2 {
   top: 15%;
   right: 15%;
-  animation: float 7s ease-in-out infinite 1s;
+  animation: float_loading 7s ease-in-out infinite 1s;
 }
 
 .not-icon-3 {
   bottom: 15%;
   left: 20%;
-  animation: float 9s ease-in-out infinite 0.5s;
+  animation: float_loading 9s ease-in-out infinite 0.5s;
 }
 
 .not-icon-4 {
   top: 25%;
   left: 50%;
   transform: translateX(-50%);
-  animation: float 6s ease-in-out infinite 0.2s;
+  animation: float_loading 6s ease-in-out infinite 0.2s;
 }
 
 .not-icon-5 {
   bottom: 10%;
   right: 20%;
-  animation: float 8s ease-in-out infinite 0.8s;
+  animation: float_loading 8s ease-in-out infinite 0.8s;
 }
 
 .not-icon-6 {
   top: 40%;
   right: 5%;
-  animation: float 7s ease-in-out infinite 1.2s;
+  animation: float_loading 7s ease-in-out infinite 1.2s;
 }
 
 
@@ -557,7 +557,7 @@
   animation: particle-float 15s infinite linear;
 }
 
-@keyframes float {
+@keyframes float_loading {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
   }
