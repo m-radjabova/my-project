@@ -194,9 +194,9 @@ function CartPage() {
                                                 onLoad={(e) => e.currentTarget.classList.add('loaded')}
                                             />
                                             <div className="image-overlay"></div>
-                                            {toNumber(item.price * 2) > toNumber(item.price) && (
+                                            {toNumber(item.price * 1.5) > toNumber(item.price) && (
                                                 <div className="discount-badge">
-                                                    Save ${formatMoney(toNumber(item.price) * 2 - toNumber(item.price))}
+                                                    Save ${formatMoney(toNumber(item.price) * 1.5 - toNumber(item.price))}
                                                 </div>
                                             )}
                                         </div>

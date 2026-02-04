@@ -124,22 +124,22 @@ function ChefPage() {
               <p>When new orders come in, they'll appear here.</p>
             </div>
           ) : (
-            <div className="orders-grid">
+            <div className="orders-grid-chef">
               {filteredOrders.map((order: Order) => {
                 const items: OrderProduct[] = order.items ?? order.products ?? [];
 
                 const orderIdNum = Number(order.id);
 
                 return (
-                  <div className="order-card" key={order.id}>
-                    <div className="order-header">
-                      <div className="order-customer">
-                        <div className="customer-avatar">
-                          <FaUser className="customer-icon" />
+                  <div className="order-card-chef" key={order.id}>
+                    <div className="order-header-chef">
+                      <div className="order-customer-chef">
+                        <div className="customer-avatar-chef">
+                          <FaUser className="customer-icon-chef" />
                         </div>
                         <div>
                           <h3>{order.user?.name || "Customer"}</h3>
-                          <span className="order-id">
+                          <span className="order-id-chef">
                             Order #{order.id ? String(order.id).slice(-6) : "------"}
                           </span>
                         </div>
@@ -148,17 +148,17 @@ function ChefPage() {
                       <div className={getStatusBadgeClass(String(order.status))}>{order.status}</div>
                     </div>
 
-                    <div className="order-details">
+                    <div className="order-details-chef">
                       {order.shipping_address && (
-                        <div className="detail-item">
-                          <FaMapMarkerAlt className="detail-icon" />
-                          <span className="address-text">{order.shipping_address}</span>
+                        <div className="detail-item-chef">
+                          <FaMapMarkerAlt className="detail-icon-chef" />
+                          <span className="address-text-chef">{order.shipping_address}</span>
                         </div>
                       )}
 
                       {order.total_price != null && (
-                        <div className="detail-item">
-                          <FaMoneyBillWave className="detail-icon" />
+                        <div className="detail-item-chef">
+                          <FaMoneyBillWave className="detail-icon-chef" />
                           <span>
                             ${Number(order.total_price).toFixed(2)} • {order.payment_method ?? "N/A"}
                           </span>
@@ -166,22 +166,22 @@ function ChefPage() {
                       )}
 
                       {order.created_at && (
-                        <div className="detail-item">
-                          <FaClock className="detail-icon" />
+                        <div className="detail-item-chef">
+                          <FaClock className="detail-icon-chef" />
                           <span>{new Date(order.created_at).toLocaleString()}</span>
                         </div>
                       )}
 
                       {order.notes && (
-                        <div className="detail-item">
-                          <FaCommentAlt className="detail-icon" />
+                        <div className="detail-item-chef">
+                          <FaCommentAlt className="detail-icon-chef" />
                           <span>{order.notes}</span>
                         </div>
                       )}
 
                       {order.location && (
-                        <div className="detail-item">
-                          <FaMapMarkerAlt className="detail-icon" />
+                        <div className="detail-item-chef">
+                          <FaMapMarkerAlt className="detail-icon-chef" />
                           <span>
                             Lat: {order.location.lat}, Lng: {order.location.lng}
                           </span>
@@ -189,14 +189,14 @@ function ChefPage() {
                       )}
 
                       {order.shipping_address && (
-                        <div className="detail-item">
-                          <FaTruck className="detail-icon" />
+                        <div className="detail-item-chef">
+                          <FaTruck className="detail-icon-chef" />
                           <span>{order.shipping_address}</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="order-products">
+                    <div className="order-products-chef">
                       <h4>Order Items ({Array.isArray(items) ? items.length : 0})</h4>
 
                       <div className="chef-product-cards">
@@ -211,19 +211,19 @@ function ChefPage() {
                                 />
                               </div>
 
-                              <div className="product-info">
-                                <div className="product-header">
+                              <div className="product-info-chef">
+                                <div className="product-heade-chefr">
                                   <span className="chef-product-quantity">{it.quantity}x</span>
                                   <span className="chef-product-name">
                                     {it.name || `Product ${index + 1}`}
                                   </span>
                                 </div>
 
-                                <div className="product-details">
+                                <div className="product-details-chef">
                                   {it.description && (
                                     <span className="chef-product-description">{it.description}</span>
                                   )}
-                                  <div className="product-meta">
+                                  <div className="product-meta-chef">
                                     <span className="chef-product-price">
                                       ${typeof it.price === "number" ? it.price.toFixed(2) : "0.00"}
                                     </span>
@@ -238,11 +238,11 @@ function ChefPage() {
                       </div>
                     </div>
 
-                    <div className="order-actions">
+                    <div className="order-actions-chef">
                       {String(order.status).toLowerCase() === "pending" && (
                         <button
                           onClick={() => handleUpdateStatus(orderIdNum, "completed")}
-                          className="action-btn update-btn"
+                          className="action-btn-chef update-btn-chef"
                           disabled={submittingId === orderIdNum}
                         >
                           {submittingId === orderIdNum ? "Updating..." : "Done Cooking"}

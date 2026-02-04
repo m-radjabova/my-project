@@ -155,33 +155,32 @@ function CartStatus() {
         </div>
 
         {/* Controls */}
-        <div className="order-controls">
+        <div className="order-controls-status">
 
-
-          <div className="filter-buttons">
+          <div className="filter-buttons-status">
             <button
-              className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
+              className={`filter-btn-status ${filterStatus === 'all' ? 'active-status' : ''}`}
               onClick={() => setFilterStatus('all')}
             >
               <FaHistory />
               All Orders
             </button>
             <button
-              className={`filter-btn ${filterStatus === 'pending' ? 'active' : ''}`}
+              className={`filter-btn-status ${filterStatus === 'pending' ? 'active-status' : ''}`}
               onClick={() => setFilterStatus('pending')}
             >
               <RiLoader2Line />
               Pending
             </button>
             <button
-              className={`filter-btn ${filterStatus === 'completed' ? 'active' : ''}`}
+              className={`filter-btn-status ${filterStatus === 'completed' ? 'active-status' : ''}`}
               onClick={() => setFilterStatus('completed')}
             >
               <RiCheckDoubleLine />
               Completed
             </button>
             <button
-              className={`filter-btn ${filterStatus === 'delivered' ? 'active' : ''}`}
+              className={`filter-btn-status ${filterStatus === 'delivered' ? 'active-status' : ''}`}
               onClick={() => setFilterStatus('delivered')}
             >
               <TbTruckDelivery />
@@ -218,7 +217,7 @@ function CartStatus() {
               )}
             </div>
           ) : (
-            <div className="orders-grid">
+            <div className="orders-grid-status">
               {filteredOrders.map((order: Order, index: number) => {
                 const items: OrderProduct[] = order.items ?? order.products ?? [];
                 const status = String(order.status).toLowerCase();
@@ -227,41 +226,41 @@ function CartStatus() {
                 
                 return (
                   <div 
-                    className={`order-card ${activeOrder === order.id ? 'expanded' : ''}`}
+                    className={`order-card-status ${activeOrder === order.id ? 'expanded' : ''}`}
                     key={order.id}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {/* Card Header */}
                     <div 
-                      className="order-card-header"
+                      className="order-card-header-status"
                       onClick={() => toggleOrderDetails(order.id.toString())}
                     >
-                      <div className="order-basic-info">
-                        <div className="order-avatar">
+                      <div className="order-basic-info-status">
+                        <div className="order-avatar-status">
                           {getStatusIcon(status)}
                           <div 
-                            className="status-indicator"
+                            className="status-indicator-status"
                             style={{ backgroundColor: statusColor }}
                           ></div>
                         </div>
                         <div>
-                          <h3 className="order-title">
+                          <h3 className="order-title-status">
                             Order #{order.id ? String(order.id).slice(-8).toUpperCase() : "------"}
                           </h3>
-                          <div className="order-meta">
-                            <span className="customer-name">
+                          <div className="order-meta-status">
+                            <span className="customer-name-status">
                               <FaUser /> {order.user?.name || "You"}
                             </span>
-                            <span className="order-date">
+                            <span className="order-date-status">
                               <FaCalendarAlt /> {order.created_at ? new Date(order.created_at).toLocaleDateString() : "N/A"}
                             </span>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="order-status-display">
+                      <div className="order-status-display-status">
                         <div 
-                          className="status-badge"
+                          className="status-badge-status"
                           style={{ 
                             background: `linear-gradient(135deg, ${statusColor}, ${statusColor}dd)`,
                             color: 'white'
@@ -270,7 +269,7 @@ function CartStatus() {
                           {getStatusIcon(status)}
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </div>
-                        <div className="order-total">
+                        <div className="order-total-status">
                           ${order.total_price ? Number(order.total_price).toFixed(2) : "0.00"}
                         </div>
                       </div>
@@ -308,52 +307,52 @@ function CartStatus() {
                     </div>
 
                     {/* Expandable Details */}
-                    <div className={`order-details ${activeOrder === order.id ? 'visible' : ''}`}>
+                    <div className={`order-details-status ${activeOrder === order.id ? 'visible' : ''}`}>
                       {/* Delivery Information */}
-                      <div className="details-section">
+                      <div className="details-section-status">
                         <h4>
-                          <FaTruck className="section-icon" />
+                          <FaTruck className="section-icon-status" />
                           Delivery Information
                         </h4>
-                        <div className="details-grid">
+                        <div className="details-grid-status">
                           {order.shipping_address && (
-                            <div className="detail-item">
-                              <FaMapMarkerAlt className="detail-icon" />
+                            <div className="detail-item-status">
+                              <FaMapMarkerAlt className="detail-icon-status" />
                               <div>
-                                <div className="detail-label">Delivery Address</div>
-                                <div className="detail-value">{order.shipping_address}</div>
+                                <div className="detail-labe-statusl">Delivery Address</div>
+                                <div className="detail-value-status">{order.shipping_address}</div>
                               </div>
                             </div>
                           )}
                           
                           {order.phone && (
-                            <div className="detail-item">
-                              <FaPhone className="detail-icon" />
+                            <div className="detail-item-status">
+                              <FaPhone className="detail-icon-status" />
                               <div>
-                                <div className="detail-label">Contact Phone</div>
-                                <div className="detail-value">{order.phone}</div>
+                                <div className="detail-label-status">Contact Phone</div>
+                                <div className="detail-value-status">{order.phone}</div>
                               </div>
                             </div>
                           )}
                           
                           {order.created_at && (
-                            <div className="detail-item">
-                              <FaClock className="detail-icon" />
+                            <div className="detail-item-status">
+                              <FaClock className="detail-icon-status" />
                               <div>
-                                <div className="detail-label">Order Time</div>
-                                <div className="detail-value">
+                                <div className="detail-label-status">Order Time</div>
+                                <div className="detail-value-status">
                                   {new Date(order.created_at).toLocaleString()}
                                 </div>
                               </div>
                             </div>
                           )}
                           
-                          <div className="detail-item">
-                            <FaMoneyBillWave className="detail-icon" />
+                          <div className="detail-item-status">
+                            <FaMoneyBillWave className="detail-icon-status" />
                             <div>
-                              <div className="detail-label">Payment Method</div>
-                              <div className="detail-value">
-                                <span className="payment-method">
+                              <div className="detail-label-status">Payment Method</div>
+                              <div className="detail-value-status">
+                                <span className="payment-method-status">
                                   {order.payment_method || "Cash on Delivery"}
                                 </span>
                               </div>
@@ -363,31 +362,31 @@ function CartStatus() {
                       </div>
 
                       {/* Order Items */}
-                      <div className="details-section">
+                      <div className="details-section-status">
                         <h4>
-                          <MdOutlineRestaurantMenu className="section-icon" />
+                          <MdOutlineRestaurantMenu className="section-icon-status" />
                           Order Items ({items.length})
                         </h4>
-                        <div className="order-items">
+                        <div className="order-items-status">
                           {Array.isArray(items) && items.map((item: OrderProduct, idx: number) => (
-                            <div className="order-item" key={item.id || idx}>
-                              <div className="item-image">
+                            <div className="order-item-status" key={item.id || idx}>
+                              <div className="item-image-status">
                                 <img
                                   src={`${API_ORIGIN}${item.product?.image || item.image || ''}`}
                                   alt={item.product?.name || item.name || `Item ${idx + 1}`}
                                   loading="lazy"
                                 />
-                                <div className="item-quantity">{item.quantity}x</div>
+                                <div className="item-quantity-status">{item.quantity}x</div>
                               </div>
-                              <div className="item-info">
-                                <div className="item-name">
+                              <div className="item-info-status">
+                                <div className="item-name-status">
                                   {item.product?.name || item.name || `Item ${idx + 1}`}
                                 </div>
-                                <div className="item-description">
+                                <div className="item-description-status">
                                   {item.product?.description || item.description || ''}
                                 </div>
-                                <div className="item-meta">
-                                  <div className="item-price">
+                                <div className="item-meta-status">
+                                  <div className="item-price-status">
                                     ${typeof item.price === 'number' 
                                       ? item.price.toFixed(2) 
                                       : typeof item.product?.price === 'number'
@@ -395,7 +394,7 @@ function CartStatus() {
                                       : '0.00'}
                                   </div>
                                   {item.product?.weight && (
-                                    <div className="item-weight">
+                                    <div className="item-weight-status">
                                       • {item.product.weight}
                                     </div>
                                   )}

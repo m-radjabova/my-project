@@ -37,7 +37,7 @@ function BestSelling() {
                             </div>
                             <div className="best-selling-product-info">
                                 <h6>{product.name}</h6>
-                                <p><span className="old-price">${product.price * 2 }</span>${product.price}</p>
+                                <p><span className="old-price">${product.price * 1.5 }</span>${product.price}</p>
                                 <button onClick={() => handleCartToggle(product)}>
                                     {cart.some((p : Product) => p.id === product.id) ? "Delete from Cart" : "Buy Now"}
                                 </button>

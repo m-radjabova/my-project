@@ -86,7 +86,7 @@ function ProductList({ products, loading }: Props) {
               <div className="product-pricing">
                 <div className="price-container">
                   <span className="current-price">${product.price}</span>
-                  <span className="old-price">${product.price * 2}</span>
+                  <span className="old-price">${product.price * 1.5}</span>
                 </div>
                 <span className="product-weight">
                   {product.weight || "500g"}

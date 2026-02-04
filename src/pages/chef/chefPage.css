@@ -7,6 +7,10 @@
 
 .order-ohone{
     cursor: pointer;
+    border-bottom: 1px solid #E21A43; 
+    color: #E21A43;
+    margin: 10px 0 ;
+
 }
 .chef-page::before {
     content: '';
@@ -159,7 +163,7 @@
     max-width: 400px;
     margin: 0 auto;
 }
-.orders-grid {
+.orders-grid-chef {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
     align-items: flex-start;
@@ -167,7 +171,7 @@
 }
 
 /* Order Card */
-.order-card {
+.order-card-chef {
     background: white;
     border-radius: 16px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
@@ -176,12 +180,12 @@
     transition: all 0.3s ease;
 }
 
-.order-card:hover {
+.order-card-chef:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(226, 26, 67, 0.15);
 }
 
-.order-header {
+.order-header-chef {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -189,13 +193,13 @@
     border-bottom: 1px solid rgba(226, 26, 67, 0.1);
 }
 
-.order-customer {
+.order-customer-chef {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.customer-avatar {
+.customer-avatar-chef {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -205,17 +209,17 @@
     justify-content: center;
 }
 
-.customer-icon {
+.customer-icon-chef {
     color: white;
     font-size: 1.2rem;
 }
 
-.order-customer h3 {
+.order-customer-chef h3 {
     margin: 0 0 0.3rem;
     font-size: 1.2rem;
 }
 
-.order-id {
+.order-id-chef {
     font-size: 0.9rem;
     color: #666;
 }
@@ -249,38 +253,38 @@
 }
 
 /* Order Details */
-.order-details {
+.order-details-chef {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(226, 26, 67, 0.1);
 }
 
-.detail-item {
+.detail-item-chef {
     display: flex;
     align-items: center;
     gap: 0.7rem;
     margin-bottom: 0.7rem;
 }
 
-.detail-item:last-child {
+.detail-item-chef:last-child {
     margin-bottom: 0;
 }
 
-.detail-icon {
+.detail-icon-chef {
     color: #E21A43;
     font-size: 0.9rem;
 }
 
-.address-text {
+.address-text-chef {
     color: #666;
     font-size: 0.9rem;
 }
 
 /* Order Products */
-.order-products {
+.order-products-chef {
     padding: 1rem 1.5rem;
 }
 
-.order-products h4 {
+.order-products-chef h4 {
     margin: 0 0 1rem;
     font-size: 1.1rem;
     color: #333;
@@ -315,7 +319,7 @@
     object-fit: cover;
 }
 
-.product-info {
+.product-info-chef {
     flex-grow: 1;
 }
 
@@ -340,7 +344,7 @@
     border: 1px solid rgba(226, 26, 67, 0.1);
 }
 
-.product-header {
+.product-header-chef {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -357,7 +361,7 @@
     color: #333;
 }
 
-.product-details {
+.product-details-chef {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
@@ -369,7 +373,7 @@
     line-height: 1.3;
 }
 
-.product-meta {
+.product-meta-chef {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -386,13 +390,13 @@
 }
 
 /* Order Actions */
-.order-actions {
+.order-actions-chef {
     padding: 1rem 1.5rem 1.5rem;
     display: flex;
     justify-content: flex-end;
 }
 
-.action-btn {
+.action-btn-chef {
     padding: 0.7rem 1.5rem;
     border: none;
     border-radius: 50px;
@@ -404,13 +408,13 @@
     gap: 0.5rem;
 }
 
-.update-btn {
+.update-btn-chef {
     background: linear-gradient(135deg, #E21A43 0%, #FF4D6D 100%);
     color: white;
     box-shadow: 0 4px 10px rgba(226, 26, 67, 0.3);
 }
 
-.update-btn:hover {
+.update-btn-chef:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(226, 26, 67, 0.4);
 }
@@ -427,11 +431,11 @@
         align-items: flex-start;
     }
     
-    .orders-grid {
+    .orders-grid-chef {
         grid-template-columns: 1fr;
     }
     
-    .order-header {
+    .order-header-chef {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
@@ -452,11 +456,11 @@
         font-size: 2rem;
     }
     
-    .orders-count {
+    .orders-count-chef {
         padding: 0.8rem 1.2rem;
     }
     
-    .count-number {
+    .count-number-chef {
         font-size: 2rem;
     }
     
@@ -478,15 +482,15 @@
     }
 }
 
-.order-card {
+.order-card-chef {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.order-card:nth-child(2n) {
+.order-card-chef:nth-child(2n) {
     animation-delay: 0.1s;
 }
 
-.order-card:nth-child(3n) {
+.order-card-chef:nth-child(3n) {
     animation-delay: 0.2s;
 }
 

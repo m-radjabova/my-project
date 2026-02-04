@@ -10,6 +10,7 @@ export interface TypeState {
   cart: Product[];
   roles: string[];
   orderProducts: OrderProduct[];
+
 }
 
 type SET_USER = { type: "SET_USER"; payload: User | null };
@@ -118,6 +119,7 @@ function CreateContextPro({ children }: { children: ReactNode }) {
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("role");
       dispatch({ type: "SET_USER", payload: null });
+      navigate("/login"); 
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }

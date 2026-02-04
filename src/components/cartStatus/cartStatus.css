@@ -57,6 +57,7 @@
 
 
 
+
 /* Main Container */
 .order-status-container {
   position: relative;
@@ -189,7 +190,7 @@
 }
 
 /* Controls */
-.order-controls {
+.order-controls-status {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 20px;
   padding: 1.5rem 2rem;
@@ -200,13 +201,13 @@
 }
 
 
-.filter-buttons {
+.filter-buttons-status {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.filter-btn {
+.filter-btn-status {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -220,13 +221,13 @@
   transition: all 0.3s ease;
 }
 
-.filter-btn:hover {
+.filter-btn-status:hover {
   border-color: #667eea;
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
 }
 
-.filter-btn.active {
+.filter-btn-status.active-status {
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   border-color: transparent;
@@ -285,19 +286,19 @@
 }
 
 /* Order Cards */
-.orders-grid {
+.orders-grid-status {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
   gap: 1.5rem;
 }
 
 @media (max-width: 768px) {
-  .orders-grid {
+  .orders-grid-status {
     grid-template-columns: 1fr;
   }
 }
 
-.order-card {
+.order-card-status {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 25px;
   padding: 1.5rem;
@@ -311,7 +312,7 @@
   overflow: hidden;
 }
 
-.order-card::before {
+.order-card-status::before {
   content: '';
   position: absolute;
   top: 0;
@@ -323,12 +324,12 @@
 }
 
 
-.order-card:hover {
+.order-card-status:hover {
   transform: translateY(-10px);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
 }
 
-.order-card.expanded {
+.order-card-status.expanded {
   transform: translateY(-5px);
 }
 
@@ -343,7 +344,7 @@
   }
 }
 
-.order-card-header {
+.order-card-header-status {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -351,13 +352,13 @@
   cursor: pointer;
 }
 
-.order-basic-info {
+.order-basic-info-status {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.order-avatar {
+.order-avatar-status {
   position: relative;
   width: 60px;
   height: 60px;
@@ -368,7 +369,7 @@
   justify-content: center;
 }
 
-.status-icon {
+.status-icon-status {
   font-size: 1.8rem;
 }
 
@@ -382,21 +383,21 @@
   border: 2px solid white;
 }
 
-.order-title {
+.order-title-status {
   font-size: 1.4rem;
   font-weight: 700;
   color: #333;
   margin: 0 0 0.5rem 0;
 }
 
-.order-meta {
+.order-meta-status {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.customer-name,
-.order-date {
+.customer-name-status,
+.order-date-status {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -405,14 +406,14 @@
   font-weight: 500;
 }
 
-.order-status-display {
+.order-status-display-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
 }
 
-.status-badge {
+.status-badge-status {
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -423,7 +424,7 @@
   backdrop-filter: blur(10px);
 }
 
-.order-total {
+.order-total-status {
   font-size: 1.5rem;
   font-weight: 800;
   color: #333;
@@ -511,17 +512,17 @@
 }
 
 /* Order Details */
-.order-details {
+.order-details-status {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.order-details.visible {
+.order-details-status.visible {
   max-height: 2000px;
 }
 
-.details-section {
+.details-section-status {
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: rgba(0, 0, 0, 0.02);
@@ -529,7 +530,7 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.details-section h4 {
+.details-section-status h4 {
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -539,18 +540,18 @@
   font-weight: 700;
 }
 
-.section-icon {
+.section-icon-status {
   color: #667eea;
   font-size: 1.3rem;
 }
 
-.details-grid {
+.details-grid-status {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
 }
 
-.detail-item {
+.detail-item-status {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -560,32 +561,32 @@
   transition: transform 0.3s ease;
 }
 
-.detail-item:hover {
+.detail-item-status:hover {
   transform: translateX(5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.detail-icon {
+.detail-icon-status {
   color: #667eea;
   font-size: 1.2rem;
   min-width: 20px;
   margin-top: 0.2rem;
 }
 
-.detail-label {
+.detail-label-status {
   font-size: 0.85rem;
   color: #666;
   margin-bottom: 0.3rem;
   font-weight: 500;
 }
 
-.detail-value {
+.detail-value-status {
   font-size: 1rem;
   color: #333;
   font-weight: 600;
 }
 
-.payment-method {
+.payment-method-status {
   background: rgba(102, 126, 234, 0.1);
   color: #667eea;
   padding: 0.3rem 0.8rem;
@@ -594,13 +595,13 @@
 }
 
 /* Order Items */
-.order-items {
+.order-items-status {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.order-item {
+.order-item-status {
   display: flex;
   gap: 1rem;
   padding: 1rem;
@@ -610,12 +611,12 @@
   transition: all 0.3s ease;
 }
 
-.order-item:hover {
+.order-item-status:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-.item-image {
+.item-image-status {
   position: relative;
   width: 80px;
   height: 80px;
@@ -625,18 +626,18 @@
   background: #f8f9fa;
 }
 
-.item-image img {
+.item-image-status img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.order-item:hover .item-image img {
+.order-item-status:hover .item-image-status img {
   transform: scale(1.1);
 }
 
-.item-quantity {
+.item-quantity-status {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -652,18 +653,18 @@
   font-weight: 700;
 }
 
-.item-info {
+.item-info-status {
   flex: 1;
 }
 
-.item-name {
+.item-name-status {
   font-weight: 700;
   color: #333;
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
 }
 
-.item-description {
+.item-description-status {
   color: #666;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -674,19 +675,19 @@
   overflow: hidden;
 }
 
-.item-meta {
+.item-meta-status {
   display: flex;
   align-items: center;
   gap: 0.8rem;
 }
 
-.item-price {
+.item-price-status {
   font-weight: 700;
   color: #667eea;
   font-size: 1.1rem;
 }
 
-.item-weight {
+.item-weight-status {
   color: #999;
   font-size: 0.9rem;
 }
