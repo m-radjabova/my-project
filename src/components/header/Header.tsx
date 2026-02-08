@@ -176,7 +176,7 @@ function Header() {
                       user.avatar
                         ? user.avatar.startsWith("http")
                           ? user.avatar
-                          : `${import.meta.env.VITE_API_URL}${user.avatar}`
+                          : `${import.meta.env.VITE_API_ORIGIN}${user.avatar}`
                         : undefined
                     }
                     alt={user.username}

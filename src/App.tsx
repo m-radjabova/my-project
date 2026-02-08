@@ -11,6 +11,7 @@ import MainLayout from "./layout/MainLayout";
 
 import AdminLayout from "./layout/AdminLayout";
 import HelloAdmin from "./pages/admin/HelloAdmin";
+import CourseDetail from "./pages/course/CourseDetail";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/courses" element={<CoursePage />} />
+        <Route path="/courses/:id" element={<CourseDetail />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

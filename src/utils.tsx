@@ -13,3 +13,4 @@ export function parseJwt(token: string): any | null {
     return null;
   }
 }
+export const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
