@@ -3,9 +3,6 @@ import LoginForm from "./Login";
 import RegisterForm from "./Register";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import imgLogin from "../../assets/loginImg.svg"
-import imgRegister from "../../assets/registerImg.svg"
-
 function AuthPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,7 +27,7 @@ function AuthPage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative hidden lg:block">
             <img
-              src={isLogin ? imgLogin : imgRegister}
+              src="#"
               alt="auth"
               className="h-full w-full object-cover"
             />

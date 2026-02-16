@@ -22,7 +22,7 @@ function ProtectedRoute({ role, roles, children }: Props) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requiredRoles.length && !hasAnyRole(user, requiredRoles)) {

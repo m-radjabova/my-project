@@ -1,113 +1,206 @@
-import Girl from "../../assets/girl.svg";
-import asistentn from "../../assets/asistents.svg";
-import icon from "../../assets/icon.svg";
-import congratulation from "../../assets/congratulation.svg";
-import user from "../../assets/user.svg";
+import { FaGamepad, FaFlask, FaBrain, FaGraduationCap, FaStar } from "react-icons/fa";
+import {GiSparkles, GiBookshelf, GiTrophy, GiPencil } from "react-icons/gi";
+import { HiOutlineAcademicCap } from "react-icons/hi";
+import { RiGovernmentLine } from "react-icons/ri";
+import { TbMathSymbols } from "react-icons/tb";
+import heroCharacter from "../../assets/hero.png";
 
 function Hero() {
+  
   return (
-    <section className="relative bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 overflow-hidden pt-10">
-      <div className="mx-auto max-w-7xl px-6 pt-14 pb-18">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div className="text-white animate-fade-in-up">
-            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-              <span className="text-orange-400 inline-block animate-bounce-light">Studying</span> Online is now
-              <br />
-              much easier
+    <section
+      className={` relative mt-[80px] h-screen w-full overflow-hidden bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d]`}
+    >
+      {/* Floating Educational Icons Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* First Row - Floating Icons */}
+        <div className="absolute top-[15%] left-[5%] animate-float-slow">
+          <HiOutlineAcademicCap className="text-7xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute top-[25%] right-[8%] animate-float-delayed">
+          <FaBrain className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute bottom-[20%] left-[12%] animate-float">
+          <GiBookshelf className="text-9xl text-white/10 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute bottom-[35%] right-[15%] animate-float-slow">
+          <FaFlask className="text-8xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
+        </div>
+
+        {/* Second Row - More Icons with different animations */}
+        <div className="absolute top-[45%] left-[18%] animate-pulse-slow">
+          <GiTrophy className="text-9xl text-[#ffd700]/20 hover:text-[#ffd700]/30 transition-all duration-1000" />
+        </div>
+        <div className="absolute top-[60%] right-[22%] animate-bounce-slow">
+          <RiGovernmentLine className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute bottom-[45%] left-[25%] animate-spin-slow">
+          <TbMathSymbols className="text-9xl text-white/10 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute bottom-[55%] right-[30%] animate-float-delayed">
+          <GiPencil className="text-8xl text-white/10 rotate-45 hover:text-white/20 transition-all duration-1000" />
+        </div>
+
+        {/* Additional decorative elements */}
+        <div className="absolute top-[75%] left-[35%] animate-pulse">
+          <FaGraduationCap className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
+        </div>
+        <div className="absolute top-[12%] left-[45%] animate-float-slow">
+          <FaStar className="text-7xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
+        </div>
+
+        {/* Background glow effects */}
+        <div className="absolute top-20 left-10">
+          <GiSparkles className="text-8xl text-white/5 animate-pulse-slow" />
+        </div>
+        <div className="absolute bottom-20 right-10">
+          <GiSparkles className="text-8xl text-white/10 animate-bounce-slow" />
+        </div>
+      </div>
+
+      <Decorations />
+
+      <div className="relative mx-auto max-w-7xl px-6 h-full flex items-center">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8 w-full">
+          {/* Left Content */}
+          <div
+            className="relative z-20 text-center lg:text-left"
+            data-aos="fade-right"
+          >
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full mb-8 animate-fade-in-up">
+              <span className="w-2 h-2 bg-[#ffd700] rounded-full animate-pulse" />
+              <span className="text-xs font-bold tracking-[0.3em] text-white/90">
+                LET THE GAMES BEGIN
+              </span>
+            </div>
+
+            <h1 className="font-bebas text-6xl sm:text-7xl lg:text-8xl leading-[0.95] text-white mb-6">
+              <span className="block transform hover:scale-105 hover:translate-x-2 transition-all duration-300 animate-slide-in-left">
+                TA'LIM 
+              </span>
+              <span className="block bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f] animate-slide-in-right">
+                JARAYONI
+              </span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f] animate-slide-in-left delay-200">
+                BIZ BILAN!
+              </span>
             </h1>
 
-            <p className="mt-6 max-w-md text-white/80 leading-relaxed  animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}>
-              TOTC is an interesting platform that will teach you in more an
-              interactive way
+            <p className="max-w-lg mx-auto lg:mx-0 text-base leading-relaxed text-white/80 mb-10 font-inter animate-fade-in-up delay-300">
+              O‘yin orqali fanlarni qiziqarli va oson o‘rganing. 
+              Topshiriqlarni bajaring, savollarga javob bering va bilim darajangizni oshiring. 
+              Do‘stlaringiz bilan birga o‘rganing va yuqori natijalarga erishing.
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}>
-              <button className="h-12 px-8 rounded-full bg-white/20 text-white font-semibold hover:bg-white/40 transition-all duration-300 hover-lift hover-shine border border-white/30 backdrop-blur-sm hover:shadow-lg hover:shadow-orange-300/30">
-                Join for free
-              </button>
+            {/* CTA Button */}
+            <button className="group relative overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-5 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_20px_30px_rgba(0,0,0,0.3)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.25)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up delay-500">
+              <span className="relative z-10 flex items-center gap-3">
+                <FaGamepad className="text-xl animate-bounce-slow" />
+                HOZIROQ BOSHLANG
+              </span>
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
+            </button>
 
-              <button className="flex items-center gap-3 text-white/90 hover:text-white transition-all duration-300 font-medium group hover-lift">
-                <span className="grid place-items-center h-12 w-12 rounded-full bg-white group-hover:shadow-lg group-hover:shadow-orange-300/50 transition-all duration-300 animate-pulse-slow hover-shine">
-                  {/* play icon */}
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="text-teal-600 group-hover:scale-110 transition-transform duration-300"
-                  >
-                    <path
-                      d="M8.5 6.5V17.5L18 12L8.5 6.5Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </span>
-                Watch how it works
-              </button>
+            {/* Stats */}
+            <div className="flex gap-8 mt-12 justify-center lg:justify-start animate-fade-in-up delay-700">
+              {[
+                { value: "50K+", label: "Active Players", icon: FaGamepad },
+                { value: "100+", label: "Dungeons", icon: GiTrophy },
+                { value: "4.9", label: "Rating", icon: GiSparkles },
+              ].map((stat, idx) => (
+                <div key={idx} className="text-center group hover:transform hover:scale-110 transition-all duration-300">
+                  <div className="text-2xl font-black text-white flex items-center gap-1 justify-center lg:justify-start">
+                    <stat.icon className="text-[#ffd966] text-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                    {stat.value}
+                  </div>
+                  <div className="text-xs font-medium text-white/60">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right */}
-          <div className="relative flex justify-center lg:justify-end animate-slide-in-right">
-            {/* Wrapper: hamma absolute shunga nisbatan ishlaydi */}
-            <div className="relative w-[360px] md:w-[500px] lg:w-[560px] h-[420px] md:h-[520px]">
-              {/* Girl */}
+          {/* Right Image */}
+          <div
+            className="relative z-20 flex items-center justify-center lg:justify-end"
+            data-aos="fade-left"
+            data-aos-delay="200"
+          >
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#ffd966] to-[#ffb347] rounded-full blur-2xl opacity-30 group-hover:opacity-50 transition-opacity animate-pulse-slow" />
               <img
-                src={Girl}
-                alt="student"
-                className="absolute right-0 bottom-0 w-[300px] md:w-[420px] lg:w-[460px] drop-shadow-2xl hover:drop-shadow-[0_20px_40px_rgba(255,165,0,0.3)] transition-all duration-500 hover:scale-105 animate-float"
-              />
-
-              {/* Assisted student (top-left card) */}
-              <img
-                src={asistentn}
-                alt="assisted"
-                className="absolute left-0 top-16 md:top-20 w-44 md:w-52 hover-lift hover:shadow-xl transition-all duration-300 rounded-2xl hover:scale-110 cursor-pointer"
-                style={{ animationDelay: "0.5s" }}
-              />
-
-              {/* Small icon (top-right small square) */}
-              <img
-                src={icon}
-                alt="icon"
-                className="absolute right-6 md:right-10 top-24 md:top-28 w-12 md:w-14 hover:scale-125 transition-transform duration-300 animate-pulse-slow cursor-pointer"
-              />
-
-              {/* Congratulation (right-middle card) */}
-              <img
-                src={congratulation}
-                alt="congratulation"
-                className="absolute right-0 md:right-2 top-48 md:top-56 w-56 md:w-64 hover-lift hover:shadow-2xl transition-all duration-300 rounded-2xl hover:scale-110 cursor-pointer"
-                style={{ animationDelay: "1s" }}
-              />
-
-              {/* User class (bottom-left card) */}
-              <img
-                src={user}
-                alt="user"
-                className="absolute left-10 md:left-14 bottom-6 md:bottom-10 w-64 md:w-72 hover-lift hover:shadow-2xl transition-all duration-300 rounded-2xl hover:scale-110 cursor-pointer"
-                style={{ animationDelay: "0.8s" }}
+                src={heroCharacter}
+                alt="Hero character"
+                className="relative z-10 w-[300px] sm:w-[400px] lg:w-[500px] select-none object-contain
+                         drop-shadow-[0_35px_25px_rgba(0,0,0,0.4)] transform transition-all 
+                         
+                        "
+                draggable={false}
               />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Wave */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <svg
-          viewBox="0 0 1440 140"
-          className="w-full h-[110px] md:h-[140px]"
-          preserveAspectRatio="none"
+        {/* Pagination Dots */}
+        <div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3"
+          data-aos="fade-up"
+          data-aos-delay="300"
         >
-          <path
-            d="M0,90 C240,140 480,140 720,95 C960,50 1200,50 1440,95 L1440,140 L0,140 Z"
-            fill="#ffffff"
-          />
-        </svg>
+          {[0, 1, 2, 3].map((dot) => (
+            <button
+              key={dot}
+              className={`h-3 w-3 rounded-full transition-all duration-300 ${
+                dot === 0 
+                  ? "bg-[#ffd966] scale-125 shadow-lg animate-pulse" 
+                  : "bg-white/30 hover:bg-white/50 hover:scale-110"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+function Decorations() {
+  return (
+    <>
+      {/* Animated Clouds */}
+      <svg
+        className="pointer-events-none absolute left-5 top-40 w-[320px] opacity-25 animate-float-slow-hero"
+        viewBox="0 0 420 260"
+        fill="none"
+      >
+        <path
+          d="M120 210c-50 0-88-30-88-70 0-36 31-66 72-70 13-34 48-59 89-59 48 0 88 32 96 76 50 3 90 36 90 76 0 42-44 77-98 77H120z"
+          fill="#ff9acb"
+        />
+      </svg>
+
+      <svg
+        className="pointer-events-none absolute right-0 top-40 w-[380px] opacity-40 animate-float-delayed"
+        viewBox="0 0 420 260"
+        fill="none"
+      >
+        <path
+          d="M120 210c-50 0-88-30-88-70 0-36 31-66 72-70 13-34 48-59 89-59 48 0 88 32 96 76 50 3 90 36 90 76 0 42-44 77-98 77H120z"
+          fill="#ffd2e4"
+        />
+      </svg>
+
+      {/* Orbital Rings */}
+      <div className="absolute left-1/2 top-1/3 -translate-x-1/2 opacity-30">
+        <div className="relative w-64 h-64">
+          <div className="absolute inset-0 border-4 border-white/10 rounded-full animate-spin-slow" />
+          <div className="absolute inset-4 border-2 border-white/20 rounded-full animate-spin-slower" />
+          <div className="absolute inset-8 border border-white/30 rounded-full animate-pulse" />
+        </div>
+      </div>
+
+      {/* Floating Orbs */}
+      <div className="absolute right-40 bottom-40 w-24 h-24 rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347] opacity-30 blur-xl animate-pulse-slow" />
+      <div className="absolute left-60 top-60 w-32 h-32 rounded-full bg-gradient-to-br from-[#ff9acb] to-[#d42d73] opacity-30 blur-xl animate-pulse-slow delay-1000" />
+    </>
   );
 }
 
