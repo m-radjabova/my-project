@@ -1,20 +1,31 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import {
   FiMail,
   FiLock,
   FiUser,
-  FiCheckCircle,
   FiEye,
   FiEyeOff,
-  FiUserPlus,
+  FiArrowRight,
 } from "react-icons/fi";
+import {
+  FaRocket,
+  FaShieldAlt,
+  FaGraduationCap,
+  FaChalkboardTeacher,
+  FaBrain,
+  FaGamepad,
+  FaStar,
+} from "react-icons/fa";
+import { GiPlanetCore, GiBrain, GiTrophy, GiBookshelf } from "react-icons/gi";
+import { HiOutlineAcademicCap } from "react-icons/hi";
 import { toast } from "react-toastify";
 import apiClient from "../../apiClient/apiClient";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../utils/error";
-import { FaStar } from "react-icons/fa";
+
+import registerIllustration from "../../assets/hero.png";
 
 type RegisterFormInputs = {
   username: string;
@@ -30,7 +41,6 @@ type CreateUserResponse = {
   roles: string[];
   created_at: string;
 };
-
 
 function Register() {
   const {
@@ -51,12 +61,9 @@ function Register() {
     password: false,
     confirmPassword: false,
   });
-
   const password = watch("password");
-  const email = watch("email");
-  const username = watch("username");
 
-  // Password strength checker (o'zgartirmadim)
+  // Password strength checker
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { strength: 0, label: "", color: "", textColor: "" };
     let strength = 0;
@@ -67,12 +74,16 @@ function Register() {
     if (pass.match(/[^a-zA-Z0-9]/)) strength += 1;
 
     const levels = [
-      { label: "Weak", color: "bg-red-500", textColor: "text-red-500" },
-      { label: "Fair", color: "bg-orange-500", textColor: "text-orange-500" },
-      { label: "Good", color: "bg-yellow-500", textColor: "text-yellow-500" },
-      { label: "Strong", color: "bg-teal-500", textColor: "text-teal-500" },
+      { label: "Zaif", color: "bg-red-500", textColor: "text-red-500" },
       {
-        label: "Very Strong",
+        label: "O'rtacha",
+        color: "bg-orange-500",
+        textColor: "text-orange-500",
+      },
+      { label: "Yaxshi", color: "bg-yellow-500", textColor: "text-yellow-500" },
+      { label: "Kuchli", color: "bg-teal-500", textColor: "text-teal-500" },
+      {
+        label: "Juda kuchli",
         color: "bg-emerald-500",
         textColor: "text-emerald-500",
       },
@@ -90,397 +101,496 @@ function Register() {
   const passwordStrength = getPasswordStrength(password || "");
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
-  if (data.password !== data.confirmPassword) {
-    toast.error("🔐 Passwords do not match", {
-      style: {
-        borderRadius: "12px",
-        background: "#fee2e2",
-        color: "#991b1b",
-        border: "1px solid #fecaca",
-      },
-    });
-    return;
-  }
-
-  try {
-    const created = await apiClient.post<CreateUserResponse>("/users/", {
-      username: data.username,
-      email: data.email,
-      password: data.password,
-    });
-
-    toast.success("✅ Account created successfully!", {
-      icon: <FaStar />,
-      style: {
-        borderRadius: "16px",
-        background: "linear-gradient(135deg, #14b8a6 0%, #10b981 100%)",
-        color: "#fff",
-        fontWeight: 500,
-        boxShadow: "0 10px 25px rgba(20, 184, 166, 0.3)",
-      },
-    });
-
-    reset();
-
-    // xohlasang login page ga yubor
-    navigate("/login");
-  } catch (error: unknown) {
-    const status = isAxiosError(error) ? error.response?.status : undefined;
-
-    const message = isAxiosError(error)
-      ? (error.response?.data as any)?.detail ||
-        (error.response?.data as any)?.message ||
-        (error.response?.data as any)?.error ||
-        "Registration failed. Please try again."
-      : "Registration failed. Please try again.";
-
-    if (status === 409) {
-      toast.error("📧 This email is already registered", {
+    if (data.password !== data.confirmPassword) {
+      toast.error("Parollar mos kelmadi", {
         style: {
-          borderRadius: "12px",
-          background: "#fff3cd",
-          color: "#856404",
-          border: "1px solid #ffeeba",
+          borderRadius: "20px",
+          background: "#fee2e2",
+          color: "#991b1b",
+          border: "1px solid #fecaca",
         },
       });
-    } else {
-      toast.error(getErrorMessage(error) || message);
+      return;
     }
-  }
-};
 
+    try {
+      const created = await apiClient.post<CreateUserResponse>("/users/", {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      });
 
+      toast.success("Hisob muvaffaqiyatli yaratildi! рџЋ‰", {
+        icon: <FaStar className="text-[#ffd966]" />,
+        style: {
+          borderRadius: "20px",
+          background: "linear-gradient(135deg, #d42d73, #b0134d)",
+          color: "#fff",
+          boxShadow: "0 10px 30px rgba(210, 45, 115, 0.3)",
+        },
+      });
+
+      reset();
+      navigate("/login");
+    } catch (error: unknown) {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+
+      if (status === 409) {
+        toast.error("Bu email allaqachon ro'yxatdan o'tgan", {
+          style: {
+            borderRadius: "20px",
+            background: "#fff3cd",
+            color: "#856404",
+            border: "1px solid #ffeeba",
+          },
+        });
+      } else {
+        toast.error(
+          getErrorMessage(error) || "Ro'yxatdan o'tish amalga oshmadi",
+        );
+      }
+    }
+  };
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-4 animate-fade-in">
-        <h2 className="text-2xl mt-2 font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-          Create Account
-        </h2>
-        <p className="text-sm text-slate-500 mt-2">
-          Register qiling — keyin emailingizga tasdiqlash linki yuboriladi.
-        </p>
+    <div className="h-screen p-20 w-screen bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d] fixed top-0 left-0">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 ">
+        {/* Floating educational icons */}
+        <div className="absolute top-[5%] left-[2%]">
+          <GiBookshelf className="text-7xl lg:text-8xl text-white/10" />
+        </div>
+        <div className="absolute top-[10%] right-[2%]">
+          <HiOutlineAcademicCap className="text-8xl lg:text-9xl text-white/10" />
+        </div>
+        <div className="absolute bottom-[15%] left-[3%]">
+          <GiBrain className="text-7xl lg:text-8xl text-white/10" />
+        </div>
+        <div className="absolute bottom-[10%] right-[2%]">
+          <GiTrophy className="text-8xl lg:text-9xl text-[#ffd700]/20" />
+        </div>
+
+        {/* Orbital rings */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20">
+          <div className="relative w-[600px] lg:w-[1000px] h-[600px] lg:h-[1000px]">
+            <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
+            <div className="absolute inset-24 lg:inset-32 border-2 border-white/15 rounded-full" />
+            <div className="absolute inset-48 lg:inset-64 border border-white/20 rounded-full" />
+          </div>
+        </div>
+
+        {/* Floating particles */}
+        <div className="absolute top-[15%] left-[10%] w-1.5 h-1.5 bg-white/30 rounded-full " />
+        <div className="absolute top-[70%] right-[15%] w-2 h-2 bg-[#ffd966]/30 rounded-full" />
+        <div className="absolute bottom-[20%] left-[20%] w-1.5 h-1.5 bg-white/20 rounded-full" />
       </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Username */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-            <FiUser className="w-4 h-4 text-teal-500" />
-            Username
-          </label>
-
-          <div
-            className={`relative group transition-all duration-300 ${isFocused.username ? "scale-[1.02]" : ""}`}
-          >
-            <div
-              className={`
-                absolute -inset-0.5 bg-gradient-to-r from-teal-400 to-emerald-500 
-                rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500
-                ${errors.username ? "!opacity-50 from-red-400 to-rose-500" : ""}
-                ${isFocused.username ? "opacity-30" : ""}
-              `}
-            />
+      {/* Main Container - Full screen centered */}
+      <div className="relative z-20 h-full w-full flex items-center justify-center px-4 lg:px-8">
+        <div className="flex w-full max-w-9xl flex-col lg:flex-row items-center justify-center gap-4 lg:gap-12">
+          {/* Left Side - Illustration & Content */}
+          <div className="flex-1 max-w-lg lg:max-w-xl text-center lg:text-left mt-10">
             <div className="relative">
-              <input
-                type="text"
-                placeholder="johndoe"
-                className={`
-                  w-full px-5 py-4 bg-white/80 backdrop-blur-sm border-2 rounded-2xl text-sm
-                  transition-all duration-300 placeholder:text-slate-400 focus:outline-none focus:ring-4
-                  ${
-                    errors.username
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : "border-teal-200 focus:border-teal-500 focus:ring-teal-100"
-                  }
-                `}
-                {...register("username", {
-                  required: "Username is required",
-                  minLength: {
-                    value: 3,
-                    message: "Username must be at least 3 characters",
-                  },
-                  pattern: {
-                    value: /^[a-zA-Z0-9_]+$/,
-                    message: "Only letters, numbers and underscore",
-                  },
-                })}
-                onFocus={() => setIsFocused((p) => ({ ...p, username: true }))}
-                onBlur={() => setIsFocused((p) => ({ ...p, username: false }))}
-              />
-              {username && !errors.username && (
-                <FiCheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
-              )}
-            </div>
-          </div>
-
-          {errors.username && (
-            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
-              <span className="w-1 h-1 bg-red-500 rounded-full" />
-              {errors.username.message}
-            </p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-            <FiMail className="w-4 h-4 text-teal-500" />
-            Email Address
-          </label>
-
-          <div
-            className={`relative group transition-all duration-300 ${isFocused.email ? "scale-[1.02]" : ""}`}
-          >
-            <div
-              className={`
-                absolute -inset-0.5 bg-gradient-to-r from-teal-400 to-emerald-500 
-                rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500
-                ${errors.email ? "!opacity-50 from-red-400 to-rose-500" : ""}
-                ${isFocused.email ? "opacity-30" : ""}
-              `}
-            />
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="hello@example.com"
-                className={`
-                  w-full px-5 py-4 bg-white/80 backdrop-blur-sm border-2 rounded-2xl text-sm
-                  transition-all duration-300 placeholder:text-slate-400 focus:outline-none focus:ring-4
-                  ${
-                    errors.email
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : "border-teal-200 focus:border-teal-500 focus:ring-teal-100"
-                  }
-                `}
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^\S+@\S+\.\S+$/,
-                    message: "Please enter a valid email",
-                  },
-                })}
-                onFocus={() => setIsFocused((p) => ({ ...p, email: true }))}
-                onBlur={() => setIsFocused((p) => ({ ...p, email: false }))}
-              />
-              {email && !errors.email && (
-                <FiCheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
-              )}
-            </div>
-          </div>
-
-          {errors.email && (
-            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
-              <span className="w-1 h-1 bg-red-500 rounded-full" />
-              {errors.email.message}
-            </p>
-          )}
-        </div>
-
-        {/* Password */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-            <FiLock className="w-4 h-4 text-teal-500" />
-            Password
-          </label>
-
-          <div
-            className={`relative group transition-all duration-300 ${isFocused.password ? "scale-[1.02]" : ""}`}
-          >
-            <div
-              className={`
-                absolute -inset-0.5 bg-gradient-to-r from-teal-400 to-emerald-500 
-                rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500
-                ${errors.password ? "!opacity-50 from-red-400 to-rose-500" : ""}
-                ${isFocused.password ? "opacity-30" : ""}
-              `}
-            />
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
-                className={`
-                  w-full px-5 py-4 bg-white/80 backdrop-blur-sm border-2 rounded-2xl text-sm
-                  transition-all duration-300 placeholder:text-slate-400 focus:outline-none focus:ring-4 pr-14
-                  ${
-                    errors.password
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : "border-teal-200 focus:border-teal-500 focus:ring-teal-100"
-                  }
-                `}
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                onFocus={() => setIsFocused((p) => ({ ...p, password: true }))}
-                onBlur={() => setIsFocused((p) => ({ ...p, password: false }))}
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-500 transition-colors duration-200"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <FiEye className="w-5 h-5" />
-                ) : (
-                  <FiEyeOff className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Strength (o'zgartirmadim) */}
-          {password && (
-            <div className="mt-2 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${passwordStrength.color} transition-all duration-500 rounded-full`}
-                    style={{
-                      width: `${(passwordStrength.strength / 5) * 100}%`,
-                    }}
-                  />
+              {/* Floating badges */}
+              <div className="absolute -top-8 -left-8 bg-white/10 backdrop-blur-lg rounded-2xl p-3 hidden lg:block">
+                <div className="flex items-center gap-2">
+                  <FaGraduationCap className="text-2xl text-[#ffd966]" />
+                  <div>
+                    <p className="text-white text-xs font-bold">50K+</p>
+                    <p className="text-white/60 text-xs">O'quvchilar</p>
+                  </div>
                 </div>
-                <span
-                  className={`text-xs font-medium ${passwordStrength.textColor}`}
-                >
-                  {passwordStrength.label}
-                </span>
+              </div>
+
+              {/* Main Illustration */}
+              <div className="relative mb-4 lg:mb-0">
+                <img
+                  src={registerIllustration}
+                  alt="Register illustration"
+                  className="relative z-10 w-full max-w-[250px] lg:max-w-[300px] mx-auto lg:mx-0 object-contain drop-shadow-2xl"
+                />
+              </div>
+
+              {/* Text Content */}
+              <div className="mt-2 lg:mt-4 space-y-2">
+                <h1 className="font-bebas text-4xl lg:text-6xl text-white leading-tight">
+                  HOZIR RO'YXATDAN
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347]">
+                    O'TING
+                  </span>
+                </h1>
+
+                <p className="text-white/85 text-sm lg:text-base max-w-md mx-auto lg:mx-0 line-clamp-2-reg">
+                  1000+ interaktiv mashg'ulotlar va o'yinlar sizni kutmoqda
+                </p>
+
+                {/* Features */}
+                <div className="flex flex-wrap gap-2 justify-center lg:justify-start mt-3">
+                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <FaGamepad className="text-[#ffd966] text-xs" />
+                    <span className="text-white text-xs">O'yinlar</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <FaBrain className="text-[#ffd966] text-xs" />
+                    <span className="text-white text-xs">Interaktiv</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <FaChalkboardTeacher className="text-[#ffd966] text-xs" />
+                    <span className="text-white text-xs">Moslashuvchan</span>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-
-          {errors.password && (
-            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
-              <span className="w-1 h-1 bg-red-500 rounded-full" />
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-
-        {/* Confirm Password */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-            <FiLock className="w-4 h-4 text-teal-500" />
-            Confirm Password
-          </label>
-
-          <div
-            className={`relative group transition-all duration-300 ${isFocused.confirmPassword ? "scale-[1.02]" : ""}`}
-          >
-            <div
-              className={`
-                absolute -inset-0.5 bg-gradient-to-r from-teal-400 to-emerald-500 
-                rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500
-                ${errors.confirmPassword ? "!opacity-50 from-red-400 to-rose-500" : ""}
-                ${isFocused.confirmPassword ? "opacity-30" : ""}
-              `}
-            />
-            <div className="relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                placeholder="Confirm your password"
-                className={`
-                  w-full px-5 py-4 bg-white/80 backdrop-blur-sm border-2 rounded-2xl text-sm
-                  transition-all duration-300 placeholder:text-slate-400 focus:outline-none focus:ring-4 pr-14
-                  ${
-                    errors.confirmPassword
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-100"
-                      : "border-teal-200 focus:border-teal-500 focus:ring-teal-100"
-                  }
-                `}
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (value) =>
-                    value === password || "Passwords do not match",
-                })}
-                onFocus={() =>
-                  setIsFocused((p) => ({ ...p, confirmPassword: true }))
-                }
-                onBlur={() =>
-                  setIsFocused((p) => ({ ...p, confirmPassword: false }))
-                }
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-teal-500 transition-colors duration-200"
-                aria-label={showConfirm ? "Hide password" : "Show password"}
-              >
-                {showConfirm ? (
-                  <FiEye className="w-5 h-5" />
-                ) : (
-                  <FiEyeOff className="w-5 h-5" />
-                )}
-              </button>
-
-              {watch("confirmPassword") &&
-                watch("confirmPassword") === password && (
-                  <FiCheckCircle className="absolute right-12 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
-                )}
-            </div>
           </div>
 
-          {errors.confirmPassword && (
-            <p className="text-xs text-red-500 mt-1 ml-1 flex items-center gap-1">
-              <span className="w-1 h-1 bg-red-500 rounded-full" />
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
+          {/* Right Side - Register Form */}
+          <div className="flex-1 w-full max-w-lg lg:max-w-xl">
+            <div className="group perspective-1000">
+              
+              {/* Main Card */}
+              <div className="relative rounded-[30px] lg:rounded-[40px] bg-white/10 backdrop-blur-xl p-7 lg:p-10 shadow-2xl border border-white/20">
+                {/* Inner glow */}
+                <div className="absolute inset-0 rounded-[30px] lg:rounded-[40px] bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2),transparent_70%)]" />
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`
-            relative w-full py-4 px-6 rounded-2xl mt-6
-            bg-gradient-to-r from-teal-500 to-emerald-500
-            text-white font-semibold text-sm
-            transform transition-all duration-300
-            hover:shadow-xl hover:shadow-teal-200/50
-            hover:scale-[1.02] active:scale-[0.98]
-            disabled:opacity-50 disabled:cursor-not-allowed
-            disabled:hover:scale-100 disabled:hover:shadow-none
-            overflow-hidden group
-          `}
-        >
-          <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          <span className="relative flex items-center justify-center gap-2">
-            {isSubmitting ? (
-              <>
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span>Creating account...</span>
-              </>
-            ) : (
-              <>
-                <FiUserPlus className="w-5 h-5" />
-                <span>Create Account</span>
-              </>
-            )}
-          </span>
-        </button>
-      </form>
+                {/* Content */}
+                <div className="relative">
+                  {/* Logo and Title */}
+                  <div className="text-center mb-4 lg:mb-6">
+                    <div className="inline-flex items-center justify-center gap-1 mb-2">
+                      <div className="relative">
+                        <GiPlanetCore className="text-4xl lg:text-5xl text-[#ffd966]" />
+                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#ffd966] rounded-full " />
+                      </div>
+                      <FaRocket className="text-3xl lg:text-4xl text-[#ffb347]" />
+                    </div>
+                    <h2 className="font-bebas text-3xl lg:text-4xl text-white mb-1 tracking-wider">
+                      RO'YXATDAN O'TISH
+                    </h2>
+                    <p className="text-white/70 text-sm">
+                      Hisob yarating va boshlang
+                    </p>
+                  </div>
+
+                  {/* Register Form */}
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="space-y-3 lg:space-y-4"
+                  >
+                    {/* Username Field */}
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-white/90">
+                        Foydalanuvchi nomi
+                      </label>
+                      <div
+                        className={`relative group/input transition-all duration-300 ${
+                          isFocused.username ? "translate-y-[-1px]" : ""
+                        }`}
+                      >
+                        <div
+                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
+                            isFocused.username ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        <div className="relative flex items-center">
+                          <FiUser
+                            className={`absolute left-3 text-sm transition-colors ${
+                              isFocused.username
+                                ? "text-[#b0134d]"
+                                : "text-[#7b8794]"
+                            }`}
+                          />
+                          <input
+                            type="text"
+                            {...register("username", {
+                              required: "Username talab qilinadi",
+                              minLength: {
+                                value: 3,
+                                message: "Kamida 3 belgi",
+                              },
+                            })}
+                            onFocus={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                username: true,
+                              }))
+                            }
+                            onBlur={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                username: false,
+                              }))
+                            }
+                            autoComplete="username"
+                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-3 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
+                            placeholder="johndoe"
+                          />
+                        </div>
+                      </div>
+                      {errors.username && (
+                        <p className="text-xs text-red-400">
+                          {errors.username.message as string}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Email Field */}
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-white/90">
+                        Email
+                      </label>
+                      <div
+                        className={`relative group/input transition-all duration-300 ${
+                          isFocused.email ? "translate-y-[-1px]" : ""
+                        }`}
+                      >
+                        <div
+                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
+                            isFocused.email ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        <div className="relative flex items-center">
+                          <FiMail
+                            className={`absolute left-3 text-sm transition-colors ${
+                              isFocused.email
+                                ? "text-[#b0134d]"
+                                : "text-[#7b8794]"
+                            }`}
+                          />
+                          <input
+                            type="email"
+                            {...register("email", {
+                              required: "Email talab qilinadi",
+                              pattern: {
+                                value:
+                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: "Noto'g'ri email format",
+                              },
+                            })}
+                            onFocus={() =>
+                              setIsFocused((prev) => ({ ...prev, email: true }))
+                            }
+                            onBlur={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                email: false,
+                              }))
+                            }
+                            autoComplete="email"
+                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-3 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
+                            placeholder="siz@email.com"
+                          />
+                        </div>
+                      </div>
+                      {errors.email && (
+                        <p className="text-xs text-red-400">
+                          {errors.email.message as string}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Password Field */}
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-white/90">
+                        Parol
+                      </label>
+                      <div
+                        className={`relative group/input transition-all duration-300 ${
+                          isFocused.password ? "translate-y-[-1px]" : ""
+                        }`}
+                      >
+                        <div
+                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
+                            isFocused.password ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        <div className="relative flex items-center">
+                          <FiLock
+                            className={`absolute left-3 text-sm transition-colors ${
+                              isFocused.password
+                                ? "text-[#b0134d]"
+                                : "text-[#7b8794]"
+                            }`}
+                          />
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            {...register("password", {
+                              required: "Parol talab qilinadi",
+                              minLength: {
+                                value: 6,
+                                message: "Kamida 6 belgi",
+                              },
+                            })}
+                            onFocus={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                password: true,
+                              }))
+                            }
+                            onBlur={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                password: false,
+                              }))
+                            }
+                            autoComplete="new-password"
+                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-10 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
+                            placeholder="••••••••"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 text-[#7b8794] hover:text-[#b0134d] transition-colors"
+                          >
+                            {showPassword ? (
+                              <FiEyeOff size={14} />
+                            ) : (
+                              <FiEye size={14} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Password Strength Indicator */}
+                      {password && passwordStrength.label && (
+                        <div className="mt-1 space-y-1">
+                          <div className="flex gap-1 h-1">
+                            {[...Array(5)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`flex-1 rounded-full transition-all duration-300 ${
+                                  i < passwordStrength.strength
+                                    ? passwordStrength.color
+                                    : "bg-white/10"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <p
+                            className={`text-xs ${passwordStrength.textColor}`}
+                          >
+                            {passwordStrength.label}
+                          </p>
+                        </div>
+                      )}
+
+                      {errors.password && (
+                        <p className="text-xs text-red-400">
+                          {errors.password.message as string}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Confirm Password Field */}
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-semibold text-white/90">
+                        Parolni tasdiqlang
+                      </label>
+                      <div
+                        className={`relative group/input transition-all duration-300 ${
+                          isFocused.confirmPassword ? "translate-y-[-1px]" : ""
+                        }`}
+                      >
+                        <div
+                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
+                            isFocused.confirmPassword ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        <div className="relative flex items-center">
+                          <FiLock
+                            className={`absolute left-3 text-sm transition-colors ${
+                              isFocused.confirmPassword
+                                ? "text-[#b0134d]"
+                                : "text-[#7b8794]"
+                            }`}
+                          />
+                          <input
+                            type={showConfirm ? "text" : "password"}
+                            {...register("confirmPassword", {
+                              required: "Parolni tasdiqlang",
+                              validate: (value) =>
+                                value === password || "Parollar mos kelmadi",
+                            })}
+                            onFocus={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                confirmPassword: true,
+                              }))
+                            }
+                            onBlur={() =>
+                              setIsFocused((prev) => ({
+                                ...prev,
+                                confirmPassword: false,
+                              }))
+                            }
+                            autoComplete="new-password"
+                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-10 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
+                            placeholder="••••••••"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirm(!showConfirm)}
+                            className="absolute right-3 text-[#7b8794] hover:text-[#b0134d] transition-colors"
+                          >
+                            {showConfirm ? (
+                              <FiEyeOff size={14} />
+                            ) : (
+                              <FiEye size={14} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      {errors.confirmPassword && (
+                        <p className="text-xs text-red-400">
+                          {errors.confirmPassword.message as string}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="group relative w-full rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] py-3.5 text-base font-bold text-[#b0134d] shadow-[0_5px_0_#8a0f3b] hover:translate-y-0.5 hover:shadow-[0_4px_0_#8a0f3b] active:translate-y-1 active:shadow-[0_3px_0_#8a0f3b] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-1">
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-[#b0134d] border-t-transparent rounded-full animate-spin" />
+                            <span className="text-xs">
+                              Ro'yxatdan o'tish...
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-xs">RO'YXATDAN O'TISH</span>
+                            <FiArrowRight className="  text-xs" />
+                          </>
+                        )}
+                      </span>
+                       </button>
+                  </form>
+
+                  {/* Login Link */}
+                  <p className="mt-3 text-center text-white/60 text-xs">
+                    Hisobingiz bormi?{" "}
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="text-[#ffd966] hover:text-[#ffb347] font-semibold hover:underline transition-all  inline-flex items-center gap-0.5"
+                    >
+                      Kirish
+                      <FiArrowRight className="text-xs" />
+                    </button>
+                  </p>
+
+                  {/* Security Badge */}
+                  <div className="mt-2 flex items-center justify-center gap-1 text-white/40 text-xs">
+                    <FaShieldAlt className="text-[#ffd966] text-xs" />
+                    <span>256-bit encryption</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

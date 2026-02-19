@@ -43,7 +43,7 @@ function Footer() {
         {/* Main Content Grid */}
         <div className="grid items-end gap-8 lg:grid-cols-[400px_1fr] lg:gap-12">
           {/* Character Section */}
-          <div className="relative h-[320px] lg:h-[400px]" data-aos="fade-right">
+          <div className="relative h-[320px] lg:h-[400px]">
             {/* Glow Effect */}
             <div className="absolute -bottom-10 left-0 w-64 h-64 bg-gradient-to-r from-[#ffd966] to-[#ffb347] rounded-full blur-3xl opacity-30" />
 
@@ -69,7 +69,7 @@ function Footer() {
           </div>
 
           {/* Content Section */}
-          <div className="relative pb-4" data-aos="fade-left" data-aos-delay="160">
+          <div className="relative pb-4">
             {/* Title and Newsletter Row */}
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
               {/* Title */}
@@ -158,8 +158,7 @@ function Footer() {
                   key={index}
                   href="#"
                   className="group relative block"
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100 + 260}
+                  
                 >
                   <div
                     className="relative bg-white rounded-2xl p-5 shadow-[0_10px_15px_rgba(0,0,0,0.05)] 
@@ -194,8 +193,7 @@ function Footer() {
             {/* Bottom Bar */}
             <div
               className=" mt-16 pt-6 border-t-2 border-gray-200/60"
-              data-aos="fade-up"
-              data-aos-delay="420"
+             
             >
               <div className="flex flex-col gap-6">
                 {/* Social Icons */}

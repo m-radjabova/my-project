@@ -84,8 +84,7 @@ function TrialSection() {
                           alt="Trial character"
                           className="relative z-10 w-[280px] lg:w-[320px] select-none object-contain 
                                    drop-shadow-[0_25px_15px_rgba(0,0,0,0.2)] transform group-hover:scale-105 
-                                   group-hover:-translate-y-2 transition-all duration-500
-                                   animate-float-slow"
+                                   "
                           draggable={false}
                         />
                       </div>
@@ -131,8 +130,8 @@ function TrialSection() {
 
                       {/* Navigation Dots */}
                       <div className="mt-10 flex items-center justify-center lg:justify-start gap-4 animate-fade-in-up delay-500">
-                        <button className="group w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffd966] to-[#ffb347] shadow-[0_6px_0_rgba(200,100,0,0.5)] hover:translate-y-1 hover:shadow-[0_4px_0_rgba(200,100,0,0.5)] active:translate-y-2 active:shadow-[0_2px_0_rgba(200,100,0,0.5)] transition-all hover:rotate-12">
-                          <FaArrowLeft className="mx-auto text-[#1a1a1a] group-hover:-translate-x-1 transition-transform" />
+                        <button className="group w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffd966] to-[#ffb347] shadow-[0_6px_0_rgba(200,100,0,0.5)] hover:shadow-[0_4px_0_rgba(200,100,0,0.5)] active:shadow-[0_2px_0_rgba(200,100,0,0.5)] transition-all">
+                          <FaArrowLeft className="mx-auto text-[#1a1a1a]" />
                         </button>
                         
                         <div className="flex gap-2">
@@ -148,8 +147,8 @@ function TrialSection() {
                           ))}
                         </div>
 
-                        <button className="group w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffd966] to-[#ffb347] shadow-[0_6px_0_rgba(200,100,0,0.5)] hover:translate-y-1 hover:shadow-[0_4px_0_rgba(200,100,0,0.5)] active:translate-y-2 active:shadow-[0_2px_0_rgba(200,100,0,0.5)] transition-all hover:-rotate-12">
-                          <FaArrowRight className="mx-auto text-[#1a1a1a] group-hover:translate-x-1 transition-transform" />
+                        <button className="group w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffd966] to-[#ffb347] shadow-[0_6px_0_rgba(200,100,0,0.5)] hover:shadow-[0_4px_0_rgba(200,100,0,0.5)] active:translate-y-2 active:shadow-[0_2px_0_rgba(200,100,0,0.5)] transition-all">
+                          <FaArrowRight className="mx-auto text-[#1a1a1a] " />
                         </button>
                       </div>
                     </div>

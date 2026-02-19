@@ -1,18 +1,26 @@
-import { FaGamepad, FaFlask, FaBrain, FaGraduationCap, FaStar } from "react-icons/fa";
-import {GiSparkles, GiBookshelf, GiTrophy, GiPencil } from "react-icons/gi";
+import {
+  FaGamepad,
+  FaFlask,
+  FaBrain,
+  FaGraduationCap,
+  FaStar,
+} from "react-icons/fa";
+import { GiSparkles, GiBookshelf, GiTrophy, GiPencil } from "react-icons/gi";
 import { HiOutlineAcademicCap } from "react-icons/hi";
 import { RiGovernmentLine } from "react-icons/ri";
 import { TbMathSymbols } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
 import heroCharacter from "../../assets/hero.png";
 
 function Hero() {
-  
+  const navigate = useNavigate();
+
   return (
     <section
       className={` relative mt-[80px] h-screen w-full overflow-hidden bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d]`}
     >
       {/* Floating Educational Icons Background */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* First Row - Floating Icons */}
         <div className="absolute top-[15%] left-[5%] animate-float-slow">
           <HiOutlineAcademicCap className="text-7xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
@@ -76,7 +84,7 @@ function Hero() {
 
             <h1 className="font-bebas text-6xl sm:text-7xl lg:text-8xl leading-[0.95] text-white mb-6">
               <span className="block transform hover:scale-105 hover:translate-x-2 transition-all duration-300 animate-slide-in-left">
-                TA'LIM 
+                TA'LIM
               </span>
               <span className="block bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f] animate-slide-in-right">
                 JARAYONI
@@ -87,15 +95,19 @@ function Hero() {
             </h1>
 
             <p className="max-w-lg mx-auto lg:mx-0 text-base leading-relaxed text-white/80 mb-10 font-inter animate-fade-in-up delay-300">
-              O‘yin orqali fanlarni qiziqarli va oson o‘rganing. 
-              Topshiriqlarni bajaring, savollarga javob bering va bilim darajangizni oshiring. 
-              Do‘stlaringiz bilan birga o‘rganing va yuqori natijalarga erishing.
+              O‘yin orqali fanlarni qiziqarli va oson o‘rganing. Topshiriqlarni
+              bajaring, savollarga javob bering va bilim darajangizni oshiring.
+              Do‘stlaringiz bilan birga o‘rganing va yuqori natijalarga
+              erishing.
             </p>
 
             {/* CTA Button */}
-            <button className="group relative overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-5 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_20px_30px_rgba(0,0,0,0.3)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.25)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up delay-500">
+            <button
+              onClick={() => navigate("/games")}
+              className="group relative mt-8 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up"
+            >
               <span className="relative z-10 flex items-center gap-3">
-                <FaGamepad className="text-xl animate-bounce-slow" />
+                <FaGamepad className="text-xl" />
                 HOZIROQ BOSHLANG
               </span>
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
@@ -108,12 +120,17 @@ function Hero() {
                 { value: "100+", label: "Dungeons", icon: GiTrophy },
                 { value: "4.9", label: "Rating", icon: GiSparkles },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center group hover:transform hover:scale-110 transition-all duration-300">
+                <div
+                  key={idx}
+                  className="text-center group hover:transform hover:scale-110 transition-all duration-300"
+                >
                   <div className="text-2xl font-black text-white flex items-center gap-1 justify-center lg:justify-start">
                     <stat.icon className="text-[#ffd966] text-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
                     {stat.value}
                   </div>
-                  <div className="text-xs font-medium text-white/60">{stat.label}</div>
+                  <div className="text-xs font-medium text-white/60">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -150,8 +167,8 @@ function Hero() {
             <button
               key={dot}
               className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                dot === 0 
-                  ? "bg-[#ffd966] scale-125 shadow-lg animate-pulse" 
+                dot === 0
+                  ? "bg-[#ffd966] scale-125 shadow-lg animate-pulse"
                   : "bg-white/30 hover:bg-white/50 hover:scale-110"
               }`}
             />
@@ -164,10 +181,10 @@ function Hero() {
 
 function Decorations() {
   return (
-    <>
+    <div className="pointer-events-none absolute inset-0">
       {/* Animated Clouds */}
       <svg
-        className="pointer-events-none absolute left-5 top-40 w-[320px] opacity-25 animate-float-slow-hero"
+        className="absolute left-5 top-40 w-[320px] opacity-25 animate-float-slow-hero"
         viewBox="0 0 420 260"
         fill="none"
       >
@@ -200,7 +217,7 @@ function Decorations() {
       {/* Floating Orbs */}
       <div className="absolute right-40 bottom-40 w-24 h-24 rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347] opacity-30 blur-xl animate-pulse-slow" />
       <div className="absolute left-60 top-60 w-32 h-32 rounded-full bg-gradient-to-br from-[#ff9acb] to-[#d42d73] opacity-30 blur-xl animate-pulse-slow delay-1000" />
-    </>
+    </div>
   );
 }
 

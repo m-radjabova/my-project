@@ -1,41 +1,43 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-// import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/home/Home";
 
 
-// import AuthPage from "./pages/login/AuthPage";
-// import AuthLayout from "./layout/AuthLayout";
+import AuthLayout from "./layout/AuthLayout";
 
-// import MainLayout from "./layout/MainLayout";
+import MainLayout from "./layout/MainLayout";
 
-// import AdminLayout from "./layout/AdminLayout";
-// import HelloAdmin from "./pages/admin/HelloAdmin";
-// import useContextPro from "./hooks/useContextPro";
+import AdminLayout from "./layout/AdminLayout";
+import HelloAdmin from "./pages/admin/HelloAdmin";
+import useContextPro from "./hooks/useContextPro";
+import LoginForm from "./pages/login/Login";
+import Register from "./pages/login/Register";
+import Games from "./pages/games/Games";
+import QuizBattlePage from "./components/games/quiz_battle/QuizBattlePage";
+import TreasureHuntPage from "./components/games/treasure_hunt/TreasureHuntPage";
+import MemoryRushPage from "./components/games/memory_rush/MemoryRushPage";
+import SiteLoader from "./components/main/SiteLoader";
 
 
 function App() {
-  // const { state: { isLoading } } = useContextPro();
+  const { state: { isLoading } } = useContextPro();
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="h-10 w-10 rounded-full border-4 border-gray-300 border-t-gray-900 animate-spin" />
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return <SiteLoader />;
+  }
 
 
   return (
     <Routes>
 
       <Route path="/home" element={<Home />} />
-      {/* <Route element={<AuthLayout />}>
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/register" element={<AuthPage />} />
-      </Route> */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
 
-      {/* <Route
+      <Route
         path="/admin"
         element={
           <ProtectedRoute role="admin">
@@ -44,9 +46,9 @@ function App() {
         }
       >
         <Route index element={<HelloAdmin />} />
-      </Route> */}
+      </Route>
 
-      {/* <Route
+      <Route
         element={
           <ProtectedRoute>
             <MainLayout />
@@ -55,7 +57,13 @@ function App() {
       >
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
-      </Route> */}
+        <Route path="/profile" element={<h1>Profile</h1>} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/games/quiz-battle" element={<QuizBattlePage />} />
+        <Route path="/games/treasure-hunt" element={<TreasureHuntPage/>} />
+        <Route path="/games/memory-rush" element={<MemoryRushPage />} />
+      
+      </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
