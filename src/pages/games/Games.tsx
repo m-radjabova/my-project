@@ -1,351 +1,319 @@
+﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
-  FaBolt,
-  FaBrain,
   FaLock,
-  FaRocket,
   FaStar,
   FaCrown,
-  FaCompass,
-  FaPuzzlePiece,
-  FaTrophy,
-  FaClock,
   FaUsers,
-  FaMedal,
-  FaGem,
-  FaFire,
   FaHome,
+  FaGamepad,
+  FaTrophy
 } from "react-icons/fa";
 import {
   GiPuzzle,
-  GiTreasureMap,
-  GiBrain as GiBrainIcon,
-  GiSpellBook,
-  GiCrystalShine
+  GiSwordsEmblem,
+  GiAchievement,
+  GiPodium,
+  GiJoystick,
 } from "react-icons/gi";
 import { IoMdTimer } from "react-icons/io";
-import { MdQuiz, MdMemory, MdGames } from "react-icons/md";
-import { RiBubbleChartFill } from "react-icons/ri";
+import {MdSportsEsports } from "react-icons/md";
+import { gameCards } from "./data";
 
 function Games() {
   const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState("Barchasi");
 
-  const quizBattleImg =
-    "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=";
-  const memoryRushImg =
-    "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
-  const classicArcadeImg =
-    "https://media.istockphoto.com/id/1582151789/vector/vector-arcade-premium-alphabet-in-purple-violet-blue-colors-vector-3d-font-text-elements.jpg?s=612x612&w=0&k=20&c=x6f1QrMBy4O6ac6IFTWDG13A9D3vQFK8cIPXGrvA6aA=";
-  const wordBattleImg =
-    "https://media.istockphoto.com/id/2186075604/vector/comic-vs-versus-logo-pop-art-style-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=fWIxFgaBpU7jGhTBSxF_5dLwDYywLDzA7VrfKIPDS2Q=";
-  const treasureHuntImg =
-    "https://media.istockphoto.com/id/1341261769/photo/treasure-map.jpg?s=612x612&w=0&k=20&c=JnZD0II52_tMPZ-U_emWhZ9GfRu92SdWsZFFy8ohKw8=";
+  const categories = useMemo(
+    () => ["Barchasi", ...Array.from(new Set(gameCards.map((game) => game.category)))],
+    []
+  );
 
-  const gameCards = [
-    {
-      id: "quiz-battle",
-      title: "⚡ Quiz Battle",
-      description: "Tezkor savollar, timer va reyting bilan bilim sinovi.",
-      mainIcon: MdQuiz,
-      icon: FaBolt,
-      iconBg: "from-yellow-400 to-orange-500",
-      iconColor: "text-yellow-300",
-      shadowColor: "yellow",
-      available: true,
-      path: "/games/quiz-battle",
-      bgPattern:
-        "bg-gradient-to-br from-yellow-500/90 via-orange-500/90 to-red-500/90",
-      image: quizBattleImg,
-      players: "1-4 o'yinchi",
-      level: "Boshlang'ich",
-      levelIcon: FaStar,
-      badge: "YANGI",
-      badgeIcon: FaRocket,
-      time: "5-10 min",
-      points: "1000+",
-      category: "Bilim",
-      categoryIcon: FaCrown,
-    },
-    {
-      id: "memory-rush",
-      title: "🧠 Memory Rush",
-      description: "Xotirani charxlaydigan tezkor kartochkalar o'yini.",
-      mainIcon: MdMemory,
-      icon: FaBrain,
-      iconBg: "from-green-400 to-emerald-500",
-      iconColor: "text-green-300",
-      shadowColor: "green",
-      available: true,
-      path: "/games/memory-rush",
-      bgPattern:
-        "bg-gradient-to-br from-green-500/90 via-emerald-500/90 to-teal-500/90",
-      image: memoryRushImg,
-      players: "2 ta o'yinchi",
-      level: "Osson - O'rtacha - Qiyin",
-      levelIcon: FaMedal,
-      badge: "YANGI",
-      badgeIcon: FaClock,
-      time: "5-8 min",
-      points: "800+",
-      category: "Xotira",
-      categoryIcon: GiBrainIcon,
-    },
-    {
-      id: "treasure-hunt",
-      title: "🗺️ Treasure Hunt",
-      description: "Topishmoqlar yechish va xazina topish sarguzashti.",
-      mainIcon: GiTreasureMap,
-      icon: FaCompass,
-      iconBg: "from-amber-400 to-orange-500",
-      iconColor: "text-amber-300",
-      shadowColor: "amber",
-      available: true,
-      path: "/games/treasure-hunt",
-      bgPattern: "bg-gradient-to-br from-[#8a4b08] via-[#b6670f] to-[#e09b2d]",
-      image: treasureHuntImg,
-      players: "1-3 o'yinchi",
-      level: "Kreativ",
-      levelIcon: GiCrystalShine,
-      badge: "YANGI",
-      badgeIcon: FaRocket,
-      time: "10-15 min",
-      points: "1500+",
-      category: "Sarguzasht",
-      categoryIcon: FaGem,
-    },
-    {
-      id: "word-battle",
-      title: "📚 Word Battle",
-      description: "So'z topish, harflar bilan o'ynash va lug'at boyitish.",
-      mainIcon: RiBubbleChartFill,
-      icon: GiSpellBook,
-      iconBg: "from-blue-400 to-cyan-500",
-      iconColor: "text-blue-300",
-      shadowColor: "blue",
-      available: false,
-      path: "/games/word-battle",
-      bgPattern:
-        "bg-gradient-to-br from-blue-500/90 via-cyan-500/90 to-sky-500/90",
-      image: wordBattleImg,
-      players: "1-2 o'yinchi",
-      level: "Boshlang'ich",
-      levelIcon: FaStar,
-      badge: "MASHHUR",
-      badgeIcon: FaFire,
-      time: "5-12 min",
-      points: "1200+",
-      category: "So'z",
-      categoryIcon: FaPuzzlePiece,
-    },
-    {
-      id: "classic-arcade",
-      title: "🎮 Classic Arcade",
-      description: "Mantiq va tezkorlikni oshiradigan mini challenge'lar.",
-      mainIcon: MdGames,
-      icon: GiPuzzle,
-      iconBg: "from-purple-400 to-pink-500",
-      iconColor: "text-purple-300",
-      shadowColor: "purple",
-      available: false,
-      path: "#",
-      bgPattern:
-        "bg-gradient-to-br from-purple-500/90 via-pink-500/90 to-rose-500/90",
-      image: classicArcadeImg,
-      players: "1 o'yinchi",
-      level: "Professional",
-      levelIcon: FaTrophy,
-      badge: "TEZ KUNDA",
-      badgeIcon: FaClock,
-      time: "5-10 min",
-      points: "2000+",
-      category: "Mantiq",
-      categoryIcon: FaBrain,
-    },
-  ];
-
-  const getShadowClass = (color: string) => {
-    const shadows: Record<string, string> = {
-      yellow: "hover:shadow-[0_20px_40px_-10px_rgba(250,204,21,0.5)]",
-      green: "hover:shadow-[0_20px_40px_-10px_rgba(34,197,94,0.5)]",
-      purple: "hover:shadow-[0_20px_40px_-10px_rgba(168,85,247,0.5)]",
-      blue: "hover:shadow-[0_20px_40px_-10px_rgba(59,130,246,0.5)]",
-      amber: "hover:shadow-[0_20px_40px_-10px_rgba(245,158,11,0.5)]",
-    };
-    return shadows[color] || shadows.yellow;
-  };
+  const filteredGames = useMemo(
+    () =>
+      activeCategory === "Barchasi"
+        ? gameCards
+        : gameCards.filter((game) => game.category === activeCategory),
+    [activeCategory]
+  );
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d] px-3 py-4 sm:px-4 sm:py-6">
-      {/* Animated background */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#0a0618] via-[#1a0f2a] to-[#0f1a2a] [&_button]:cursor-pointer [&_button]:transition-all [&_button]:duration-200 [&_button:hover]:brightness-110 [&_button:disabled]:cursor-not-allowed">
+      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-20 -left-20 h-96 w-96 animate-pulse rounded-full bg-white/5 blur-3xl"></div>
-        <div className="absolute -bottom-20 -right-20 h-96 w-96 animate-pulse rounded-full bg-yellow-300/5 blur-3xl delay-1000"></div>
-        <div className="absolute left-1/4 top-1/3 h-64 w-64 animate-pulse rounded-full bg-pink-300/5 blur-3xl delay-500"></div>
+        {/* Gradient Orbs */}
+        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] animate-pulse rounded-full bg-purple-600/20 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse rounded-full bg-pink-600/20 blur-3xl delay-1000" />
+        <div className="absolute top-1/3 left-1/3 h-[500px] w-[500px] animate-pulse rounded-full bg-blue-600/10 blur-3xl delay-500" />
+
+        {/* Floating Particles */}
+        {[...Array(50)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute h-1.5 w-1.5 rounded-full bg-white/20 animate-float"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${5 + Math.random() * 10}s`,
+              opacity: 0.1 + Math.random() * 0.3,
+            }}
+          />
+        ))}
+
+        {/* Grid Pattern */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 2px, transparent 0)",
+            backgroundSize: "50px 50px",
+          }}
+        />
+
+        {/* Gaming Icons Background */}
+        <MdSportsEsports className="absolute left-[5%] top-[15%] animate-float text-8xl text-white/5" />
+        <GiPuzzle className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl text-white/5" />
+        <FaTrophy className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl text-white/5" />
+        <GiSwordsEmblem className="absolute right-[12%] top-[25%] animate-float text-8xl text-white/5" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl">
-        {/* Back button with modern design */}
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
+        {/* Back Button */}
         <button
-          type="button"
           onClick={() => navigate("/home")}
-          className="group mb-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-x-1 hover:bg-white/20 sm:mb-8 sm:px-5 sm:py-2.5"
+          className="group relative mb-8 inline-flex items-center gap-3 rounded-2xl bg-white/5 px-5 py-3 text-sm font-bold text-white/90 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/10 hover:scale-105 active:scale-95"
         >
-          <FaHome className="text-sm transition-transform group-hover:-translate-x-1 sm:text-base" />
+          <FaHome className="text-base transition-transform group-hover:-translate-x-1" />
           <span>Asosiy Sahifa</span>
+          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
 
-        <div className="relative mb-16 text-center">
-          {/* Animated gradient text */}
+        {/* Hero Section */}
+        <div className="relative mb-12 text-center">
+          {/* Animated Title */}
           <div className="relative inline-block">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black">
               <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent drop-shadow-2xl">
                 O'YINLAR MASKANI
               </span>
             </h1>
-            
-            {/* Decorative elements */}
-            <div className="absolute -top-6 -left-12 text-3xl opacity-30 rotate-12">🎮</div>
-            <div className="absolute -bottom-4 -right-8 text-3xl opacity-30 -rotate-12">⭐</div>
+
+            {/* Decorative Elements */}
+            <div className="absolute -top-6 -right-6">
+              <div className="relative">
+                <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
+                <FaStar className="relative text-3xl text-yellow-400 animate-spin-slow" />
+              </div>
+            </div>
+            <div className="absolute -bottom-4 -left-8">
+              <div className="relative">
+                <div className="absolute inset-0 animate-ping rounded-full bg-pink-400/30" />
+                <FaCrown className="relative text-3xl text-pink-400 animate-bounce-slow" />
+              </div>
+            </div>
           </div>
-          
+
           <p className="mt-4 text-lg text-white/60 max-w-2xl mx-auto">
-            Eng qiziqarli o'yinlar, ajoyib sarguzashtlar va cheksiz zavq sizni kutmoqda!
+            Eng qiziqarli o'yinlar, ajoyib sarguzashtlar va cheksiz zavq sizni
+            kutmoqda!
           </p>
-          
+
           {/* Decorative line */}
-          <div className="mt-6 flex justify-center gap-2">
+          <div className="mt-8 flex justify-center gap-2">
             <div className="h-1 w-12 rounded-full bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
             <div className="h-1 w-24 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500"></div>
             <div className="h-1 w-12 rounded-full bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
           </div>
         </div>
 
+        {/* Category Filters */}
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
+          {categories.map((category) => {
+            const isActive = activeCategory === category;
 
-        {/* Games Grid - Clean and modern */}
-        <div className="relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:gap-6">
-          {gameCards.map((game) => (
-            <div key={game.id} className="group perspective-game">
+            return (
               <button
-                type="button"
-                disabled={!game.available}
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`rounded-2xl border px-4 py-2 text-sm font-bold transition-all ${
+                  isActive
+                    ? "border-yellow-400/70 bg-yellow-400/20 text-yellow-200"
+                    : "border-white/20 bg-white/5 text-white/80 hover:bg-white/10"
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Games Grid */}
+        <div className="relative z-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-8">
+          {filteredGames.map((game) => (
+            <div
+              key={game.id}
+              className="group relative transform-gpu transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2"
+            >
+              {/* Glow Effect */}
+              <div
+                className={`absolute -inset-1 rounded-3xl bg-gradient-to-r ${game.gradient} opacity-0 group-hover:opacity-20 blur-2xl transition-opacity duration-500`}
+              />
+
+              {/* Card */}
+              <button
                 onClick={() => game.available && navigate(game.path)}
-                className={`relative w-full overflow-hidden rounded-2xl border-2 p-0 text-left transition-all duration-300 sm:rounded-3xl sm:border-4 ${
+                disabled={!game.available}
+                className={`relative w-full overflow-hidden rounded-3xl border-2 transition-all duration-300 ${
                   game.available
-                    ? `${game.bgPattern} border-white/40 ${getShadowClass(game.shadowColor)} hover:${game.bgPattern}`
-                    : "cursor-not-allowed border-white/10 bg-gray-800/30 opacity-70"
+                    ? `${game.bgPattern} border-white/20 hover:border-white/40 ${game.borderGlow}`
+                    : "border-white/10 bg-gray-800/50 cursor-not-allowed"
                 }`}
               >
                 {/* Image Section */}
-                <div className="relative h-36 w-full overflow-hidden sm:h-40">
+                <div className="relative h-48 w-full overflow-hidden sm:h-56">
                   <img
                     src={game.image}
                     alt={game.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                   {/* Badge */}
-                  <div className="absolute left-2 top-2 sm:left-3 sm:top-3">
-                    <div
-                      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-lg sm:px-3 sm:py-1 sm:text-xs ${
-                        game.available
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                          : "bg-gray-800/90"
-                      }`}
-                    >
-                      <game.badgeIcon className="text-[8px] sm:text-xs" />
+                  <div className="absolute left-3 top-3">
+                    <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+                      <game.badgeIcon className="text-xs" />
                       <span>{game.badge}</span>
                     </div>
                   </div>
 
-                  {/* Level */}
-                  <div className="absolute right-2 top-2 sm:right-3 sm:top-3">
-                    <div className="flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm sm:px-3 sm:py-1 sm:text-xs">
+                  {/* Level Badge */}
+                  <div className="absolute right-3 top-3">
+                    <div className="flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-3 py-1.5 text-xs font-bold text-white border border-white/20">
                       <game.levelIcon className="text-yellow-300" />
                       <span>{game.level}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Content Section */}
-                <div className="p-3 sm:p-4">
-                  {/* Title and icon row */}
-                  <div className="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${game.iconBg} text-base text-white shadow-lg sm:h-12 sm:w-12 sm:text-xl`}
-                    >
-                      <game.icon />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-base font-bold text-white sm:text-lg">
-                        {game.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[10px] text-white/60 sm:text-xs">
-                        <FaUsers className="text-white/40" />
-                        <span>{game.players}</span>
-                      </div>
-                    </div>
+                {/* Icon Overlay */}
+                <div className="pointer-events-none absolute left-4 top-[calc(12rem-1.75rem)] z-20 sm:top-[calc(14rem-1.75rem)]">
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${game.iconBg} text-white shadow-xl border-2 border-white/30 transform transition-transform group-hover:scale-110 group-hover:rotate-6`}
+                  >
+                    <game.icon className="text-2xl" />
                   </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-5 pt-10">
+                  {/* Title */}
+                  <h3 className="mb-1 text-xl font-black text-white">
+                    {game.title}
+                  </h3>
 
                   {/* Description */}
-                  <p className="mb-2 text-xs text-white/80 line-clamp-2 sm:mb-3 sm:text-sm">
+                  <p className="mb-4 text-sm text-white/70 line-clamp-2">
                     {game.description}
                   </p>
 
-                  {/* Features row */}
-                  <div className="mb-3 flex flex-wrap gap-1 sm:mb-4 sm:gap-2">
-                    <span className="flex items-center gap-0.5 rounded-full bg-white/10 px-2 py-0.5 text-[9px] text-white sm:gap-1 sm:px-3 sm:py-1 sm:text-xs">
-                      <IoMdTimer className="text-yellow-300" />
-                      {game.time}
-                    </span>
-                    <span className="flex items-center gap-0.5 rounded-full bg-white/10 px-2 py-0.5 text-[9px] text-white sm:gap-1 sm:px-3 sm:py-1 sm:text-xs">
-                      <FaTrophy className="text-yellow-300" />
-                      {game.points}
-                    </span>
-                    <span className="flex items-center gap-0.5 rounded-full bg-white/10 px-2 py-0.5 text-[9px] text-white sm:gap-1 sm:px-3 sm:py-1 sm:text-xs">
-                      <game.categoryIcon className="text-pink-300" />
-                      {game.category}
-                    </span>
+                  {/* Features Grid */}
+                  <div className="mb-5 grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 rounded-xl bg-white/5 p-2 border border-white/10">
+                      <FaUsers className="text-sm text-white/60" />
+                      <span className="text-xs font-bold text-white/80">
+                        {game.players}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl bg-white/5 p-2 border border-white/10">
+                      <IoMdTimer className="text-sm text-white/60" />
+                      <span className="text-xs font-bold text-white/80">
+                        {game.time}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl bg-white/5 p-2 border border-white/10">
+                      <FaTrophy className="text-sm text-yellow-300" />
+                      <span className="text-xs font-bold text-white/80">
+                        {game.points}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl bg-white/5 p-2 border border-white/10">
+                      <game.categoryIcon
+                        className={`text-sm ${game.iconColor}`}
+                      />
+                      <span className="text-xs font-bold text-white/80">
+                        {game.category}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Action Button */}
-<div
-  className={`group relative mt-4 w-full overflow-hidden rounded-full border-2 px-4 py-2 text-xs font-black tracking-wider shadow-[0_8px_0_0_rgba(230,126,34,0.95),0_12px_20px_rgba(0,0,0,0.2)] transition-all sm:px-6 sm:py-3 sm:text-sm ${
-    game.available
-      ? "border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] text-[#1a1a1a] hover:translate-y-1 hover:shadow-[0_6px_0_0_rgba(230,126,34,0.95)] active:translate-y-2 active:shadow-[0_4px_0_0_rgba(230,126,34,0.95)] cursor-pointer"
-      : "border-gray-600 bg-gray-700/50 text-white/50 cursor-not-allowed shadow-none"
-  }`}
->
-  <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
-    {game.available ? (
-      <>
-        <game.mainIcon className="text-sm sm:text-base" />
-        <span>O'YNASH</span>
-        <FaArrowRight className="text-xs transition-transform group-hover:translate-x-1 sm:text-sm" />
-      </>
-    ) : (
-      <>
-        <FaLock className="text-xs sm:text-sm" />
-        <span>TEZ KUNDA</span>
-      </>
-    )}
-  </span>
+                  <div
+                    className={`relative w-full overflow-hidden rounded-2xl border-2 transition-all ${
+                      game.available
+                        ? "border-yellow-400/50 bg-gradient-to-r from-yellow-500 to-orange-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        : "border-gray-600 bg-gray-700/50 cursor-not-allowed"
+                    }`}
+                  >
+                    <button
+                      onClick={() => game.available && navigate(game.path)}
+                      disabled={!game.available}
+                      className="w-full px-6 py-3"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-3 text-sm font-black text-white">
+                        {game.available ? (
+                          <>
+                            <game.mainIcon className="text-base" />
+                            <span>O'YNASH</span>
+                            <FaArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
+                          </>
+                        ) : (
+                          <>
+                            <FaLock className="text-sm" />
+                            <span>TEZ KUNDA</span>
+                          </>
+                        )}
+                      </span>
+                    </button>
 
-  {/* Shine Effect */}
-  {game.available && (
-    <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
-  )}
-</div>
-
+                    {/* Shine Effect */}
+                    {game.available && (
+                      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+                    )}
+                  </div>
                 </div>
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Footer Stats */}
+        <div className="relative mt-16 flex justify-center gap-8 text-white/20">
+          <GiAchievement
+            className="text-4xl animate-bounce"
+            style={{ animationDelay: "0s" }}
+          />
+          <GiPodium
+            className="text-4xl animate-bounce"
+            style={{ animationDelay: "0.2s" }}
+          />
+          <FaTrophy
+            className="text-4xl animate-bounce"
+            style={{ animationDelay: "0.4s" }}
+          />
+          <FaGamepad
+            className="text-4xl animate-bounce"
+            style={{ animationDelay: "0.6s" }}
+          />
+          <GiJoystick
+            className="text-4xl animate-bounce"
+            style={{ animationDelay: "0.8s" }}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-export default Games; 
+export default Games;

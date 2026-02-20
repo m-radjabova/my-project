@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBolt,
   FaCheckCircle,
-  FaClock,
+  FaChevronDown,
   FaCrown,
   FaPlay,
   FaPlus,
@@ -12,6 +12,8 @@ import {
   FaTrash,
   FaUsers,
 } from "react-icons/fa";
+import { MdQuiz} from "react-icons/md";
+import Confetti from "react-confetti-boom";
 
 type TeamId = 0 | 1;
 
@@ -31,9 +33,9 @@ type QuestionDraft = {
   category: string;
 };
 
-
 const SECONDS_PER_QUESTION = 18;
 const BASE_POINTS = 10;
+const STREAK_BONUS = 5;
 
 const createEmptyDraft = (): QuestionDraft => ({
   question: "",
@@ -43,8 +45,9 @@ const createEmptyDraft = (): QuestionDraft => ({
 });
 
 function QuizBattle() {
+  const finishViewRef = useRef<HTMLDivElement | null>(null);
   const [phase, setPhase] = useState<Phase>("question-setup");
-  const [teamNames, setTeamNames] = useState<[string, string]>(["Yulduzlar", "Chaqqonlar"]);
+  const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -59,11 +62,12 @@ function QuizBattle() {
   const [selected, setSelected] = useState<number | null>(null);
   const [doublePoints, setDoublePoints] = useState(false);
   const [streak, setStreak] = useState<[number, number]>([0, 0]);
+  const [toast, setToast] = useState<string | null>(null);
 
   const question = questions[current];
   const progressPct = questions.length > 0 ? Math.round(((current + 1) / questions.length) * 100) : 0;
   const timePct = Math.max(0, Math.round((timeLeft / SECONDS_PER_QUESTION) * 100));
-  const maxScore = Math.max(1, questions.length * BASE_POINTS * 2);
+  // const maxScore = Math.max(1, questions.length * BASE_POINTS * 2);
 
   const winner = useMemo(() => {
     if (scores[0] === scores[1]) return null;
@@ -71,8 +75,15 @@ function QuizBattle() {
   }, [scores]);
 
   useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 1800);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  useEffect(() => {
     if (phase !== "play" || locked) return;
     if (timeLeft <= 0) {
+      setToast("⏰ Vaqt tugadi!");
       goNext();
       return;
     }
@@ -87,6 +98,11 @@ function QuizBattle() {
     setSelected(null);
     setDoublePoints(Math.random() < 0.25);
   }, [current, phase]);
+
+  useEffect(() => {
+    if (phase !== "finish") return;
+    finishViewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [phase]);
 
   const addQuestion = () => {
     const questionText = draft.question.trim();
@@ -117,10 +133,12 @@ function QuizBattle() {
     ]);
     setQuestionError("");
     setDraft(createEmptyDraft());
+    setToast("✅ Savol qo'shildi!");
   };
 
   const removeQuestion = (idx: number) => {
     setQuestions((prev) => prev.filter((_, i) => i !== idx));
+    setToast("🗑️ Savol o'chirildi");
   };
 
   const goToTeamSetup = () => {
@@ -160,6 +178,7 @@ function QuizBattle() {
     setLocked(false);
     setSelected(null);
     setPhase("play");
+    setToast("🎮 O'yin boshlandi!");
   };
 
   const goNext = () => {
@@ -179,7 +198,8 @@ function QuizBattle() {
 
     const correct = idx === question.answerIndex;
     if (correct) {
-      const gain = BASE_POINTS * (doublePoints ? 2 : 1);
+      const streakBonus = streak[turn] * STREAK_BONUS;
+      const gain = (BASE_POINTS + streakBonus) * (doublePoints ? 2 : 1);
       setScores((prev) => {
         const n: [number, number] = [...prev] as [number, number];
         n[turn] += gain;
@@ -190,15 +210,17 @@ function QuizBattle() {
         n[turn] += 1;
         return n;
       });
+      setToast(`✅ To'g'ri! +${gain} ball ${doublePoints ? 'x2 BONUS!' : ''}`);
     } else {
       setStreak((prev) => {
         const n: [number, number] = [...prev] as [number, number];
         n[turn] = 0;
         return n;
       });
+      setToast(`❌ Xato! Javob: ${question.options[question.answerIndex]}`);
     }
 
-    window.setTimeout(goNext, 900);
+    window.setTimeout(goNext, 1200);
   };
 
   const resetRound = () => {
@@ -211,6 +233,7 @@ function QuizBattle() {
     setSelected(null);
     setDoublePoints(false);
     setPhase("team-setup");
+    setToast("🔄 Yangi o'yin boshlandi!");
   };
 
   const resetEverything = () => {
@@ -227,354 +250,463 @@ function QuizBattle() {
     setSelected(null);
     setDoublePoints(false);
     setPhase("question-setup");
+    setToast("🏠 Bosh sahifaga qaytdingiz");
   };
 
-  if (phase === "question-setup") {
-    return (
-      <div className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#ffd966]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-[#ffb36b]/20 blur-3xl" />
-
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full bg-black/25 px-4 py-2 text-xs font-extrabold tracking-[0.14em] text-yellow-100">
-            <FaUsers />
-            O'QITUVCHI BOSQICHI
-          </div>
-          <h2 className="mt-4 font-bebas text-5xl text-white">SAVOLLARNI KIRITING</h2>
-          <p className="mt-1 text-white/80">
-            Savol, 4 ta variant va to'g'ri javobni tanlang. Keyin jamoalarni boshlaysiz.
-          </p>
-
-          <div className="mt-6 rounded-2xl border border-orange-200/40 bg-black/15 p-4">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/70">Savol</label>
-            <input
-              value={draft.question}
-              onChange={(e) => setDraft((prev) => ({ ...prev, question: e.target.value }))}
-              className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-              placeholder="Savol matni..."
-            />
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {draft.options.map((item, idx) => (
-                <div key={idx}>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/70">
-                    Variant {idx + 1}
-                  </label>
-                  <input
-                    value={item}
-                    onChange={(e) =>
-                      setDraft((prev) => {
-                        const next = [...prev.options] as [string, string, string, string];
-                        next[idx] = e.target.value;
-                        return { ...prev, options: next };
-                      })
-                    }
-                    className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-                    placeholder={`Variant ${idx + 1}`}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/70">Kategoriya</label>
-                <input
-                  value={draft.category}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-                  placeholder="Masalan: Matematika"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/70">To'g'ri javob</label>
-                <select
-                  value={draft.answerIndex}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, answerIndex: Number(e.target.value) }))}
-                  className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-                >
-                  <option value={0}>Variant 1</option>
-                  <option value={1}>Variant 2</option>
-                  <option value={2}>Variant 3</option>
-                  <option value={3}>Variant 4</option>
-                </select>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-black tracking-[0.08em] text-[#8a1f4d] shadow-lg transition hover:scale-[1.02]"
-            >
-              <FaPlus />
-              SAVOL QO'SHISH
-            </button>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/75">
-            <span className="rounded-full bg-black/20 px-3 py-1">Savollar: {questions.length}</span>
-            <span className="rounded-full bg-black/20 px-3 py-1">Har to'g'ri javob: +{BASE_POINTS}</span>
-            <span className="rounded-full bg-black/20 px-3 py-1">Bonus raund: x2 ball</span>
-          </div>
-
-          {questionError ? <p className="mt-4 text-sm font-semibold text-rose-200">{questionError}</p> : null}
-
-          <div className="mt-5 space-y-3">
-            {questions.map((item, idx) => (
-              <div key={`${item.question}-${idx}`} className="rounded-2xl border border-orange-200/35 bg-black/15 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.1em] text-white/60">{item.category}</p>
-                    <p className="mt-1 font-bold text-white">
-                      {idx + 1}. {item.question}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeQuestion(idx)}
-                    className="inline-flex items-center gap-1 rounded-full bg-rose-400/20 px-3 py-1 text-xs font-bold text-rose-100"
-                  >
-                    <FaTrash />
-                    O'chirish
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={goToTeamSetup}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-black tracking-[0.08em] text-[#8a1f4d] shadow-lg transition hover:scale-[1.02]"
-            >
-              <FaPlay />
-              GURUHLARGA O'TISH
-            </button>
-            {questions.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => setQuestions([])}
-                className="inline-flex items-center gap-2 rounded-full border border-orange-200/35 bg-black/20 px-6 py-3 text-sm font-bold text-white/90"
-              >
-                <FaTrash />
-                SAVOLLARNI TOZALASH
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "team-setup") {
-    return (
-      <div className="relative overflow-hidden rounded-[28px] border border-orange-200/40 bg-gradient-to-br from-yellow-500/90 via-orange-500/90 to-red-500/90 p-6 shadow-2xl shadow-[#7f1d4f]/45 backdrop-blur-xl lg:p-8">
-        <div className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#ffd966]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-[#ffb36b]/20 blur-3xl" />
-
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full bg-black/25 px-4 py-2 text-xs font-extrabold tracking-[0.14em] text-yellow-100">
-            <FaUsers />
-            TEAM BATTLE
-          </div>
-          <h2 className="mt-4 font-bebas text-5xl text-white">GURUHLARNI KIRITING</h2>
-          <p className="mt-1 text-white/80">
-            O'qituvchi kiritgan savollar soni: <span className="font-black text-[#ffe57a]">{questions.length}</span>
-          </p>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-orange-200/40 bg-black/15 p-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-white/70">1-Guruh</p>
-              <input
-                value={teamNames[0]}
-                onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
-                className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-                placeholder="Masalan: Yulduzlar"
-              />
-            </div>
-            <div className="rounded-2xl border border-orange-200/40 bg-black/15 p-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-white/70">2-Guruh</p>
-              <input
-                value={teamNames[1]}
-                onChange={(e) => setTeamNames([teamNames[0], e.target.value])}
-                className="w-full rounded-xl border border-white/25 bg-white/95 px-3 py-3 font-semibold text-[#1f2937] outline-none focus:border-[#ffb36b]"
-                placeholder="Masalan: Chaqqonlar"
-              />
-            </div>
-          </div>
-
-          {nameError ? <p className="mt-4 text-sm font-semibold text-rose-200">{nameError}</p> : null}
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={startGame}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-black tracking-[0.08em] text-[#8a1f4d] shadow-lg transition hover:scale-[1.02]"
-            >
-              <FaPlay />
-              O'YINNI BOSHLASH
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPhase("question-setup")}
-              className="inline-flex items-center gap-2 rounded-full border border-orange-200/35 bg-black/20 px-6 py-3 text-sm font-bold text-white/90"
-            >
-              <FaRedo />
-              SAVOLLARGA QAYTISH
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "finish") {
-    return (
-      <div className="rounded-[28px] border border-orange-200/40 bg-gradient-to-br from-yellow-500/90 via-orange-500/90 to-red-500/90 p-6 shadow-2xl shadow-[#7f1d4f]/45 backdrop-blur-xl lg:p-8">
-        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#8a1f4d]">
-          <FaCrown className="text-2xl" />
-        </div>
-        <h2 className="mt-4 font-bebas text-5xl text-white">YAKUNIY NATIJA</h2>
-        <p className="mt-1 text-white/80">
-          {winner === null ? "Durrang! Juda zo'r o'ynadingiz." : `${teamNames[winner]} g'olib bo'ldi!`}
-        </p>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {[0, 1].map((i) => (
-            <div key={i} className="rounded-2xl border border-orange-200/35 bg-black/15 p-4">
-              <p className="text-sm font-bold text-white/70">{i + 1}-Guruh</p>
-              <p className="mt-1 text-xl font-black text-white">{teamNames[i as TeamId]}</p>
-              <p className="mt-2 text-3xl font-black text-[#ffd966]">{scores[i as TeamId]} ball</p>
-              <div className="mt-3 h-2 w-full rounded-full bg-black/20">
-                <div
-                  className={`h-full rounded-full ${i === 0 ? "bg-yellow-200" : "bg-orange-300"}`}
-                  style={{ width: `${Math.min(100, Math.round((scores[i as TeamId] / maxScore) * 100))}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={resetRound}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-black tracking-[0.08em] text-[#8a1f4d] shadow-lg transition hover:scale-[1.02]"
-          >
-            <FaRedo />
-            YANA O'YNASH
-          </button>
-          <button
-            type="button"
-            onClick={resetEverything}
-            className="inline-flex items-center gap-2 rounded-full border border-orange-200/35 bg-black/20 px-6 py-3 text-sm font-bold text-white/90"
-          >
-            <FaTrash />
-            BARCHASINI YANGILASH
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!question) return null;
+  const fieldClass = "w-full rounded-xl border border-yellow-500/30 bg-yellow-950/30 px-4 py-3 text-white placeholder-yellow-200/50 outline-none transition focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20";
+  const selectClass = `${fieldClass} appearance-none`;
 
   return (
-    <div className="rounded-[28px] border border-orange-200/40 bg-gradient-to-br from-yellow-500/90 via-orange-500/90 to-red-500/90 p-6 shadow-2xl shadow-[#7f1d4f]/45 backdrop-blur-xl lg:p-8">
-      <div className="mb-4 grid gap-3 md:grid-cols-2">
-        {[0, 1].map((i) => {
-          const active = turn === i;
-          return (
-            <div
-              key={i}
-              className={`rounded-2xl border p-4 transition ${
-                active ? "border-orange-100 bg-black/25" : "border-orange-200/35 bg-black/15"
-              }`}
-            >
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">{i + 1}-Guruh</p>
-              <p className="mt-1 text-lg font-black text-white">{teamNames[i as TeamId]}</p>
-              <p className="mt-1 text-sm font-bold text-[#ffe57a]">{scores[i as TeamId]} ball</p>
-              <p className="mt-1 text-xs text-white/70">Combo: {streak[i as TeamId]}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-bold tracking-[0.08em] text-white/85">
-          Savol {current + 1}/{questions.length}
-        </p>
-        <div className="inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1 text-sm font-bold text-yellow-100">
-          <FaClock />
-          {timeLeft}s
-        </div>
-      </div>
-
-      <div className="mb-4 h-2 w-full rounded-full bg-black/20">
-        <div className="h-full rounded-full bg-gradient-to-r from-yellow-200 to-orange-200" style={{ width: `${progressPct}%` }} />
-      </div>
-      <div className="mb-5 h-2 w-full rounded-full bg-black/20">
-        <div className="h-full rounded-full bg-orange-300 transition-all" style={{ width: `${timePct}%` }} />
-      </div>
-
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="rounded-full bg-black/20 px-3 py-1 text-xs font-bold text-white/90">{question.category}</span>
-        {doublePoints ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#ffd966]/20 px-3 py-1 text-xs font-black text-[#ffe57a]">
-            <FaRocket />
-            BONUS x2
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-3 py-1 text-xs font-bold text-white/90">
-            <FaBolt />
-            ODDIY RAUND
-          </span>
+    <div className="relative text-white">
+      {/* Toast Notification */}
+      <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50">
+        {toast && (
+          <div className="rounded-full bg-gradient-to-r from-yellow-600 to-orange-600 px-6 py-3 text-white font-bold shadow-2xl animate-bounce backdrop-blur-sm">
+            {toast}
+          </div>
         )}
       </div>
 
-      <h3 className="text-2xl font-black leading-tight text-white">{question.question}</h3>
-      <p className="mt-1 text-sm text-white/75">
-        Navbat: <span className="font-black text-[#ffe57a]">{teamNames[turn]}</span>
-      </p>
+      {/* Question Setup Phase */}
+      {phase === "question-setup" && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500">
+              <MdQuiz className="text-xl text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-white">SAVOLLARNI KIRITING</h3>
+              <p className="text-sm text-yellow-200/80">Kamida 2 ta savol qo'shing</p>
+            </div>
+          </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {question.options.map((option, idx) => {
-          const isSelected = selected === idx;
-          const isCorrect = idx === question.answerIndex;
-          const reveal = locked && selected !== null;
+          {/* Question Form */}
+          <div className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 to-orange-900/30 p-6 backdrop-blur-xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10" />
+            
+            <div className="relative space-y-4">
+              {/* Question Input */}
+              <div>
+                <label className="mb-2 block text-xs font-bold text-yellow-400">SAVOL</label>
+                <input
+                  value={draft.question}
+                  onChange={(e) => setDraft((prev) => ({ ...prev, question: e.target.value }))}
+                  className={fieldClass}
+                  placeholder="Savol matnini kiriting..."
+                />
+              </div>
 
-          const stateClass =
-            reveal && isCorrect
-              ? "border-orange-200 bg-orange-400/30"
-              : reveal && isSelected && !isCorrect
-                ? "border-rose-300 bg-rose-500/25"
-                : "border-orange-200/35 bg-black/20 hover:bg-black/30";
+              {/* Options Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {draft.options.map((item, idx) => (
+                  <div key={idx}>
+                    <label className="mb-2 block text-xs font-bold text-yellow-400">VARIANT {idx + 1}</label>
+                    <input
+                      value={item}
+                      onChange={(e) =>
+                        setDraft((prev) => {
+                          const next = [...prev.options] as [string, string, string, string];
+                          next[idx] = e.target.value;
+                          return { ...prev, options: next };
+                        })
+                      }
+                      className={fieldClass}
+                      placeholder={`Variant ${idx + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
 
-          return (
+              {/* Category and Answer */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-yellow-400">KATEGORIYA</label>
+                  <input
+                    value={draft.category}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, category: e.target.value }))}
+                    className={fieldClass}
+                    placeholder="Masalan: Matematika"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-yellow-400">TO'G'RI JAVOB</label>
+                  <div className="relative">
+                    <select
+                      value={draft.answerIndex}
+                      onChange={(e) => setDraft((prev) => ({ ...prev, answerIndex: Number(e.target.value) }))}
+                      className={selectClass}
+                    >
+                      <option value={0} className="bg-yellow-900">Variant 1</option>
+                      <option value={1} className="bg-yellow-900">Variant 2</option>
+                      <option value={2} className="bg-yellow-900">Variant 3</option>
+                      <option value={3} className="bg-yellow-900">Variant 4</option>
+                    </select>
+                    <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-yellow-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Add Question Button */}
+              <button
+                onClick={addQuestion}
+                className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 p-3 font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+                <span className="relative flex items-center justify-center gap-2">
+                  <FaPlus />
+                  SAVOL QO'SHISH
+                </span>
+              </button>
+
+              {/* Error Message */}
+              {questionError && (
+                <div className="rounded-xl bg-rose-500/20 p-3 text-rose-300 border border-rose-500/30">
+                  ⚠️ {questionError}
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-2 text-xs text-yellow-200/60">
+                <span className="rounded-full bg-yellow-500/20 px-3 py-1">Savollar: {questions.length}</span>
+                <span className="rounded-full bg-yellow-500/20 px-3 py-1">Har to'g'ri javob: +{BASE_POINTS}</span>
+                <span className="rounded-full bg-yellow-500/20 px-3 py-1">Bonus raund: x2 ball</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Questions List */}
+          {questions.length > 0 && (
+            <div className="space-y-3">
+              {questions.map((item, idx) => (
+                <div
+                  key={`${item.question}-${idx}`}
+                  className="relative transform-gpu overflow-hidden rounded-xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 p-4 backdrop-blur-sm"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-400">
+                          {item.category}
+                        </span>
+                        <span className="text-xs text-yellow-200/60">#{idx + 1}</span>
+                      </div>
+                      <p className="text-sm font-bold text-white">{item.question}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {item.options.map((opt, optIdx) => (
+                          <span
+                            key={optIdx}
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              optIdx === item.answerIndex
+                                ? 'bg-emerald-500/20 text-emerald-300'
+                                : 'bg-yellow-500/10 text-yellow-200/60'
+                            }`}
+                          >
+                            {opt}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeQuestion(idx)}
+                      className="rounded-lg bg-rose-500/20 p-2 text-rose-400 hover:bg-rose-500/30 transition-all"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex justify-center gap-4">
             <button
-              key={`${option}-${idx}`}
-              type="button"
-              onClick={() => onAnswer(idx)}
-              disabled={locked}
-              className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left font-bold text-white transition ${stateClass}`}
+              onClick={goToTeamSetup}
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
             >
-              <span>{option}</span>
-              {reveal && isCorrect ? (
-                <FaCheckCircle className="text-orange-100" />
-              ) : reveal && isSelected && !isCorrect ? (
-                <FaTimesCircle className="text-rose-200" />
-              ) : null}
+              <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+              <span className="relative flex items-center gap-3">
+                <FaUsers />
+                GURUHLARGA O'TISH
+              </span>
             </button>
-          );
-        })}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Setup Phase */}
+      {phase === "team-setup" && (
+        <div className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 to-orange-900/30 p-8 backdrop-blur-xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10" />
+          
+          <h3 className="relative mb-6 text-center text-2xl font-black text-white">GURUH NOMLARINI KIRITING</h3>
+          
+          <div className="relative grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-yellow-400">
+                ⚔️ 1-GURUH
+              </label>
+              <input
+                value={teamNames[0]}
+                onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
+                className={fieldClass}
+                placeholder="YULDUZLAR"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-orange-400">
+                🛡️ 2-GURUH
+              </label>
+              <input
+                value={teamNames[1]}
+                onChange={(e) => setTeamNames([teamNames[0], e.target.value])}
+                className={fieldClass}
+                placeholder="CHAQQONLAR"
+              />
+            </div>
+          </div>
+          
+          {nameError && (
+            <div className="relative mt-4 rounded-xl bg-rose-500/20 p-3 text-rose-300 border border-rose-500/30">
+              ⚠️ {nameError}
+            </div>
+          )}
+          
+          <div className="relative mt-6 flex justify-center gap-4">
+            <button
+              onClick={() => setPhase("question-setup")}
+              className="group relative overflow-hidden rounded-xl bg-yellow-500/20 px-6 py-3 font-bold text-white border border-yellow-500/30 transition-all hover:bg-yellow-500/30"
+            >
+              <span className="relative flex items-center gap-2">
+                <FaRedo />
+                ORQAGA
+              </span>
+            </button>
+            
+            <button
+              onClick={startGame}
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+              <span className="relative flex items-center gap-3">
+                <FaPlay />
+                O'YINNI BOSHLASH
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Play Phase */}
+      {phase === "play" && question && (
+        <div className="space-y-6">
+          {/* Teams Score */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {[0, 1].map((i) => {
+              const active = turn === i;
+              return (
+                <div
+                  key={i}
+                  className={`relative transform-gpu overflow-hidden rounded-xl border-2 p-6 backdrop-blur-xl transition-all ${
+                    active
+                      ? i === 0
+                        ? 'border-yellow-400/50 bg-yellow-900/40 scale-105'
+                        : 'border-orange-400/50 bg-orange-900/40 scale-105'
+                      : 'border-yellow-500/20 bg-yellow-950/30'
+                  }`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-r ${i === 0 ? 'from-yellow-500/10' : 'from-orange-500/10'} to-transparent`} />
+                  
+                  <div className="relative flex items-center justify-between">
+                    <div>
+                      <p className={`text-xs font-bold ${i === 0 ? 'text-yellow-400' : 'text-orange-400'}`}>
+                        {i === 0 ? '⚔️ 1-GURUH' : '🛡️ 2-GURUH'}
+                      </p>
+                      <p className="text-lg font-black text-white">{teamNames[i as TeamId]}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-3xl font-black ${i === 0 ? 'text-yellow-400' : 'text-orange-400'}`}>
+                        {scores[i as TeamId]}
+                      </p>
+                      <p className="text-xs text-yellow-200/60">Streak: {streak[i as TeamId]}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Progress Bars */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="relative rounded-xl border border-yellow-500/20 bg-yellow-950/30 p-4">
+              <p className="text-xs font-bold text-yellow-400">SAVOL PROGRESS</p>
+              <p className="text-sm text-white mb-2">{current + 1}/{questions.length}</p>
+              <div className="h-2 rounded-full bg-yellow-500/20">
+                <div className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-400" style={{ width: `${progressPct}%` }} />
+              </div>
+            </div>
+
+            <div className="relative rounded-xl border border-yellow-500/20 bg-yellow-950/30 p-4">
+              <p className="text-xs font-bold text-yellow-400">VAQT</p>
+              <p className="text-sm text-white mb-2">{timeLeft}s</p>
+              <div className="h-2 rounded-full bg-yellow-500/20">
+                <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-red-400" style={{ width: `${timePct}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Question Card */}
+          <div className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 to-orange-900/30 p-6 backdrop-blur-xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10" />
+
+            {/* Category and Bonus */}
+            <div className="relative flex items-center justify-between mb-4">
+              <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-bold text-yellow-400 border border-yellow-500/30">
+                {question.category}
+              </span>
+              {doublePoints ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 text-xs font-black text-white animate-pulse">
+                  <FaRocket />
+                  BONUS x2
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-bold text-yellow-300">
+                  <FaBolt />
+                  ODDIY RAUND
+                </span>
+              )}
+            </div>
+
+            {/* Question */}
+            <h3 className="relative mb-2 text-xl font-black text-white">{question.question}</h3>
+            <p className="relative mb-4 text-sm text-yellow-200/80">
+              Navbat: <span className="font-bold text-yellow-400">{teamNames[turn]}</span>
+            </p>
+
+            {/* Options */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {question.options.map((option, idx) => {
+                const isSelected = selected === idx;
+                const isCorrect = idx === question.answerIndex;
+                const reveal = locked && selected !== null;
+
+                let stateClass = 'border-yellow-500/30 bg-yellow-950/30 hover:bg-yellow-900/40';
+                if (reveal && isCorrect) {
+                  stateClass = 'border-emerald-500/50 bg-emerald-500/20';
+                } else if (reveal && isSelected && !isCorrect) {
+                  stateClass = 'border-rose-500/50 bg-rose-500/20';
+                } else if (isSelected) {
+                  stateClass = 'border-yellow-400 bg-yellow-500/30';
+                }
+
+                return (
+                  <button
+                    key={`${option}-${idx}`}
+                    onClick={() => onAnswer(idx)}
+                    disabled={locked}
+                    className={`group relative overflow-hidden rounded-xl border-2 p-4 text-left font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 ${stateClass}`}
+                  >
+                    <span className="relative flex items-center justify-between">
+                      <span>{option}</span>
+                      {reveal && isCorrect && (
+                        <FaCheckCircle className="text-emerald-400 text-xl" />
+                      )}
+                      {reveal && isSelected && !isCorrect && (
+                        <FaTimesCircle className="text-rose-400 text-xl" />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Finish Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => setPhase("finish")}
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-8 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+              <span className="relative flex items-center gap-3">
+                <FaCrown />
+                YAKUNLASH
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Finish Phase */}
+      {phase === "finish" && (
+        <div ref={finishViewRef} className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 via-orange-900/30 to-red-900/30 p-8 backdrop-blur-xl text-center">
+          <Confetti
+            mode="boom"
+            particleCount={100}
+            effectCount={1}
+            x={0.5}
+            y={0.35}
+            colors={["#f59e0b", "#f97316", "#ef4444", "#fbbf24", "#fde68a"]}
+          />
+          
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10" />
+          
+          <div className="relative mb-6 flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-orange-500">
+                <FaCrown className="text-4xl text-white" />
+              </div>
+            </div>
+          </div>
+          
+          <h2 className="relative mb-4 text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+            {winner === null ? "DURRANG!" : `${teamNames[winner]} G'OLIB!`}
+          </h2>
+          
+          <div className="relative mx-auto mb-8 max-w-md rounded-xl border border-yellow-500/30 bg-yellow-950/30 p-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <p className="text-yellow-400 font-bold">⚔️ 1-GURUH</p>
+                <p className="text-2xl font-black text-white">{teamNames[0]}</p>
+                <p className="text-3xl font-black text-yellow-400 mt-2">{scores[0]}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-orange-400 font-bold">🛡️ 2-GURUH</p>
+                <p className="text-2xl font-black text-white">{teamNames[1]}</p>
+                <p className="text-3xl font-black text-orange-400 mt-2">{scores[1]}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="relative flex justify-center gap-4">
+            <button
+              onClick={resetRound}
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-3 font-black text-white shadow-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+              <span className="relative flex items-center gap-2">
+                <FaRedo />
+                YANA O'YNA
+              </span>
+            </button>
+            
+            <button
+              onClick={resetEverything}
+              className="group relative overflow-hidden rounded-xl bg-yellow-500/20 px-6 py-3 font-bold text-white border border-yellow-500/30 transition-all hover:bg-yellow-500/30"
+            >
+              <span className="relative flex items-center gap-2">
+                <FaTrash />
+                BOSH SAHIFA
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default QuizBattle;
-
-
-

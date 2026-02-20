@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+﻿import { Route, Routes, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/home/Home";
@@ -18,20 +18,24 @@ import QuizBattlePage from "./components/games/quiz_battle/QuizBattlePage";
 import TreasureHuntPage from "./components/games/treasure_hunt/TreasureHuntPage";
 import MemoryRushPage from "./components/games/memory_rush/MemoryRushPage";
 import SiteLoader from "./components/main/SiteLoader";
+import ClassicArcadePage from "./components/games/classic_arcade/ClassicArcadePage";
+import WordBattlePage from "./components/games/word_battle/WordBattlePage";
 
+
+import GameLayout from "./layout/GameLayout";
+import FlagBattlePage from "./components/games/flag_battle/FlagBattlePage";
+import WheelOfFortunePage from "./components/games/wheel_of_fortune/WheelOfFortunePage";
+import WordSearchPuzzlePage from "./components/games/word_search_puzzle/WordSearchPuzzlePage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
 
-  if (isLoading) {
-    return <SiteLoader />;
-  }
-
+  if (isLoading) return <SiteLoader />;
 
   return (
     <Routes>
-
       <Route path="/home" element={<Home />} />
+
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<Register />} />
@@ -48,6 +52,7 @@ function App() {
         <Route index element={<HelloAdmin />} />
       </Route>
 
+      {/* Oddiy sahifalar: header/footer BOR */}
       <Route
         element={
           <ProtectedRoute>
@@ -58,11 +63,25 @@ function App() {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<h1>Profile</h1>} />
+      </Route>
+
+      {/* Game sahifalar: header/footer YO'Q */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <GameLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/games" element={<Games />} />
         <Route path="/games/quiz-battle" element={<QuizBattlePage />} />
-        <Route path="/games/treasure-hunt" element={<TreasureHuntPage/>} />
+        <Route path="/games/treasure-hunt" element={<TreasureHuntPage />} />
         <Route path="/games/memory-rush" element={<MemoryRushPage />} />
-      
+        <Route path="/games/classic-arcade" element={<ClassicArcadePage />} />
+        <Route path="/games/word-battle" element={<WordBattlePage />} />
+        <Route path="/games/flag-battle" element={<FlagBattlePage />} />
+        <Route path="/games/wheel-of-fortune" element={<WheelOfFortunePage />} />
+        <Route path="/games/word-search" element={<WordSearchPuzzlePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />
@@ -71,3 +90,6 @@ function App() {
 }
 
 export default App;
+
+
+

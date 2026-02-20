@@ -1,60 +1,72 @@
 import { 
-  FaStar, FaUsers, FaTrophy, FaHeart, FaLayerGroup, FaBolt,
-  FaCrown} from "react-icons/fa";
+  FaApple, 
+  FaCarrot, 
+  FaCrown, 
+  FaStar, 
+  FaUsers, 
+  FaPuzzlePiece,
+  FaSearch
+} from "react-icons/fa";
 import { 
-  GiBrain, GiPodium, GiBrainStem, GiAchievement,
-  GiLeak} from "react-icons/gi";
+  GiAchievement, 
+  GiPodium, 
+  GiFruitBowl, 
+  GiBroccoli, 
+  GiBrain
+} from "react-icons/gi";
 import { 
-  MdTimer, MdSpeed, MdStars, MdMemory,
-  MdEmojiEvents} from "react-icons/md";
-import { RiBrainFill} from "react-icons/ri";
-import MemoryRush from "./MemoryRush";
+  MdTimer, 
+  MdEmojiEvents, 
+  MdGridOn,
+  MdOutlineGridOn
+} from "react-icons/md";
+import { RiTeamFill} from "react-icons/ri";
+import WordSearchPuzzle from "./WordSearchPuzzle";
 
-function MemoryRushPage() {
-  const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
-
+function WordSearchPuzzlePage() {
+  const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
   const gameStats = [
-    { icon: FaUsers, label: "3.8k+ o'yinchi", value: "ONLINE", color: "from-emerald-400 to-teal-400" },
-    { icon: MdTimer, label: "DAVOMIYLIK", value: "5-8 min", color: "from-teal-400 to-cyan-400" },
-    { icon: GiBrain, label: "XOTIRA", value: "TREENING", color: "from-cyan-400 to-emerald-400" },
-    { icon: FaTrophy, label: "REKORD", value: "800+ ball", color: "from-emerald-400 to-cyan-400" },
+    { icon: FaUsers, label: "GURUHLAR", value: "2 jamoa", color: "from-emerald-400 to-teal-400" },
+    { icon: MdTimer, label: "DAVOMIYLIK", value: "10-15 min", color: "from-teal-400 to-cyan-400" },
+    { icon: MdGridOn, label: "JADVAL", value: "12x12", color: "from-cyan-400 to-emerald-400" },
+    { icon: FaSearch, label: "SO'ZLAR", value: "Custom", color: "from-emerald-400 to-cyan-400" },
   ];
 
   const features = [
     { 
-      icon: GiBrain, 
-      title: "Xotira mashqi", 
-      desc: "Kartochkalarni eslab qoling va juftini toping",
+      icon: GiFruitBowl, 
+      title: "1-guruh ro'yxati", 
+      desc: "O'qituvchi xohlagan temadagi so'zlarni 1-guruhga biriktiradi",
       color: "from-emerald-400 to-teal-400",
-      bgIcon: GiBrainStem,
-      stats: "12-20 karta"
+      bgIcon: FaApple,
+      stats: "Custom words"
     },
     { 
-      icon: MdSpeed, 
-      title: "Tezkor javob", 
-      desc: "Vaqt chegarasi bilan xotirangizni sinang",
+      icon: GiBroccoli, 
+      title: "2-guruh ro'yxati", 
+      desc: "O'qituvchi xohlagan temadagi so'zlarni 2-guruhga biriktiradi",
       color: "from-teal-400 to-cyan-400",
-      bgIcon: FaBolt,
-      stats: "3s preview"
+      bgIcon: FaCarrot,
+      stats: "Custom words"
     },
     { 
-      icon: GiPodium, 
-      title: "Reytinglar", 
-      desc: "Eng kuchli xotira egalari bilan raqobat",
+      icon: MdOutlineGridOn, 
+      title: "So'z qidirish", 
+      desc: "8 tomonga so'zlarni topish imkoniyati",
       color: "from-cyan-400 to-emerald-400",
-      bgIcon: GiAchievement,
-      stats: "Top 100"
+      bgIcon: FaSearch,
+      stats: "8 direction"
     },
   ];
 
-  const memoryLevels = [
-    { level: "BOSHLANG'ICH", cards: "12 ta kartochka", time: "60 soniya", icon: FaStar, color: "from-emerald-400 to-teal-400", progress: 33 },
-    { level: "O'RTA", cards: "16 ta kartochka", time: "90 soniya", icon: MdStars, color: "from-teal-400 to-cyan-400", progress: 66 },
-    { level: "PROFESSIONAL", cards: "20 ta kartochka", time: "120 soniya", icon: GiBrain, color: "from-cyan-400 to-emerald-400", progress: 100 },
+  const puzzleLevels = [
+    { level: "BOSHLANG'ICH", words: "10-15 so'z", time: "45 soniya", icon: FaStar, color: "from-emerald-400 to-teal-400", progress: 33 },
+    { level: "O'RTA", words: "15-25 so'z", time: "60 soniya", icon: GiBrain, color: "from-teal-400 to-cyan-400", progress: 66 },
+    { level: "PROFESSIONAL", words: "25-35 so'z", time: "90 soniya", icon: FaCrown, color: "from-cyan-400 to-emerald-400", progress: 100 },
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#0a1f1a] via-[#0f2e26] to-[#0a282f] [&_button]:cursor-pointer [&_button]:transition-all [&_button]:duration-200 [&_button:hover]:brightness-110 [&_button:disabled]:cursor-not-allowed">
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#0a2a1a] via-[#0a3a2a] to-[#0a2f3a] [&_button]:cursor-pointer [&_button]:transition-all [&_button]:duration-200 [&_button:hover]:brightness-110 [&_button:disabled]:cursor-not-allowed">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
@@ -66,36 +78,36 @@ function MemoryRushPage() {
         {[...Array(40)].map((_, i) => (
           <div
             key={i}
-            className="absolute h-1.5 w-1.5 rounded-full bg-white/20 animate-float"
+            className="absolute h-1.5 w-1.5 rounded-full bg-emerald-200/20 animate-float"
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${5 + Math.random() * 10}s`,
-              opacity: 0.2 + Math.random() * 0.4
+              opacity: 0.1 + Math.random() * 0.3
             }}
           />
         ))}
 
         {/* Grid Pattern */}
         <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(16, 185, 129, 0.03) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(16, 185, 129, 0.03) 2px, transparent 0)',
+          backgroundSize: '50px 50px'
         }} />
 
-        {/* Memory Icons Background */}
-        <GiBrain className="absolute left-[5%] top-[15%] animate-float text-8xl text-emerald-500/5" />
-        <MdMemory className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl text-teal-500/5" />
-        <RiBrainFill className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl text-cyan-500/5" />
-        <GiLeak className="absolute right-[12%] top-[25%] animate-float text-8xl text-emerald-500/5" />
+        {/* Game Icons Background */}
+        <GiFruitBowl className="absolute left-[5%] top-[15%] animate-float text-8xl text-emerald-500/5" />
+        <GiBroccoli className="absolute right-[8%] bottom-[20%] animate-float-delayed text-7xl text-teal-500/5" />
+        <FaSearch className="absolute left-[15%] bottom-[10%] animate-float-slow text-7xl text-cyan-500/5" />
+        <MdGridOn className="absolute right-[12%] top-[25%] animate-float text-8xl text-emerald-500/5" />
       </div>
 
       <div className="relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10">
         {/* Hero Section */}
-        <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
+        <div className="group relative mb-8 transform-gpu overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8 lg:p-10">
           {/* Animated Gradient Border */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-emerald-500/30 via-teal-500/30 to-cyan-500/30" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-emerald-500/30 via-teal-500/30 to-cyan-500/30 animate-gradient" />
           </div>
 
           <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-12 lg:items-center">
@@ -103,9 +115,9 @@ function MemoryRushPage() {
             <div className="space-y-6">
               {/* Badge */}
               <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 px-4 py-2 border border-emerald-500/30">
-                <MdMemory className="text-emerald-400 animate-pulse" />
+                <FaSearch className="text-emerald-400 animate-pulse" />
                 <span className="text-sm font-black text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text">
-                  MEMORY RUSH CHALLENGE
+                  WORD SEARCH PUZZLE
                 </span>
                 <div className="ml-2 flex h-2 w-2">
                   <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-green-400 opacity-75" />
@@ -116,18 +128,18 @@ function MemoryRushPage() {
               {/* Title */}
               <h1 className="text-4xl font-black leading-tight md:text-5xl lg:text-6xl">
                 <span className="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent">
-                  Xotirangizni
+                  So'z qidirish
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                  charxlang
+                  o'yini
                 </span>
               </h1>
 
               {/* Description */}
-              <p className="max-w-xl text-base text-gray-300 md:text-lg leading-relaxed">
-                Kartochkalarni eslab qoling, juftlarini toping va eng yuqori natijaga erishing. 
-                Xotirangizni sinash va rivojlantirish uchun ajoyib imkoniyat!
+              <p className="max-w-xl text-base text-emerald-100/80 md:text-lg leading-relaxed">
+                O'qituvchi kiritgan istalgan temadagi so'zlarni qidiring. 
+                1-guruh va 2-guruh o'z ro'yxatidagi so'zlarni topadi. Eng ko'p ball to'plagan guruh g'olib!
               </p>
 
               {/* Stats Grid */}
@@ -135,14 +147,14 @@ function MemoryRushPage() {
                 {gameStats.map((stat, index) => (
                   <div
                     key={index}
-                    className="group/stat relative transform-gpu overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/10"
+                    className="group/stat relative transform-gpu overflow-hidden rounded-xl border border-emerald-500/20 bg-emerald-950/30 p-4 backdrop-blur-sm transition-all hover:scale-105 hover:bg-emerald-900/40"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover/stat:opacity-20 transition-opacity`} />
                     <div className="relative">
                       <div className={`mb-2 inline-flex rounded-lg bg-gradient-to-r ${stat.color} p-2`}>
                         <stat.icon className="text-lg text-white" />
                       </div>
-                      <p className="text-xs font-bold text-gray-400">{stat.label}</p>
+                      <p className="text-xs font-bold text-emerald-200/70">{stat.label}</p>
                       <p className="text-sm font-black text-white">{stat.value}</p>
                     </div>
                   </div>
@@ -157,19 +169,19 @@ function MemoryRushPage() {
               <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-emerald-500/20 blur-xl animate-ping" />
               
               {/* Image Container */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-white/20 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/30">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1f1a] via-transparent to-transparent z-10" />
+              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-emerald-500/30 shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-emerald-400/50">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a2a1a] via-transparent to-transparent z-10" />
                 <img 
-                  src={memoryRushImg} 
-                  alt="Memory Rush Game" 
+                  src={wordSearchImg} 
+                  alt="Word Search Puzzle Game" 
                   className="h-[300px] w-full object-cover md:h-[400px] lg:h-[450px]"
                 />
                 
                 {/* Overlay Content */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-6">
-                  <div className="inline-flex items-center gap-3 rounded-2xl bg-black/50 backdrop-blur-md px-4 py-2 border border-white/10">
-                    <GiBrain className="text-emerald-400" />
-                    <span className="text-sm font-black text-white">XOTIRA O'YINI</span>
+                  <div className="inline-flex items-center gap-3 rounded-2xl bg-black/50 backdrop-blur-md px-4 py-2 border border-emerald-500/30">
+                    <FaPuzzlePiece className="text-emerald-400" />
+                    <span className="text-sm font-black text-white">WORD SEARCH</span>
                     <div className="ml-2 flex gap-1">
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                       <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse delay-150" />
@@ -181,10 +193,10 @@ function MemoryRushPage() {
                 {/* Floating Badges */}
                 <div className="absolute top-4 right-4 z-20 flex gap-2">
                   <div className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                    3 DARAJA
+                    12x12 jadval
                   </div>
                   <div className="rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                    AKTIV 98%
+                    8 TOMON
                   </div>
                 </div>
               </div>
@@ -197,13 +209,13 @@ function MemoryRushPage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative transform-gpu overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6 backdrop-blur-sm transition-all duration-500 hover:scale-105 hover:border-white/20"
+              className="group relative transform-gpu overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/30 to-teal-950/30 p-6 backdrop-blur-sm transition-all duration-500 hover:scale-105 hover:border-emerald-400/30"
             >
               {/* Animated Background */}
               <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
               
               {/* Decorative Icon */}
-              <feature.bgIcon className="absolute right-2 top-2 text-4xl text-white/10 group-hover:text-white/20 transition-all group-hover:scale-110" />
+              <feature.bgIcon className="absolute right-2 top-2 text-4xl text-emerald-500/20 group-hover:text-emerald-400/30 transition-all group-hover:scale-110" />
               
               {/* Icon */}
               <div className={`relative mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-r ${feature.color} text-white shadow-xl transition-transform group-hover:scale-110 group-hover:rotate-3`}>
@@ -212,25 +224,25 @@ function MemoryRushPage() {
               
               {/* Content */}
               <h3 className="relative mb-2 text-lg font-black text-white">{feature.title}</h3>
-              <p className="relative mb-3 text-sm text-gray-300">{feature.desc}</p>
+              <p className="relative mb-3 text-sm text-emerald-200/80">{feature.desc}</p>
               
               {/* Stats */}
               <div className="relative flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-400">{feature.stats}</span>
-                <div className="h-1 flex-1 rounded-full bg-white/10">
-                  <div className={`h-full rounded-full bg-gradient-to-r ${feature.color}`} style={{ width: '70%' }} />
+                <span className="text-xs font-bold text-emerald-300">{feature.stats}</span>
+                <div className="h-1 flex-1 rounded-full bg-emerald-500/20">
+                  <div className={`h-full rounded-full bg-gradient-to-r ${feature.color}`} style={{ width: '75%' }} />
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Memory Levels */}
+        {/* Puzzle Levels */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-          {memoryLevels.map((level, index) => (
+          {puzzleLevels.map((level, index) => (
             <div
               key={index}
-              className="group relative transform-gpu overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6 backdrop-blur-sm transition-all hover:border-white/20"
+              className="group relative transform-gpu overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/30 to-teal-950/30 p-6 backdrop-blur-sm transition-all hover:border-emerald-400/30"
             >
               {/* Gradient Background */}
               <div className={`absolute inset-0 bg-gradient-to-r ${level.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
@@ -240,11 +252,11 @@ function MemoryRushPage() {
               
               {/* Title */}
               <h4 className="relative mb-2 text-center text-base font-black text-white">{level.level}</h4>
-              <p className="relative mb-1 text-center text-xs text-gray-400">{level.cards}</p>
-              <p className="relative mb-4 text-center text-xs text-gray-400">{level.time}</p>
+              <p className="relative mb-1 text-center text-xs text-emerald-200/70">{level.words}</p>
+              <p className="relative mb-4 text-center text-xs text-emerald-200/70">{level.time}</p>
               
               {/* Progress Bar */}
-              <div className="relative h-2 rounded-full bg-white/10">
+              <div className="relative h-2 rounded-full bg-emerald-500/20">
                 <div 
                   className={`h-full rounded-full bg-gradient-to-r ${level.color} transition-all group-hover:animate-pulse`}
                   style={{ width: `${level.progress}%` }}
@@ -254,59 +266,59 @@ function MemoryRushPage() {
           ))}
         </div>
 
-        {/* Memory Rush Component Container */}
+        {/* WordSearchPuzzle Component Container */}
         <div className="relative">
           {/* Decorative Elements */}
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 blur-3xl" />
           
           {/* Main Game Container */}
-          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/30 via-teal-900/30 to-cyan-900/30 p-6 backdrop-blur-xl shadow-2xl md:p-8">
+          <div className="relative transform-gpu overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 via-teal-900/40 to-cyan-900/40 p-6 backdrop-blur-xl shadow-2xl md:p-8">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="mb-6 flex items-center justify-between border-b border-emerald-500/30 pb-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <div className="absolute -inset-1 animate-pulse rounded-xl bg-emerald-500/50 blur" />
                   <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500">
-                    <MdMemory className="text-2xl text-white" />
+                    <FaSearch className="text-2xl text-white" />
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white">Memory Rush</h2>
-                  <p className="flex items-center gap-2 text-sm text-gray-300">
-                    <RiBrainFill className="text-emerald-400" />
-                    Xotirangizni sinang · Juftlarni toping
+                  <h2 className="text-xl font-black text-white">Word Search Puzzle</h2>
+                  <p className="flex items-center gap-2 text-sm text-emerald-200/80">
+                    <RiTeamFill className="text-emerald-400" />
+                    2 guruh · custom tema
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <FaLayerGroup className="text-emerald-400" />
-                  <span className="text-xs font-bold text-white">3 daraja</span>
+                <div className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1.5 border border-emerald-500/30">
+                  <GiFruitBowl className="text-emerald-400" />
+                  <span className="text-xs font-bold text-white">1-Guruh</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                  <FaHeart className="text-teal-400" />
-                  <span className="text-xs font-bold text-white">5 hayot</span>
+                <div className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1.5 border border-emerald-500/30">
+                  <GiBroccoli className="text-teal-400" />
+                  <span className="text-xs font-bold text-white">2-Guruh</span>
                 </div>
               </div>
             </div>
 
-            {/* MemoryRush Component */}
-            <MemoryRush />
+            {/* WordSearchPuzzle Component */}
+            <WordSearchPuzzle />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="relative mt-10 flex justify-center gap-6 text-5xl text-white/10 md:text-6xl">
+        <div className="relative mt-10 flex justify-center gap-6 text-5xl text-emerald-500/20 md:text-6xl">
           <MdEmojiEvents className="animate-bounce" style={{ animationDelay: '0s' }} />
           <GiAchievement className="animate-bounce" style={{ animationDelay: '0.2s' }} />
-          <FaTrophy className="animate-bounce" style={{ animationDelay: '0.4s' }} />
+          <FaCrown className="animate-bounce" style={{ animationDelay: '0.4s' }} />
           <GiPodium className="animate-bounce" style={{ animationDelay: '0.6s' }} />
-          <FaCrown className="animate-bounce" style={{ animationDelay: '0.8s' }} />
+          <FaStar className="animate-bounce" style={{ animationDelay: '0.8s' }} />
         </div>
       </div>
     </div>
   );
 }
 
-export default MemoryRushPage;
+export default WordSearchPuzzlePage;
