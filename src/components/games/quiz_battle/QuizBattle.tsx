@@ -4,6 +4,7 @@ import {
   FaCheckCircle,
   FaChevronDown,
   FaCrown,
+  FaEdit,
   FaPlay,
   FaPlus,
   FaRedo,
@@ -14,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { MdQuiz} from "react-icons/md";
 import Confetti from "react-confetti-boom";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 
 type TeamId = 0 | 1;
 
@@ -36,6 +38,7 @@ type QuestionDraft = {
 const SECONDS_PER_QUESTION = 18;
 const BASE_POINTS = 10;
 const STREAK_BONUS = 5;
+const QUIZ_BATTLE_GAME_KEY = "quiz_battle";
 
 const createEmptyDraft = (): QuestionDraft => ({
   question: "",
@@ -46,13 +49,16 @@ const createEmptyDraft = (): QuestionDraft => ({
 
 function QuizBattle() {
   const finishViewRef = useRef<HTMLDivElement | null>(null);
+  const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("question-setup");
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [draft, setDraft] = useState<QuestionDraft>(createEmptyDraft());
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [questionError, setQuestionError] = useState("");
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const [current, setCurrent] = useState(0);
   const [turn, setTurn] = useState<TeamId>(0);
@@ -104,6 +110,52 @@ function QuizBattle() {
     finishViewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [phase]);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<Question>(QUIZ_BATTLE_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestions(remoteQuestions);
+      }
+      setRemoteLoaded(true);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      void saveGameQuestions<Question>(QUIZ_BATTLE_GAME_KEY, questions);
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [questions, remoteLoaded]);
+
+  const resetQuestionDraft = () => {
+    setDraft(createEmptyDraft());
+    setEditingQuestionIndex(null);
+    setQuestionError("");
+  };
+
+  const beginEditQuestion = (idx: number) => {
+    const item = questions[idx];
+    if (!item) return;
+    setEditingQuestionIndex(idx);
+    setDraft({
+      question: item.question,
+      options: [item.options[0] ?? "", item.options[1] ?? "", item.options[2] ?? "", item.options[3] ?? ""],
+      answerIndex: item.answerIndex,
+      category: item.category,
+    });
+    setQuestionError("");
+  };
+
   const addQuestion = () => {
     const questionText = draft.question.trim();
     const categoryText = draft.category.trim();
@@ -122,6 +174,26 @@ function QuizBattle() {
       return;
     }
 
+    if (editingQuestionIndex !== null) {
+      setQuestions((prev) =>
+        prev.map((item, idx) =>
+          idx === editingQuestionIndex
+            ? {
+                ...item,
+                question: questionText,
+                options: cleanedOptions,
+                answerIndex: draft.answerIndex,
+                category: categoryText,
+              }
+            : item,
+        ),
+      );
+      setQuestionError("");
+      resetQuestionDraft();
+      setToast("Savol yangilandi!");
+      return;
+    }
+
     setQuestions((prev) => [
       ...prev,
       {
@@ -132,11 +204,19 @@ function QuizBattle() {
       },
     ]);
     setQuestionError("");
-    setDraft(createEmptyDraft());
+    resetQuestionDraft();
     setToast("✅ Savol qo'shildi!");
   };
 
   const removeQuestion = (idx: number) => {
+    setEditingQuestionIndex((prev) => {
+      if (prev === null) return prev;
+      if (prev === idx) {
+        setDraft(createEmptyDraft());
+        return null;
+      }
+      return prev > idx ? prev - 1 : prev;
+    });
     setQuestions((prev) => prev.filter((_, i) => i !== idx));
     setToast("🗑️ Savol o'chirildi");
   };
@@ -238,7 +318,7 @@ function QuizBattle() {
 
   const resetEverything = () => {
     setQuestions([]);
-    setDraft(createEmptyDraft());
+    resetQuestionDraft();
     setQuestionError("");
     setNameError("");
     setCurrent(0);
@@ -354,10 +434,18 @@ function QuizBattle() {
               >
                 <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
                 <span className="relative flex items-center justify-center gap-2">
-                  <FaPlus />
-                  SAVOL QO'SHISH
+                  {editingQuestionIndex !== null ? <FaEdit /> : <FaPlus />}
+                  {editingQuestionIndex !== null ? "SAVOLNI SAQLASH" : "SAVOL QO'SHISH"}
                 </span>
               </button>
+              {editingQuestionIndex !== null && (
+                <button
+                  onClick={resetQuestionDraft}
+                  className="w-full rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 font-bold text-yellow-200 transition-all hover:bg-yellow-500/20"
+                >
+                  BEKOR QILISH
+                </button>
+              )}
 
               {/* Error Message */}
               {questionError && (
@@ -407,12 +495,22 @@ function QuizBattle() {
                         ))}
                       </div>
                     </div>
-                    <button
-                      onClick={() => removeQuestion(idx)}
-                      className="rounded-lg bg-rose-500/20 p-2 text-rose-400 hover:bg-rose-500/30 transition-all"
-                    >
-                      <FaTrash />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => beginEditQuestion(idx)}
+                        className="rounded-lg bg-cyan-500/20 p-2 text-cyan-300 hover:bg-cyan-500/30 transition-all"
+                        title="Tahrirlash"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => removeQuestion(idx)}
+                        className="rounded-lg bg-rose-500/20 p-2 text-rose-400 hover:bg-rose-500/30 transition-all"
+                        title="O'chirish"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

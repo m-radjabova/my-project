@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBolt,
   FaCheckCircle,
@@ -6,6 +6,7 @@ import {
   FaFlag,
   FaForward,
   FaGlobe,
+  FaPause,
   FaPlay,
   FaRedo,
   FaStar,
@@ -14,18 +15,12 @@ import {
 import { GiEarthAfricaEurope, GiEarthAmerica, GiEarthAsiaOceania } from "react-icons/gi";
 import { RiShieldFill, RiSwordFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
+import correctSfx from "../../../assets/correct.m4a";
+import wrongSfx from "../../../assets/wrong.m4a";
+import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
 
 type TeamId = 0 | 1;
 type Phase = "setup" | "play" | "round" | "finish";
-
-type FlagQuestion = {
-  id: string;
-  country: string;
-  flag: string;
-  options: string[];
-  continent: string;
-  difficulty: "easy" | "medium" | "hard";
-};
 
 type TeamAnswer = {
   team0: string | null;
@@ -34,29 +29,7 @@ type TeamAnswer = {
   team1Time: number | null;
 };
 
-const FLAG_QUESTIONS: FlagQuestion[] = [
-  { id: "uz", country: "O'zbekiston", flag: "https://flagcdn.com/w320/uz.png", options: ["O'zbekiston", "Qozog'iston", "Turkmaniston", "Tojikiston"], continent: "Osiyo", difficulty: "easy" },
-  { id: "jp", country: "Yaponiya", flag: "https://flagcdn.com/w320/jp.png", options: ["Yaponiya", "Xitoy", "Koreya", "Tailand"], continent: "Osiyo", difficulty: "easy" },
-  { id: "cn", country: "Xitoy", flag: "https://flagcdn.com/w320/cn.png", options: ["Xitoy", "Yaponiya", "Koreya", "Vyetnam"], continent: "Osiyo", difficulty: "easy" },
-  { id: "in", country: "Hindiston", flag: "https://flagcdn.com/w320/in.png", options: ["Hindiston", "Pokiston", "Bangladesh", "Nepal"], continent: "Osiyo", difficulty: "medium" },
-  { id: "de", country: "Germaniya", flag: "https://flagcdn.com/w320/de.png", options: ["Germaniya", "Fransiya", "Italiya", "Ispaniya"], continent: "Yevropa", difficulty: "easy" },
-  { id: "fr", country: "Fransiya", flag: "https://flagcdn.com/w320/fr.png", options: ["Fransiya", "Germaniya", "Italiya", "Ispaniya"], continent: "Yevropa", difficulty: "easy" },
-  { id: "it", country: "Italiya", flag: "https://flagcdn.com/w320/it.png", options: ["Italiya", "Fransiya", "Ispaniya", "Gretsiya"], continent: "Yevropa", difficulty: "easy" },
-  { id: "gb", country: "Buyuk Britaniya", flag: "https://flagcdn.com/w320/gb.png", options: ["Buyuk Britaniya", "Irlandiya", "Shotlandiya", "Uels"], continent: "Yevropa", difficulty: "medium" },
-  { id: "us", country: "AQSH", flag: "https://flagcdn.com/w320/us.png", options: ["AQSH", "Kanada", "Meksika", "Kuba"], continent: "Shimoliy Amerika", difficulty: "easy" },
-  { id: "ca", country: "Kanada", flag: "https://flagcdn.com/w320/ca.png", options: ["Kanada", "AQSH", "Meksika", "Grenlandiya"], continent: "Shimoliy Amerika", difficulty: "easy" },
-  { id: "mx", country: "Meksika", flag: "https://flagcdn.com/w320/mx.png", options: ["Meksika", "Ispaniya", "Argentina", "Kolumbiya"], continent: "Shimoliy Amerika", difficulty: "medium" },
-  { id: "br", country: "Braziliya", flag: "https://flagcdn.com/w320/br.png", options: ["Braziliya", "Argentina", "Kolumbiya", "Peru"], continent: "Janubiy Amerika", difficulty: "easy" },
-  { id: "ar", country: "Argentina", flag: "https://flagcdn.com/w320/ar.png", options: ["Argentina", "Braziliya", "Urugvay", "Chili"], continent: "Janubiy Amerika", difficulty: "medium" },
-  { id: "eg", country: "Misr", flag: "https://flagcdn.com/w320/eg.png", options: ["Misr", "Liviya", "Sudan", "Jazoir"], continent: "Afrika", difficulty: "medium" },
-  { id: "za", country: "Janubiy Afrika", flag: "https://flagcdn.com/w320/za.png", options: ["Janubiy Afrika", "Namibiya", "Zimbabve", "Mozambik"], continent: "Afrika", difficulty: "hard" },
-  { id: "ng", country: "Nigeriya", flag: "https://flagcdn.com/w320/ng.png", options: ["Nigeriya", "Gana", "Kot-d'Ivuar", "Kamerun"], continent: "Afrika", difficulty: "hard" },
-  { id: "au", country: "Avstraliya", flag: "https://flagcdn.com/w320/au.png", options: ["Avstraliya", "Yangi Zelandiya", "Fiji", "Papua Yangi Gvineya"], continent: "Okeaniya", difficulty: "easy" },
-  { id: "nz", country: "Yangi Zelandiya", flag: "https://flagcdn.com/w320/nz.png", options: ["Yangi Zelandiya", "Avstraliya", "Fiji", "Samoa"], continent: "Okeaniya", difficulty: "medium" },
-];
-
 const ROUND_SECONDS = 20;
-const TOTAL_ROUNDS = 10;
 const BASE_POINTS = 100;
 const TIME_BONUS = 5;
 const STREAK_BONUS = 15;
@@ -71,10 +44,32 @@ const shuffle = <T,>(arr: T[]) => {
   return a;
 };
 
+type ContinentFilter =
+  | "ALL"
+  | "Osiyo"
+  | "Yevropa"
+  | "Afrika"
+  | "Shimoliy Amerika"
+  | "Janubiy Amerika"
+  | "Okeaniya";
+
+type DifficultyFilter = "ALL" | "easy" | "medium" | "hard";
+type RoundCount = 10 | 15 | 20;
+
 export default function FlagBattle() {
   const [phase, setPhase] = useState<Phase>("setup");
-const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]);
+  const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]);
   const [nameError, setNameError] = useState("");
+
+  // вњ… filterlar
+  const [continentFilter, setContinentFilter] = useState<ContinentFilter>("ALL");
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("ALL");
+
+  // вњ… round sonini tanlash
+  const [roundCount, setRoundCount] = useState<RoundCount>(10);
+
+  // вњ… pause/resume
+  const [paused, setPaused] = useState(false);
 
   const [questions, setQuestions] = useState<FlagQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,6 +82,31 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
   const [roundMessage, setRoundMessage] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
+  // вњ… audio (public papkaga qoвЂying)
+  // src/assets/correct.m4a
+  // src/assets/wrong.m4a
+  const correctAudioRef = useRef<HTMLAudioElement | null>(null);
+  const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    correctAudioRef.current = new Audio(correctSfx);
+    wrongAudioRef.current = new Audio(wrongSfx);
+  }, []);
+
+  const playCorrect = () => {
+    const a = correctAudioRef.current;
+    if (!a) return;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  };
+
+  const playWrong = () => {
+    const a = wrongAudioRef.current;
+    if (!a) return;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  };
+
   const [teamAnswers, setTeamAnswers] = useState<TeamAnswer>({
     team0: null,
     team1: null,
@@ -97,8 +117,14 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
   const roundStartTimeRef = useRef<number>(Date.now());
   const currentQuestion = questions[currentIndex];
   const totalRounds = questions.length;
-  const progressPct = useMemo(() => Math.round(((currentIndex + 1) / Math.max(1, totalRounds)) * 100), [currentIndex, totalRounds]);
+
+  const progressPct = useMemo(
+    () => Math.round(((currentIndex + 1) / Math.max(1, totalRounds)) * 100),
+    [currentIndex, totalRounds]
+  );
+
   const timePct = useMemo(() => Math.round((roundTimer / ROUND_SECONDS) * 100), [roundTimer]);
+
   const winner = useMemo(() => (scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1), [scores]);
 
   useEffect(() => {
@@ -107,24 +133,25 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  // вњ… TIMER: pause boвЂlsa ishlamaydi
   useEffect(() => {
-    if (phase !== "play" || locked) return;
+    if (phase !== "play" || locked || paused) return;
     if (roundTimer <= 0) {
       handleRoundEnd();
       return;
     }
     const t = window.setTimeout(() => setRoundTimer((v) => v - 1), 1000);
     return () => window.clearTimeout(t);
-  }, [phase, roundTimer, locked]);
+  }, [phase, roundTimer, locked, paused]);
 
   useEffect(() => {
-    if (phase !== "play" || locked || !currentQuestion) return;
+    if (phase !== "play" || locked || paused || !currentQuestion) return;
     const team0Correct = teamAnswers.team0 === currentQuestion.country;
     const team1Correct = teamAnswers.team1 === currentQuestion.country;
     if (team0Correct || team1Correct || (teamAnswers.team0 !== null && teamAnswers.team1 !== null)) {
       handleRoundEnd();
     }
-  }, [teamAnswers, phase, locked, currentQuestion]);
+  }, [teamAnswers, phase, locked, paused, currentQuestion]);
 
   useEffect(() => {
     if (phase !== "round") return;
@@ -142,15 +169,38 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     roundStartTimeRef.current = Date.now();
   };
 
+  const getFilteredPool = () => {
+    return FLAG_QUESTIONS.filter((q) => {
+      const okContinent = continentFilter === "ALL" ? true : q.continent === continentFilter;
+      const okDiff = difficultyFilter === "ALL" ? true : q.difficulty === difficultyFilter;
+      return okContinent && okDiff;
+    });
+  };
+
   const startGame = () => {
     const a = teamNames[0].trim();
     const b = teamNames[1].trim();
     if (!a || !b) return setNameError("Ikkala guruh nomini kiriting.");
     if (a.toLowerCase() === b.toLowerCase()) return setNameError("Guruh nomlari bir xil bo'lmasin.");
 
+    const pool = getFilteredPool();
+    if (pool.length < 4) {
+      setNameError("Tanlangan filter boвЂyicha savollar juda kam. (Kamida 4 ta kerak)");
+      return;
+    }
+
+    const rounds = Math.min(roundCount, pool.length);
+
     setTeamNames([a, b]);
     setNameError("");
-    setQuestions(shuffle(FLAG_QUESTIONS).slice(0, TOTAL_ROUNDS));
+    setPaused(false);
+
+    setQuestions(
+      shuffle(pool)
+        .slice(0, rounds)
+        .map((q) => ({ ...q, options: shuffle(q.options) }))
+    );
+
     setCurrentIndex(0);
     setScores([0, 0]);
     setStreaks([0, 0]);
@@ -163,7 +213,7 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
   };
 
   const handleTeamAnswer = (team: TeamId, answer: string) => {
-    if (phase !== "play" || locked || !currentQuestion) return;
+    if (phase !== "play" || locked || paused || !currentQuestion) return;
     if (team === 0 && teamAnswers.team0 !== null) return;
     if (team === 1 && teamAnswers.team1 !== null) return;
 
@@ -176,26 +226,36 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
   };
 
   const awardRound = (team: TeamId, bonusTimeSeconds: number) => {
-    const gain = BASE_POINTS + Math.max(0, Math.round(ROUND_SECONDS - bonusTimeSeconds)) * TIME_BONUS + streaks[team] * STREAK_BONUS;
+    const gain =
+      BASE_POINTS +
+      Math.max(0, Math.round(ROUND_SECONDS - bonusTimeSeconds)) * TIME_BONUS +
+      streaks[team] * STREAK_BONUS;
+
     setScores((prev) => {
       const next: [number, number] = [...prev] as [number, number];
       next[team] += gain;
       return next;
     });
+
     setStreaks((prev) => {
       const next: [number, number] = [...prev] as [number, number];
       next[team] += 1;
       next[team === 0 ? 1 : 0] = 0;
       return next;
     });
+
     setBestStreaks((prev) => {
       const next: [number, number] = [...prev] as [number, number];
       next[team] = Math.max(next[team], streaks[team] + 1);
       return next;
     });
+
     setRoundWinner(team);
     setRoundMessage(`${teamNames[team]} birinchi topdi: +${gain} ball`);
     setToast(`${teamNames[team]} +${gain}`);
+
+    // вњ… toвЂgвЂri javob audio
+    playCorrect();
   };
 
   const handleRoundEnd = () => {
@@ -225,6 +285,9 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
       setStreaks([0, 0]);
       setRoundWinner(null);
       setRoundMessage(`To'g'ri javob: ${currentQuestion.country}`);
+
+      // вњ… xato audio (xohlasangiz qoldiring)
+      playWrong();
     }
 
     setPhase("round");
@@ -238,6 +301,7 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     setCurrentIndex((prev) => prev + 1);
     setRoundTimer(ROUND_SECONDS);
     setLocked(false);
+    setPaused(false);
     resetTeamAnswers();
     setPhase("play");
   };
@@ -251,8 +315,15 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     setQuestions([]);
     setRoundTimer(ROUND_SECONDS);
     setLocked(false);
+    setPaused(false);
     setToast(null);
     resetTeamAnswers();
+  };
+
+  const togglePause = () => {
+    if (phase !== "play" || locked) return;
+    setPaused((p) => !p);
+    setToast((prev) => (prev ? prev : !paused ? "PAUSE" : "RESUME"));
   };
 
   const getContinentIcon = (continent: string) => {
@@ -273,6 +344,28 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     );
   };
 
+  type ContinentOption = { value: ContinentFilter; label: string };
+  type DifficultyOption = { value: DifficultyFilter; label: string };
+
+  const continentOptions: ContinentOption[] = [
+    { value: "ALL", label: "Barchasi" },
+    { value: "Osiyo", label: "Osiyo" },
+    { value: "Yevropa", label: "Yevropa" },
+    { value: "Afrika", label: "Afrika" },
+    { value: "Shimoliy Amerika", label: "Shimoliy Amerika" },
+    { value: "Janubiy Amerika", label: "Janubiy Amerika" },
+    { value: "Okeaniya", label: "Okeaniya" },
+  ];
+
+  const difficultyOptions: DifficultyOption[] = [
+    { value: "ALL", label: "Barchasi" },
+    { value: "easy", label: "Easy" },
+    { value: "medium", label: "Medium" },
+    { value: "hard", label: "Hard" },
+  ];
+
+  const roundCountOptions: RoundCount[] = [10, 15, 20];
+
   return (
     <div className="relative text-white">
       <div className="fixed left-1/2 top-24 z-50 -translate-x-1/2 transform">
@@ -280,7 +373,14 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
       </div>
 
       {phase === "finish" && winner !== null && (
-        <Confetti mode="boom" particleCount={100} effectCount={1} x={0.5} y={0.35} colors={["#3b82f6", "#06b6d4", "#f59e0b", "#10b981", "#8b5cf6"]} />
+        <Confetti
+          mode="boom"
+          particleCount={100}
+          effectCount={1}
+          x={0.5}
+          y={0.35}
+          colors={["#3b82f6", "#06b6d4", "#f59e0b", "#10b981", "#8b5cf6"]}
+        />
       )}
 
       {phase === "setup" && (
@@ -299,13 +399,71 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-bold text-blue-300"><RiSwordFill /> 1-GURUH</label>
-                <input value={teamNames[0]} onChange={(e) => setTeamNames([e.target.value, teamNames[1]])} className="w-full rounded-xl border border-blue-500/30 bg-blue-950/30 px-4 py-3 text-white outline-none focus:border-blue-400" />
+                <input
+                  value={teamNames[0]}
+                  onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
+                  className="w-full rounded-xl border border-blue-500/30 bg-blue-950/30 px-4 py-3 text-white outline-none focus:border-blue-400"
+                />
               </div>
+
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-bold text-cyan-300"><RiShieldFill /> 2-GURUH</label>
-                <input value={teamNames[1]} onChange={(e) => setTeamNames([teamNames[0], e.target.value])} className="w-full rounded-xl border border-cyan-500/30 bg-cyan-950/30 px-4 py-3 text-white outline-none focus:border-cyan-400" />
+                <input
+                  value={teamNames[1]}
+                  onChange={(e) => setTeamNames([teamNames[0], e.target.value])}
+                  className="w-full rounded-xl border border-cyan-500/30 bg-cyan-950/30 px-4 py-3 text-white outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              {/* вњ… FILTERS + ROUND COUNT */}
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-blue-300">QIT'A (CONTINENT)</label>
+                  <select
+                    value={continentFilter}
+                    onChange={(e) => setContinentFilter(e.target.value as ContinentFilter)}
+                    className="w-full rounded-xl border border-blue-500/30 bg-blue-950/30 px-4 py-3 text-white outline-none focus:border-blue-400"
+                  >
+                    {continentOptions.map((o) => (
+                      <option key={o.value} value={o.value} className="bg-slate-900">
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-cyan-300">QIYINCHILIK (DIFFICULTY)</label>
+                  <select
+                    value={difficultyFilter}
+                    onChange={(e) => setDifficultyFilter(e.target.value as DifficultyFilter)}
+                    className="w-full rounded-xl border border-cyan-500/30 bg-cyan-950/30 px-4 py-3 text-white outline-none focus:border-cyan-400"
+                  >
+                    {difficultyOptions.map((o) => (
+                      <option key={o.value} value={o.value} className="bg-slate-900">
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="text-xs font-bold text-emerald-300">RAUND SONI</label>
+                  <select
+                    value={roundCount}
+                    onChange={(e) => setRoundCount(Number(e.target.value) as RoundCount)}
+                    className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-4 py-3 text-white outline-none focus:border-emerald-400"
+                  >
+                    {roundCountOptions.map((v) => (
+                      <option key={v} value={v} className="bg-slate-900">
+                        {v} ta raund
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
+
             <div className="rounded-xl border border-blue-500/30 bg-blue-950/30 p-4">
               <h3 className="mb-3 text-sm font-bold text-blue-300">QOIDALAR</h3>
               <ul className="space-y-2 text-sm text-blue-100/80">
@@ -313,6 +471,10 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
                 <li className="flex items-start gap-2"><FaBolt className="mt-1 text-xs text-yellow-400" /><span>Qaysi guruh birinchi to'g'ri topsa o'sha ball oladi</span></li>
                 <li className="flex items-start gap-2"><FaTimesCircle className="mt-1 text-xs text-rose-400" /><span>Noto'g'ri javob: -{WRONG_PENALTY} ball</span></li>
               </ul>
+
+              <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+                Filter bo'yicha savollar kam bo'lsa, o'yinda avtomatik raund sonini kamaytiradi.
+              </div>
             </div>
           </div>
 
@@ -328,26 +490,53 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
 
       {phase === "play" && currentQuestion && (
         <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-4">
+          {/* вњ… top info + pause button */}
+          <div className="grid gap-4 md:grid-cols-5">
             <div className="rounded-xl border border-blue-500/20 bg-blue-950/30 p-4">
               <p className="text-xs text-blue-300">{teamNames[0]}</p>
               <p className="text-2xl font-black">{scores[0]}</p>
               <p className="text-xs text-blue-100/60">Streak: {streaks[0]}</p>
             </div>
+
             <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/30 p-4">
               <p className="text-xs text-cyan-300">{teamNames[1]}</p>
               <p className="text-2xl font-black">{scores[1]}</p>
               <p className="text-xs text-cyan-100/60">Streak: {streaks[1]}</p>
             </div>
+
             <div className="rounded-xl border border-blue-500/20 bg-blue-950/30 p-4">
               <p className="text-xs text-blue-300">VAQT</p>
               <p className="text-2xl font-black">{roundTimer}s</p>
-              <div className="mt-2 h-1.5 rounded-full bg-blue-500/20"><div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: `${timePct}%` }} /></div>
+              <div className="mt-2 h-1.5 rounded-full bg-blue-500/20">
+                <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: `${timePct}%` }} />
+              </div>
             </div>
+
             <div className="rounded-xl border border-blue-500/20 bg-blue-950/30 p-4">
               <p className="text-xs text-blue-300">PROGRESS</p>
               <p className="text-2xl font-black">{currentIndex + 1}/{totalRounds}</p>
-              <div className="mt-2 h-1.5 rounded-full bg-blue-500/20"><div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: `${progressPct}%` }} /></div>
+              <div className="mt-2 h-1.5 rounded-full bg-blue-500/20">
+                <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: `${progressPct}%` }} />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs text-white/60">BOSHQARUV</p>
+              <button
+                onClick={togglePause}
+                className={`mt-2 w-full rounded-xl px-4 py-3 font-black text-white transition-all hover:scale-[1.02] ${
+                  paused ? "bg-gradient-to-r from-emerald-500 to-teal-500" : "bg-gradient-to-r from-yellow-500 to-orange-500"
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  {paused ? <FaPlay /> : <FaPause />}
+                  {paused ? "RESUME" : "PAUSE"}
+                </span>
+              </button>
+
+              {paused && <div className="mt-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-2 text-xs text-yellow-200">
+                Pause holatda javob berib bo'lmaydi.
+              </div>}
             </div>
           </div>
 
@@ -377,7 +566,10 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
                 const teamAnswerTime = teamId === 0 ? teamAnswers.team0Time : teamAnswers.team1Time;
 
                 return (
-                  <div key={teamId} className={`rounded-2xl border p-4 ${teamId === 0 ? "border-blue-500/30 bg-blue-950/30" : "border-cyan-500/30 bg-cyan-950/30"}`}>
+                  <div
+                    key={teamId}
+                    className={`rounded-2xl border p-4 ${teamId === 0 ? "border-blue-500/30 bg-blue-950/30" : "border-cyan-500/30 bg-cyan-950/30"}`}
+                  >
                     <div className="mb-3 flex items-center justify-between">
                       <p className={`font-black ${teamId === 0 ? "text-blue-300" : "text-cyan-300"}`}>{teamNames[teamId]}</p>
                       {teamAnswerTime !== null && <span className="text-xs text-white/70">{teamAnswerTime.toFixed(1)}s</span>}
@@ -391,9 +583,11 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
                           <button
                             key={`${teamId}-${option}`}
                             onClick={() => handleTeamAnswer(teamId, option)}
-                            disabled={locked || teamAnswer !== null}
+                            disabled={locked || paused || teamAnswer !== null}
                             className={`rounded-xl border-2 p-3 text-left font-bold transition-all hover:scale-[1.02] disabled:hover:scale-100 ${
-                              selected ? (correct ? "border-emerald-500/50 bg-emerald-500/20" : "border-rose-500/50 bg-rose-500/20") : "border-white/20 bg-black/20 hover:bg-white/10"
+                              selected
+                                ? (correct ? "border-emerald-500/50 bg-emerald-500/20" : "border-rose-500/50 bg-rose-500/20")
+                                : "border-white/20 bg-black/20 hover:bg-white/10"
                             }`}
                           >
                             <span className="flex items-center justify-between">
@@ -415,7 +609,7 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
         </div>
       )}
 
-      {phase === "round" && (
+       {phase === "round" && (
         <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-900/30 to-cyan-900/30 p-8 text-center backdrop-blur-xl">
           <div className="mb-5 flex justify-center">
             <div className={`flex h-24 w-24 items-center justify-center rounded-full ${roundWinner !== null ? "bg-gradient-to-r from-yellow-500 to-orange-500" : "bg-gradient-to-r from-blue-500 to-cyan-500"}`}>
@@ -462,7 +656,7 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
           </div>
           <div className="flex justify-center gap-4">
             <button onClick={startGame} className="rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-3 font-black text-white transition-all hover:scale-105">
-              <span className="flex items-center gap-2"><FaPlay /> QAYTA O'YNA</span>
+              <span className="flex items-center gap-2"><FaPlay /> QAYTA O'YNASH</span>
             </button>
             <button onClick={resetGame} className="rounded-xl border border-white/20 bg-white/10 px-6 py-3 font-bold text-white transition-all hover:bg-white/20">
               <span className="flex items-center gap-2"><FaRedo /> BOSH SAHIFA</span>
@@ -473,3 +667,4 @@ const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]
     </div>
   );
 }
+

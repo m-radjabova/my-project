@@ -26,6 +26,8 @@ import GameLayout from "./layout/GameLayout";
 import FlagBattlePage from "./components/games/flag_battle/FlagBattlePage";
 import WheelOfFortunePage from "./components/games/wheel_of_fortune/WheelOfFortunePage";
 import WordSearchPuzzlePage from "./components/games/word_search_puzzle/WordSearchPuzzlePage";
+import Profile from "./components/profile/Profile";
+import OceanWordFishingPage from "./components/games/ocean_word_fishing/OceanWordFishingPage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -62,7 +64,7 @@ function App() {
       >
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/profile" element={<h1>Profile</h1>} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
 
       {/* Game sahifalar: header/footer YO'Q */}
@@ -82,6 +84,7 @@ function App() {
         <Route path="/games/flag-battle" element={<FlagBattlePage />} />
         <Route path="/games/wheel-of-fortune" element={<WheelOfFortunePage />} />
         <Route path="/games/word-search" element={<WordSearchPuzzlePage />} />
+        <Route path="/games/ocean-word-fishing" element={<OceanWordFishingPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/home" replace />} />

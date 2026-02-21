@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { 
-  FaPlay, FaPlus, FaRedo, FaTrash, FaTrophy, FaForward, FaBackward,FaCrown 
+  FaPlay, FaPlus, FaRedo, FaTrash, FaTrophy, FaForward, FaBackward, FaCrown, FaEdit
 } from "react-icons/fa";
 import { 
   GiBrain, GiPuzzle, GiAchievement, GiLightBulb, GiShield, GiSwordman 
 } from "react-icons/gi";
 import { 
   MdSkipNext, } from "react-icons/md";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -27,6 +28,7 @@ const WRONG_PENALTY = 40;
 const SKIP_PENALTY = 25;
 const SHAPES = ["🔵", "🟢", "🟡", "🔴", "🟣", "🟠", "⚪", "⬛"];
 const EMPTY_DRAFT: Draft = { prompt: "", options: ["", "", "", ""], correctIndex: 0, reason: "" };
+const CLASSIC_ARCADE_GAME_KEY = "classic_arcade";
 const BUILTIN_ODD: OddRound[] = [
   { prompt: "Qaysi biri meva emas?", options: ["Olma", "Nok", "Uzum", "Mashina"], correctIndex: 3, reason: "Mashina meva emas." },
   { prompt: "Qaysi biri toq son?", options: ["2", "4", "6", "9"], correctIndex: 3, reason: "9 toq son." },
@@ -52,12 +54,15 @@ const buildPattern = (): PatternRound => {
 const buildOdd = (teacher: OddRound[]): OddRound => (teacher.length ? [...teacher, ...BUILTIN_ODD] : BUILTIN_ODD)[r(0, (teacher.length ? teacher.length + BUILTIN_ODD.length : BUILTIN_ODD.length) - 1)];
 
 export default function ClassicArcade() {
+  const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [teacherRounds, setTeacherRounds] = useState<OddRound[]>([]);
   const [teacherError, setTeacherError] = useState("");
+  const [editingTeacherRoundIndex, setEditingTeacherRoundIndex] = useState<number | null>(null);
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [sessionLeft, setSessionLeft] = useState(SESSION_SECONDS);
   const [roundLeft, setRoundLeft] = useState(ROUND_SECONDS);
   const [betweenLeft, setBetweenLeft] = useState(0);
@@ -90,6 +95,31 @@ export default function ClassicArcade() {
       if (betweenTimerRef.current) window.clearTimeout(betweenTimerRef.current);
     };
   }, []);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteRounds = await fetchGameQuestions<OddRound>(CLASSIC_ARCADE_GAME_KEY);
+      if (!alive) return;
+      if (remoteRounds && remoteRounds.length > 0) {
+        setTeacherRounds(remoteRounds);
+      }
+      setRemoteLoaded(true);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      void saveGameQuestions<OddRound>(CLASSIC_ARCADE_GAME_KEY, teacherRounds);
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [teacherRounds, remoteLoaded]);
   useEffect(() => { if (phase !== "play") return; if (sessionLeft <= 0) { setPhase("finish"); return; } const t = window.setTimeout(() => setSessionLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, sessionLeft]);
   useEffect(() => { if (phase !== "play" || betweenLeft > 0 || locked) return; if (roundLeft <= 0) { onSkip(true); return; } const t = window.setTimeout(() => setRoundLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, roundLeft, betweenLeft, locked]);
   useEffect(() => { if (phase !== "play" || betweenLeft <= 0) return; const t = window.setTimeout(() => setBetweenLeft((s) => s - 1), 1000); return () => window.clearTimeout(t); }, [phase, betweenLeft]);
@@ -103,13 +133,58 @@ export default function ClassicArcade() {
     if (next === "odd") setOddRound(buildOdd(teacherRounds));
   }, [betweenLeft, phase, teacherRounds]);
 
+  const resetTeacherDraft = () => {
+    setDraft(EMPTY_DRAFT);
+    setEditingTeacherRoundIndex(null);
+    setTeacherError("");
+  };
+
+  const beginEditTeacherRound = (idx: number) => {
+    const item = teacherRounds[idx];
+    if (!item) return;
+    setEditingTeacherRoundIndex(idx);
+    setDraft({
+      prompt: item.prompt,
+      options: [...item.options],
+      correctIndex: item.correctIndex,
+      reason: item.reason,
+    });
+    setTeacherError("");
+  };
+
   const addTeacherRound = () => {
     const prompt = draft.prompt.trim(); const options = draft.options.map((o) => o.trim()) as [string, string, string, string]; const reason = draft.reason.trim();
     if (!prompt) return setTeacherError("Savol kiriting.");
     if (options.some((o) => !o)) return setTeacherError("4 ta variant kiriting.");
     if (new Set(options.map((o) => o.toLowerCase())).size < 4) return setTeacherError("Variantlar turlicha bo'lsin.");
+
+    if (editingTeacherRoundIndex !== null) {
+      setTeacherRounds((prev) =>
+        prev.map((item, idx) =>
+          idx === editingTeacherRoundIndex
+            ? { prompt, options, correctIndex: draft.correctIndex, reason: reason || `To'g'ri javob: ${options[draft.correctIndex]}` }
+            : item,
+        ),
+      );
+      resetTeacherDraft();
+      setToast("Challenge yangilandi");
+      return;
+    }
+
     setTeacherRounds((p) => [...p, { prompt, options, correctIndex: draft.correctIndex, reason: reason || `To'g'ri javob: ${options[draft.correctIndex]}` }]);
-    setDraft(EMPTY_DRAFT); setTeacherError("");
+    resetTeacherDraft();
+  };
+
+  const removeTeacherRound = (idx: number) => {
+    setEditingTeacherRoundIndex((prev) => {
+      if (prev === null) return prev;
+      if (prev === idx) {
+        setDraft(EMPTY_DRAFT);
+        return null;
+      }
+      return prev > idx ? prev - 1 : prev;
+    });
+    setTeacherRounds((p) => p.filter((_, itemIdx) => itemIdx !== idx));
   };
 
   const startGame = () => {
@@ -234,10 +309,18 @@ export default function ClassicArcade() {
                 >
                   <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
                   <span className="relative flex items-center justify-center gap-2">
-                    <FaPlus />
-                    CHALLENGE QO'SHISH
+                    {editingTeacherRoundIndex !== null ? <FaEdit /> : <FaPlus />}
+                    {editingTeacherRoundIndex !== null ? "CHALLENGE SAQLASH" : "CHALLENGE QO'SHISH"}
                   </span>
                 </button>
+                {editingTeacherRoundIndex !== null && (
+                  <button
+                    onClick={resetTeacherDraft}
+                    className="w-full rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/10 p-3 font-bold text-fuchsia-200 transition-all hover:bg-fuchsia-500/20"
+                  >
+                    BEKOR QILISH
+                  </button>
+                )}
               </div>
             </div>
             
@@ -269,12 +352,22 @@ export default function ClassicArcade() {
                           </p>
                           <p className="text-xs text-gray-500 mt-1">{q.reason}</p>
                         </div>
-                        <button
-                          onClick={() => setTeacherRounds((p) => p.filter((_, idx) => idx !== i))}
-                          className="rounded-lg bg-rose-500/20 p-2 text-rose-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500/30"
-                        >
-                          <FaTrash />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => beginEditTeacherRound(i)}
+                            className="rounded-lg bg-cyan-500/20 p-2 text-cyan-300 opacity-0 group-hover:opacity-100 transition-all hover:bg-cyan-500/30"
+                            title="Tahrirlash"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => removeTeacherRound(i)}
+                            className="rounded-lg bg-rose-500/20 p-2 text-rose-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500/30"
+                            title="O'chirish"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))

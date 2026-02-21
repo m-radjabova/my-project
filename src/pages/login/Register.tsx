@@ -120,7 +120,7 @@ function Register() {
         password: data.password,
       });
 
-      toast.success("Hisob muvaffaqiyatli yaratildi! рџЋ‰", {
+      toast.success("Hisob muvaffaqiyatli yaratildi!", {
         icon: <FaStar className="text-[#ffd966]" />,
         style: {
           borderRadius: "20px",

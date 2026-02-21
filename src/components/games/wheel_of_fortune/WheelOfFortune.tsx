@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  FaArrowRight,
+  FaEdit,
   FaCrown,
   FaMedal,
   FaPlus,
@@ -14,12 +14,14 @@ import {
 import { GiPodiumWinner, GiSpinningWheel} from "react-icons/gi";
 import { MdQuiz, MdTimer} from "react-icons/md";
 import Confetti from "react-confetti-boom";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 
 type Student = { id: string; name: string; score: number };
 type Question = {
   id: string;
   question: string;
-  answer: string;
+  options: [string, string, string, string];
+  answerIndex: number;
   points: number;
   category: string;
   timeLimit: number;
@@ -27,11 +29,11 @@ type Question = {
 type Phase = "setup" | "spinning" | "question" | "finish";
 
 const SAMPLE_QUESTIONS: Question[] = [
-  { id: "q1", question: "O'zbekiston poytaxti qayer?", answer: "Toshkent", points: 100, category: "Geografiya", timeLimit: 30 },
-  { id: "q2", question: "9 ning kvadrati nechiga teng?", answer: "81", points: 80, category: "Matematika", timeLimit: 25 },
-  { id: "q3", question: "Eng katta okean qaysi?", answer: "Tinch okeani", points: 120, category: "Geografiya", timeLimit: 35 },
-  { id: "q4", question: "Qaysi hayvon 'sahro kemasi' deb ataladi?", answer: "Tuya", points: 90, category: "Biologiya", timeLimit: 30 },
-  { id: "q5", question: "20 + 35 - 12 = ?", answer: "43", points: 70, category: "Matematika", timeLimit: 20 },
+  { id: "q1", question: "O'zbekiston poytaxti qayer?", options: ["Samarqand", "Buxoro", "Toshkent", "Xiva"], answerIndex: 2, points: 100, category: "Geografiya", timeLimit: 30 },
+  { id: "q2", question: "9 ning kvadrati nechiga teng?", options: ["72", "81", "99", "91"], answerIndex: 1, points: 80, category: "Matematika", timeLimit: 25 },
+  { id: "q3", question: "Eng katta okean qaysi?", options: ["Atlantika", "Tinch okeani", "Hind okeani", "Shimoliy muz"], answerIndex: 1, points: 120, category: "Geografiya", timeLimit: 35 },
+  { id: "q4", question: "Qaysi hayvon 'sahro kemasi' deb ataladi?", options: ["Ot", "Sigir", "Tuya", "Eshak"], answerIndex: 2, points: 90, category: "Biologiya", timeLimit: 30 },
+  { id: "q5", question: "20 + 35 - 12 = ?", options: ["43", "41", "45", "47"], answerIndex: 0, points: 70, category: "Matematika", timeLimit: 20 },
 ];
 
 const WHEEL_COLORS = [
@@ -40,23 +42,66 @@ const WHEEL_COLORS = [
 ];
 
 const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+const WHEEL_OF_FORTUNE_GAME_KEY = "wheel_of_fortune";
+const EMPTY_OPTIONS: [string, string, string, string] = ["", "", "", ""];
+
+const normalizeQuestions = (items: unknown[]): Question[] =>
+  items
+    .map((item, idx) => {
+      const row = item as Partial<Question> & { answer?: string };
+      const q = (row.question || "").toString().trim();
+      if (!q) return null;
+
+      const rawOptions = Array.isArray(row.options)
+        ? row.options.map((v) => String(v).trim())
+        : [];
+      let options: [string, string, string, string];
+      let answerIndex = Number.isInteger(row.answerIndex)
+        ? Number(row.answerIndex)
+        : 0;
+
+      if (rawOptions.length >= 4) {
+        options = [rawOptions[0], rawOptions[1], rawOptions[2], rawOptions[3]];
+      } else {
+        const answer = (row.answer || "").toString().trim();
+        if (!answer) return null;
+        options = [answer, "Variant B", "Variant C", "Variant D"];
+        answerIndex = 0;
+      }
+
+      if (answerIndex < 0 || answerIndex > 3) answerIndex = 0;
+
+      return {
+        id: row.id || `q-import-${idx}`,
+        question: q,
+        options,
+        answerIndex,
+        points: Number(row.points) || 100,
+        category: (row.category || "Umumiy").toString(),
+        timeLimit: Number(row.timeLimit) || 30,
+      } as Question;
+    })
+    .filter((q): q is Question => q !== null);
 
 export default function WheelOfFortune() {
+  const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("setup");
   const [students, setStudents] = useState<Student[]>([]);
   const [questions, setQuestions] = useState<Question[]>(SAMPLE_QUESTIONS);
   const [newStudent, setNewStudent] = useState("");
   const [studentError, setStudentError] = useState("");
   const [questionText, setQuestionText] = useState("");
-  const [answerText, setAnswerText] = useState("");
+  const [questionOptions, setQuestionOptions] = useState<[string, string, string, string]>(EMPTY_OPTIONS);
+  const [answerIndex, setAnswerIndex] = useState(0);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionError, setQuestionError] = useState("");
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [answer, setAnswer] = useState("");
   const [questionLocked, setQuestionLocked] = useState(false);
   const [result, setResult] = useState<{ correct: boolean; message: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -84,6 +129,33 @@ export default function WheelOfFortune() {
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestions(normalizeQuestions(remoteQuestions));
+      }
+      setRemoteLoaded(true);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      void saveGameQuestions<Question>(WHEEL_OF_FORTUNE_GAME_KEY, questions);
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [questions, remoteLoaded]);
+
   useEffect(() => () => {
     if (spinTimeoutRef.current) window.clearTimeout(spinTimeoutRef.current);
     if (countdownRef.current) window.clearTimeout(countdownRef.current);
@@ -93,7 +165,7 @@ export default function WheelOfFortune() {
   useEffect(() => {
     if (phase !== "question" || !currentQuestion || questionLocked) return;
     if (timeLeft <= 0) {
-      submitAnswer(true);
+      submitAnswer(undefined, true);
       return;
     }
     countdownRef.current = window.setTimeout(() => setTimeLeft((v) => v - 1), 1000);
@@ -109,7 +181,6 @@ export default function WheelOfFortune() {
     }
     setCurrentQuestionIndex((v) => v + 1);
     setSelectedStudentId(null);
-    setAnswer("");
     setQuestionLocked(false);
     setResult(null);
     setTimeLeft(0);
@@ -133,26 +204,63 @@ export default function WheelOfFortune() {
     setToast(`🗑️ ${student?.name} o'chirildi`);
   };
 
+  const resetQuestionForm = () => {
+    setQuestionText("");
+    setQuestionOptions(EMPTY_OPTIONS);
+    setAnswerIndex(0);
+    setCategory("Geografiya");
+    setPoints(100);
+    setQuestionError("");
+    setEditingQuestionId(null);
+  };
+
+  const beginEditQuestion = (question: Question) => {
+    setEditingQuestionId(question.id);
+    setQuestionText(question.question);
+    setQuestionOptions([...question.options] as [string, string, string, string]);
+    setAnswerIndex(question.answerIndex);
+    setCategory(question.category);
+    setPoints(question.points);
+    setQuestionError("");
+  };
+
   const addQuestion = () => {
     const q = questionText.trim();
-    const a = answerText.trim();
-    if (!q || !a) return setQuestionError("Savol va javob kiriting");
+    const options = questionOptions.map((option) => option.trim()) as [string, string, string, string];
+    if (!q) return setQuestionError("Savol matnini kiriting");
+    if (options.some((option) => !option)) return setQuestionError("4 ta variantni to'ldiring");
+    if (editingQuestionId) {
+      setQuestions((prev) =>
+        prev.map((item) =>
+          item.id === editingQuestionId
+            ? {
+                ...item,
+                question: q,
+                options,
+                answerIndex,
+                points,
+                category,
+              }
+            : item,
+        ),
+      );
+      resetQuestionForm();
+      setToast("✏️ Savol yangilandi");
+      return;
+    }
     setQuestions((prev) => [
       ...prev,
       { 
         id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, 
         question: q, 
-        answer: a, 
+        options,
+        answerIndex,
         points: points, 
         category: category, 
         timeLimit: 30 
       },
     ]);
-    setQuestionText("");
-    setAnswerText("");
-    setCategory("Geografiya");
-    setPoints(100);
-    setQuestionError("");
+    resetQuestionForm();
     setToast("✅ Savol qo'shildi");
   };
 
@@ -162,6 +270,9 @@ export default function WheelOfFortune() {
       return;
     }
     setQuestions((prev) => prev.filter((q) => q.id !== id));
+    if (editingQuestionId === id) {
+      resetQuestionForm();
+    }
     setToast("🗑️ Savol o'chirildi");
   };
 
@@ -172,7 +283,6 @@ export default function WheelOfFortune() {
     setActiveQuestions(shuffle(questions));
     setCurrentQuestionIndex(0);
     setSelectedStudentId(null);
-    setAnswer("");
     setQuestionLocked(false);
     setResult(null);
     setPhase("spinning");
@@ -213,15 +323,15 @@ export default function WheelOfFortune() {
     requestAnimationFrame(animate);
   };
 
-  const submitAnswer = (timeout = false) => {
+  const submitAnswer = (selectedOptionIndex?: number, timeout = false) => {
     if (questionLocked || !currentQuestion || !selectedStudentId) return;
     setQuestionLocked(true);
-    const ok = !timeout && answer.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase();
+    const ok = !timeout && selectedOptionIndex === currentQuestion.answerIndex;
     if (ok) {
       setStudents((prev) => prev.map((s) => (s.id === selectedStudentId ? { ...s, score: s.score + currentQuestion.points } : s)));
       setResult({ correct: true, message: `✅ To'g'ri! +${currentQuestion.points} ball` });
     } else {
-      setResult({ correct: false, message: `❌ Xato! To'g'ri javob: ${currentQuestion.answer}` });
+      setResult({ correct: false, message: `❌ Xato! To'g'ri javob: ${currentQuestion.options[currentQuestion.answerIndex]}` });
     }
     nextRef.current = window.setTimeout(nextQuestion, 2000);
   };
@@ -235,7 +345,6 @@ export default function WheelOfFortune() {
     setSelectedStudentId(null);
     setRotation(0);
     setTimeLeft(0);
-    setAnswer("");
     setQuestionLocked(false);
     setResult(null);
     setToast("🔄 O'yin qayta boshlandi");
@@ -370,12 +479,16 @@ export default function WheelOfFortune() {
                   placeholder="Savol matni"
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={answerText}
-                    onChange={(e) => setAnswerText(e.target.value)}
-                    className="rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white placeholder-purple-200/50 focus:border-purple-400 focus:outline-none"
-                    placeholder="Javob"
-                  />
+                  <select
+                    value={answerIndex}
+                    onChange={(e) => setAnswerIndex(Number(e.target.value))}
+                    className="rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white focus:border-purple-400 focus:outline-none"
+                  >
+                    <option value={0} className="bg-purple-900">To'g'ri: Variant 1</option>
+                    <option value={1} className="bg-purple-900">To'g'ri: Variant 2</option>
+                    <option value={2} className="bg-purple-900">To'g'ri: Variant 3</option>
+                    <option value={3} className="bg-purple-900">To'g'ri: Variant 4</option>
+                  </select>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -390,6 +503,23 @@ export default function WheelOfFortune() {
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
+                  {questionOptions.map((option, idx) => (
+                    <input
+                      key={idx}
+                      value={option}
+                      onChange={(e) =>
+                        setQuestionOptions((prev) => {
+                          const next = [...prev] as [string, string, string, string];
+                          next[idx] = e.target.value;
+                          return next;
+                        })
+                      }
+                      className="rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white placeholder-purple-200/50 focus:border-purple-400 focus:outline-none"
+                      placeholder={`Variant ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-purple-200/70">Ball:</span>
                     <input
@@ -402,15 +532,25 @@ export default function WheelOfFortune() {
                       className="w-24 rounded-xl border border-purple-500/30 bg-purple-950/30 px-3 py-2 text-white"
                     />
                   </div>
-                  <button
-                    onClick={addQuestion}
-                    className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 text-white font-bold transition-all hover:scale-105"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <FaPlus />
-                      QO'SHISH
-                    </span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={addQuestion}
+                      className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 text-white font-bold transition-all hover:scale-105"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        {editingQuestionId ? <FaEdit /> : <FaPlus />}
+                        {editingQuestionId ? "SAQLASH" : "QO'SHISH"}
+                      </span>
+                    </button>
+                    {editingQuestionId && (
+                      <button
+                        onClick={resetQuestionForm}
+                        className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-white/20"
+                      >
+                        BEKOR
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -437,14 +577,37 @@ export default function WheelOfFortune() {
                           </span>
                         </div>
                         <p className="text-sm font-bold text-white line-clamp-1">{q.question}</p>
-                        <p className="text-xs text-purple-200/60 mt-1">Javob: {q.answer}</p>
+                        <div className="mt-2 grid grid-cols-2 gap-1">
+                          {q.options.map((opt, optIdx) => (
+                            <span
+                              key={optIdx}
+                              className={`rounded-lg px-2 py-1 text-xs ${
+                                optIdx === q.answerIndex
+                                  ? "bg-emerald-500/20 text-emerald-300"
+                                  : "bg-purple-500/10 text-purple-200/70"
+                              }`}
+                            >
+                              {opt}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => removeQuestion(q.id)}
-                        className="text-rose-400 hover:text-rose-300 transition-colors ml-2"
-                      >
-                        <FaTrash />
-                      </button>
+                      <div className="ml-2 flex items-center gap-2">
+                        <button
+                          onClick={() => beginEditQuestion(q)}
+                          className="text-cyan-300 hover:text-cyan-200 transition-colors"
+                          title="Tahrirlash"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => removeQuestion(q.id)}
+                          className="text-rose-400 hover:text-rose-300 transition-colors"
+                          title="O'chirish"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -627,24 +790,18 @@ export default function WheelOfFortune() {
             </div>
             <h3 className="text-xl font-bold text-white mb-4">{currentQuestion.question}</h3>
             
-            {/* Answer Input */}
-            <div className="flex gap-2">
-              <input
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && !questionLocked && answer.trim() && submitAnswer()}
-                disabled={questionLocked}
-                className="flex-1 rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-white placeholder-purple-200/50 focus:border-purple-400 focus:outline-none disabled:opacity-50"
-                placeholder="Javobingizni yozing..."
-                autoFocus
-              />
-              <button
-                onClick={() => submitAnswer()}
-                disabled={questionLocked || !answer.trim()}
-                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-bold text-white transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-              >
-                <FaArrowRight />
-              </button>
+            {/* Options */}
+            <div className="grid gap-2 sm:grid-cols-2">
+              {currentQuestion.options.map((option, idx) => (
+                <button
+                  key={`${currentQuestion.id}-${idx}`}
+                  onClick={() => submitAnswer(idx)}
+                  disabled={questionLocked}
+                  className="rounded-xl border border-purple-500/30 bg-purple-950/30 px-4 py-3 text-left font-bold text-white transition-all hover:scale-[1.02] hover:bg-purple-900/40 disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  {option}
+                </button>
+              ))}
             </div>
           </div>
           

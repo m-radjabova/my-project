@@ -14,6 +14,7 @@ import {
   FaGlobe,
   FaFlag,
   FaSearch,
+  FaFish,
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -23,6 +24,7 @@ import {
   GiCrystalShine,
   GiSpinningWheel,
   GiPodiumWinner,
+  GiFishing,
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
@@ -236,5 +238,30 @@ export const gameCards = [
   categoryIcon: FaSearch,
   gradient: "from-emerald-400 to-teal-400",
   borderGlow: "hover:border-emerald-400/50",
+},
+{
+  id: "ocean-word-fishing",
+  title: "Ocean Word Fishing",
+  description: "Baliqlar ustidagi harflardan so'zlar yig'ing. Okean sadosi bilan o'ynang va so'zlar toping.",
+  mainIcon: FaFish,
+  icon: GiFishing,
+  iconBg: "from-blue-500 to-cyan-500",
+  iconColor: "text-blue-300",
+  shadowColor: "blue",
+  available: true,
+  path: "/games/ocean-word-fishing",
+  bgPattern: "bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600",
+  image: "https://media.istockphoto.com/id/537816526/vector/underwater-world.jpg?s=612x612&w=0&k=20&c=U_1QpgfCsqkNFdbiLqFs6C-RyC5d2Eyfl5Kf8_YBgT0=",
+  players: "1-4 o'yinchi",
+  level: "Boshlang'ich - Professional",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "5-10 min",
+  points: "500+",
+  category: "So'z o'yini",
+  categoryIcon: FaFish,
+  gradient: "from-blue-400 to-cyan-400",
+  borderGlow: "hover:border-blue-400/50",
 },
 ];
