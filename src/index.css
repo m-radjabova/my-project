@@ -259,134 +259,17 @@
   animation: shake 0.3s ease-in-out;
 }
 
-@keyframes wave {
-  0% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-10px) translateX(10px);
-  }
-  100% {
-    transform: translateY(0) translateX(0);
-  }
+@keyframes fish-pass-right {
+  from { transform: translateX(var(--fromX)); }
+  to   { transform: translateX(var(--toX)); }
 }
 
-@keyframes wave-slow {
-  0% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-15px) translateX(-10px);
-  }
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-}
-
-.animate-wave {
-  animation: wave 8s ease-in-out infinite;
-}
-
-.animate-wave-slow {
-  animation: wave-slow 12s ease-in-out infinite;
-}
-
-@keyframes fish-swim-right {
-  0% {
-    left: 5%;
-  }
-  50% {
-    left: 80%;
-  }
-  100% {
-    left: 5%;
-  }
-}
-
-@keyframes fish-swim-left {
-  0% {
-    left: 80%;
-  }
-  50% {
-    left: 5%;
-  }
-  100% {
-    left: 80%;
-  }
+@keyframes fish-pass-left {
+  from { transform: translateX(var(--fromX)); }
+  to   { transform: translateX(var(--toX)); }
 }
 
 @keyframes fish-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes wave {
-  0% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-10px) translateX(15px);
-  }
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-}
-
-@keyframes wave-slow {
-  0% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-15px) translateX(-15px);
-  }
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-}
-
-@keyframes wave-slower {
-  0% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-8px) translateX(10px);
-  }
-  100% {
-    transform: translateY(0) translateX(0);
-  }
-}
-
-@keyframes bubble {
-  0% {
-    transform: translateY(0) scale(0);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-100vh) scale(1);
-    opacity: 0;
-  }
-}
-
-.animate-wave {
-  animation: wave 8s ease-in-out infinite;
-}
-
-.animate-wave-slow {
-  animation: wave-slow 12s ease-in-out infinite;
-}
-
-.animate-wave-slower {
-  animation: wave-slower 15s ease-in-out infinite;
-}
-
-.animate-bubble {
-  animation: bubble 12s ease-out infinite;
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-8px); }
 }
