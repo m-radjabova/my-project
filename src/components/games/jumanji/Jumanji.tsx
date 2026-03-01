@@ -1218,6 +1218,12 @@ function Jumanji() {
                     type="text"
                     value={newTeamName}
                     onChange={(e) => setNewTeamName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addTeam();
+                      }
+                    }}
                     placeholder="Jamoa nomi..."
                     className="flex-1 px-4 py-2 rounded-xl border border-amber-500/30 bg-amber-950/30 text-white placeholder-amber-300/50 focus:border-amber-400 focus:outline-none"
                   />

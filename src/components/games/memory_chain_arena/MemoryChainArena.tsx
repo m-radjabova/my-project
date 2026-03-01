@@ -57,12 +57,12 @@ type PadItem = {
 };
 
 const PAD_ITEMS: PadItem[] = [
-  { id: 0, icon: FaAppleAlt, label: "Olma", tone: "from-rose-500 to-orange-500" },
-  { id: 1, icon: FaStar, label: "Yulduz", tone: "from-amber-400 to-yellow-500" },
-  { id: 2, icon: FaPuzzlePiece, label: "Puzzle", tone: "from-violet-500 to-fuchsia-500" },
-  { id: 3, icon: FaMusic, label: "Musiqa", tone: "from-cyan-500 to-blue-500" },
-  { id: 4, icon: FaBullseye, label: "Nishon", tone: "from-emerald-500 to-lime-500" },
-  { id: 5, icon: FaRocket, label: "Raketa", tone: "from-indigo-500 to-sky-500" },
+  { id: 0, icon: FaAppleAlt, label: "Olma", tone: "from-cyan-500 to-sky-500" },
+  { id: 1, icon: FaStar, label: "Yulduz", tone: "from-blue-500 to-indigo-500" },
+  { id: 2, icon: FaPuzzlePiece, label: "Puzzle", tone: "from-indigo-500 to-violet-500" },
+  { id: 3, icon: FaMusic, label: "Musiqa", tone: "from-sky-500 to-cyan-500" },
+  { id: 4, icon: FaBullseye, label: "Nishon", tone: "from-violet-500 to-fuchsia-500" },
+  { id: 5, icon: FaRocket, label: "Raketa", tone: "from-blue-600 to-cyan-500" },
 ];
 
 const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
@@ -129,6 +129,7 @@ const generateSequence = (length: number): number[] => {
 
 function MemoryChainArena({
   gameTitle,
+  gameTone = "from-cyan-500 to-blue-500",
   leftTeamName = "1-Jamoa",
   rightTeamName = "2-Jamoa",
   initialDifficulty = "O'rta",
@@ -404,13 +405,13 @@ function MemoryChainArena({
   }, [winner, leftLabel, rightLabel]);
 
   const renderDots = (teamInputLength: number) => (
-    <div className="mt-3 flex flex-wrap gap-1.5">
+    <div className="mt-3 flex flex-wrap gap-2">
       {Array.from({ length: currentLength }, (_, index) => {
         const filled = index < teamInputLength;
         return (
           <span
             key={`dot-${index}`}
-            className={`h-2.5 w-6 rounded-full transition ${filled ? "bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.8)]" : "bg-slate-700"}`}
+            className={`h-3 w-8 rounded-full transition ${filled ? "bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.85)]" : "bg-slate-300 dark:bg-slate-700"}`}
           />
         );
       })}
@@ -427,25 +428,25 @@ function MemoryChainArena({
     borderTone: string,
     accentTone: string,
   ) => (
-    <article className={`relative overflow-hidden rounded-3xl border p-4 backdrop-blur-xl ${borderTone}`}>
-      <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/5 blur-2xl" />
+    <article className={`relative overflow-hidden rounded-3xl border-2 p-4 lg:p-5 backdrop-blur-xl shadow-xl ${borderTone}`}>
+      <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-cyan-300/25 blur-2xl dark:bg-white/5" />
       <div className="relative flex items-center justify-between gap-2">
-        <h3 className="text-3xl font-black tracking-tight text-white">{title}</h3>
-        <span className={`rounded-full bg-gradient-to-r px-3 py-1 text-xs font-extrabold text-white ${accentTone}`}>{team.score} ball</span>
+        <h3 className="text-2xl font-black tracking-tight text-slate-800 dark:text-white sm:text-3xl">{title}</h3>
+        <span className={`rounded-full bg-gradient-to-r px-4 py-1.5 text-sm font-extrabold text-white ${accentTone}`}>{team.score} ball</span>
       </div>
-      <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-300">
+      <p className="mt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
         Raund yutgan: {team.roundsWon} | Combo: {team.streak} | Best: {team.bestStreak}
       </p>
 
-      <div className="mt-3 rounded-2xl border border-white/10 bg-slate-900/60 p-3">
-        <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">
+      <div className="mt-3 rounded-2xl border border-cyan-300/30 bg-white/70 p-3 dark:border-white/10 dark:bg-slate-900/60">
+        <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">
           <span>Zanjir uzunligi: {currentLength}</span>
           <span>{phase === "input" ? `${team.timeLeft}s` : "Tayyor"}</span>
         </div>
         {renderDots(team.input.length)}
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2.5 lg:gap-3">
         {PAD_ITEMS.map((pad) => {
           const Icon = pad.icon;
           const isFlashing = flash === pad.id;
@@ -455,30 +456,30 @@ function MemoryChainArena({
               type="button"
               onClick={() => evaluatePress(side, pad.id)}
               disabled={roundLocked || team.status !== "waiting"}
-              className={`group relative overflow-hidden rounded-2xl border px-2 py-3 text-center transition ${
+              className={`group relative overflow-hidden rounded-2xl border px-2 py-3 text-center transition sm:px-3 sm:py-4 lg:py-5 ${
                 isFlashing
-                  ? `scale-[1.03] border-transparent bg-gradient-to-br text-white shadow-[0_0_24px_rgba(59,130,246,0.5)] ${pad.tone}`
-                  : "border-white/10 bg-slate-900/70 text-slate-200"
-              } ${roundLocked || team.status !== "waiting" ? "cursor-not-allowed opacity-70" : "hover:-translate-y-0.5 hover:border-cyan-300/80"}`}
+                  ? `scale-[1.03] border-transparent bg-gradient-to-br text-white shadow-[0_0_24px_rgba(59,130,246,0.45)] ${pad.tone}`
+                  : "border-cyan-300/30 bg-white/80 text-slate-700 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-200"
+              } ${roundLocked || team.status !== "waiting" ? "cursor-not-allowed opacity-70" : "hover:-translate-y-0.5 hover:border-cyan-400/80 hover:shadow-lg"}`}
             >
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-black/20 text-lg shadow-inner">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/70 text-lg shadow-inner dark:bg-black/20 sm:h-12 sm:w-12 sm:text-xl lg:h-14 lg:w-14 lg:text-2xl">
                 <Icon />
               </div>
-              <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.14em]">{pad.label}</p>
+              <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.14em] sm:text-xs">{pad.label}</p>
             </button>
           );
         })}
       </div>
 
       <p
-        className={`mt-3 rounded-xl border px-3 py-2 text-xs font-extrabold ${
+        className={`mt-3 rounded-xl border px-3 py-2.5 text-xs font-extrabold sm:text-sm ${
           team.status === "correct"
             ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-200"
             : team.status === "wrong"
               ? "border-rose-400/50 bg-rose-500/20 text-rose-200"
               : team.status === "timeout"
                 ? "border-amber-400/50 bg-amber-500/20 text-amber-200"
-                : "border-white/10 bg-slate-900/60 text-slate-300"
+                : "border-cyan-300/30 bg-cyan-50/80 text-cyan-800 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-300"
         }`}
       >
         Holat: {team.status === "waiting" ? "Javob kiritilmoqda" : team.status === "correct" ? "To'g'ri" : team.status === "wrong" ? "Xato" : "Vaqt tugadi"}
@@ -487,81 +488,84 @@ function MemoryChainArena({
   );
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-cyan-400/25 bg-[radial-gradient(circle_at_15%_20%,rgba(6,182,212,0.18),transparent_35%),radial-gradient(circle_at_85%_80%,rgba(217,70,239,0.18),transparent_35%),linear-gradient(135deg,#020617_0%,#0f172a_45%,#1e1b4b_100%)] p-4 shadow-[0_0_60px_rgba(34,211,238,0.14)] sm:p-5">
+    <section className="relative overflow-hidden rounded-3xl border-2 border-cyan-400/30 bg-gradient-to-br from-white/90 via-cyan-50/80 to-blue-50/90 p-4 shadow-2xl sm:p-5 lg:p-6 dark:from-slate-900/85 dark:via-slate-900/90 dark:to-indigo-950/85">
       {showConfetti ? (
-        <Confetti mode="boom" particleCount={140} effectCount={1} x={0.5} y={0.35} colors={["#06b6d4", "#3b82f6", "#22c55e", "#f59e0b", "#a855f7"]} />
+        <Confetti mode="boom" particleCount={140} effectCount={1} x={0.5} y={0.35} colors={["#06b6d4", "#3b82f6", "#6366f1", "#22d3ee", "#ec4899"]} />
       ) : null}
 
-      <div className="absolute -left-20 top-12 h-56 w-56 rounded-full bg-cyan-500/20 blur-3xl" />
-      <div className="absolute -right-16 bottom-10 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl" />
+      <div className="absolute -left-20 top-12 h-56 w-56 rounded-full bg-cyan-400/20 blur-3xl" />
+      <div className="absolute -right-16 bottom-10 h-56 w-56 rounded-full bg-blue-400/20 blur-3xl" />
 
       <div className="relative flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-cyan-200 sm:text-xs">
-            <GiBrain className="text-cyan-300" /> Memory Chain Protocol
+          <p className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-100/80 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-cyan-700 sm:text-xs dark:bg-cyan-400/10 dark:text-cyan-200">
+            <GiBrain className="text-cyan-500 dark:text-cyan-300" /> Memory Chain Protocol
           </p>
-          <h2 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">{gameTitle} Arena</h2>
+          <h2 className="mt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">{gameTitle} Arena</h2>
+          <p className="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            Bolalar uchun qulay rejim: tugmalar yirik, ranglar aniq, katta ekranlarga mos.
+          </p>
         </div>
       </div>
 
       <div className="relative mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 backdrop-blur">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">Raund</p>
-          <p className="mt-1 text-3xl font-black text-white">{roundLabel}</p>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">Raund</p>
+          <p className="mt-1 text-3xl font-black text-slate-900 dark:text-white">{roundLabel}</p>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 backdrop-blur">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">Daraja</p>
-          <p className="mt-1 text-base font-extrabold text-cyan-200">{initialDifficulty}</p>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">Daraja</p>
+          <p className="mt-1 text-base font-extrabold text-cyan-700 dark:text-cyan-200">{initialDifficulty}</p>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 backdrop-blur">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">{leftLabel}</p>
-          <p className="mt-1 text-xl font-extrabold text-white">{leftTeam.score} ball</p>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">{leftLabel}</p>
+          <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{leftTeam.score} ball</p>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 backdrop-blur">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">{rightLabel}</p>
-          <p className="mt-1 text-xl font-extrabold text-white">{rightTeam.score} ball</p>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">{rightLabel}</p>
+          <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{rightTeam.score} ball</p>
         </div>
-        <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 backdrop-blur">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">Uzunlik</p>
-          <p className="mt-1 text-xl font-extrabold text-white">{currentLength} belgi</p>
+        <div className="rounded-2xl border border-cyan-300/35 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/15 dark:bg-white/5">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-300">Uzunlik</p>
+          <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">{currentLength} belgi</p>
         </div>
       </div>
 
-      <div className="relative mt-4 rounded-2xl border border-white/15 bg-slate-950/40 p-4">
-        <div className="flex items-center justify-between gap-3 text-xs font-extrabold uppercase tracking-[0.12em] text-slate-300">
+      <div className="relative mt-4 rounded-2xl border border-cyan-300/35 bg-white/70 p-4 dark:border-white/15 dark:bg-slate-950/40">
+        <div className="flex items-center justify-between gap-3 text-xs font-extrabold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">
           <span>Progress: {progressPercent}%</span>
           <span>
             Holat: {phase === "ready" ? "Tayyor" : phase === "preview" ? "Ko'rsatish" : phase === "input" ? "Javob" : phase === "result" ? "Natija" : "Tugadi"}
           </span>
         </div>
-        <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-800">
-          <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_12px_rgba(34,211,238,0.9)]" style={{ width: `${progressPercent}%` }} />
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-cyan-100 dark:bg-slate-800">
+          <div className={`h-full rounded-full bg-gradient-to-r shadow-[0_0_12px_rgba(34,211,238,0.9)] ${gameTone}`} style={{ width: `${progressPercent}%` }} />
         </div>
       </div>
 
-      <div className="relative mt-4 grid gap-4 lg:grid-cols-2">
-        {renderTeamPanel("left", leftLabel, leftTeam, leftFlash, "border-cyan-400/40 bg-cyan-500/8", "from-cyan-500 to-blue-500")}
-        {renderTeamPanel("right", rightLabel, rightTeam, rightFlash, "border-fuchsia-400/35 bg-fuchsia-500/8", "from-fuchsia-500 to-rose-500")}
+      <div className="relative mt-4 grid gap-4 xl:grid-cols-2">
+        {renderTeamPanel("left", leftLabel, leftTeam, leftFlash, "border-cyan-400/45 bg-cyan-100/55 dark:bg-cyan-500/8", gameTone)}
+        {renderTeamPanel("right", rightLabel, rightTeam, rightFlash, "border-indigo-400/45 bg-indigo-100/55 dark:bg-indigo-500/8", "from-indigo-500 to-blue-500")}
       </div>
 
-      <div className="relative mt-4 flex flex-wrap justify-center gap-2">
+      <div className="relative mt-5 flex flex-wrap justify-center gap-3">
         <button
           type="button"
           onClick={handleStartMatch}
-          className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white shadow-lg transition hover:-translate-y-0.5 sm:text-xs"
+          className={`rounded-xl bg-gradient-to-r px-5 py-3 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-lg transition hover:-translate-y-0.5 sm:text-sm ${gameTone}`}
         >
           {phase === "ready" || phase === "finished" ? "O'yinni boshlash" : "Qayta start"}
         </button>
         <button
           type="button"
           onClick={resetMatch}
-          className="rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white transition hover:bg-white/20 sm:text-xs"
+          className="rounded-xl border border-cyan-300/40 bg-white/80 px-5 py-3 text-xs font-extrabold uppercase tracking-[0.12em] text-slate-800 transition hover:bg-cyan-50 sm:text-sm dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
         >
           Nolga tushir
         </button>
       </div>
 
-      <div className={`relative mt-4 rounded-2xl border px-4 py-3 text-sm font-extrabold ${phase === "finished" ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-100" : "border-cyan-400/50 bg-cyan-500/15 text-cyan-100"}`}>
+      <div className={`relative mt-4 rounded-2xl border px-4 py-3 text-sm font-extrabold sm:text-base ${phase === "finished" ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-100" : "border-cyan-400/40 bg-cyan-100/85 text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-100"}`}>
         {statusText}
       </div>
 
@@ -604,7 +608,7 @@ function MemoryChainArena({
                 <button
                   type="button"
                   onClick={handleStartMatch}
-                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-extrabold text-white shadow-lg transition hover:-translate-y-0.5"
+                  className={`rounded-xl bg-gradient-to-r px-4 py-2 text-sm font-extrabold text-white shadow-lg transition hover:-translate-y-0.5 ${gameTone}`}
                 >
                   Yangi raund
                 </button>

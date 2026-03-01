@@ -21,7 +21,8 @@ import {
   FaHeart,
   FaChild,
   FaBook,
-  FaDice
+  FaDice,
+  FaMagic
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -38,12 +39,14 @@ import {
   GiLetterBomb,
   GiBrain,
   GiJungle,
+  GiMagicSwirl,
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames, MdNumbers, MdOutlineGamepad } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
 import ocean from "../../assets/ocean.jpg";
 import memoryChain from "../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
-
+import magicSquare from "../../assets/magic_square.png";
+import reverseThinking from "../../assets/reverse_thinking.png";
 
 export const gameCards = [
   {
@@ -145,7 +148,7 @@ export const gameCards = [
     badgeIcon: FaFire,
     time: "5-12 min",
     points: "1200+",
-    category: "So'z",
+    category: "So'z o'yini",
     categoryIcon: FaPuzzlePiece,
     gradient: "from-blue-400 to-cyan-400",
     borderGlow: "hover:border-blue-400/50",
@@ -278,7 +281,7 @@ export const gameCards = [
     badgeIcon: FaRocket,
     time: "5-10 min",
     points: "500+",
-    category: "So'z",
+    category: "So'z o'yini",
     categoryIcon: FaFish,
     gradient: "from-blue-400 to-cyan-400",
     borderGlow: "hover:border-blue-400/50",
@@ -355,7 +358,7 @@ export const gameCards = [
   badgeIcon: FaRocket,
   time: "20s",
   points: "310+",
-  category: "Diqqat",
+  category: "Xotira",
   categoryIcon: FaPalette,
   gradient: "from-cyan-400 to-blue-400",
   borderGlow: "hover:border-cyan-400/50",
@@ -459,6 +462,81 @@ export const gameCards = [
   categoryIcon: GiJungle,
   gradient: "from-amber-600 to-amber-400",
   borderGlow: "hover:border-amber-400/50",
-}
-];
+},
+{
+  id: "mini-puzzle",
+  title: "Rasmni Yig'",
+  description: "2 jamoa musobaqalashadi. Rasm bo'laklarini yig'ing va birinchi bo'lib to'liq rasmni hosil qiling!",
+  mainIcon: GiPuzzle,
+  icon: FaPuzzlePiece,
+  iconBg: "from-pink-500 to-rose-500",
+  iconColor: "text-pink-300",
+  shadowColor: "pink",
+  available: true,
+  path: "/games/mini-puzzle",
+  bgPattern: "bg-gradient-to-br from-pink-500 via-rose-500 to-pink-500",
+  image: "https://media.istockphoto.com/id/2249204910/photo/jigsaw-puzzle-pieces-colorful-background-with-small-puzzle-pieces-messy-some-colored-pieces.jpg?s=612x612&w=0&k=20&c=r43dtrUR7kvYbZHLZa6OVcbETVnFLOVhayJWwMwLUUc=",
+   players: "2 jamoa",
+  level: "Oson - Qiyin",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "5-10 min",
+  points: "500+",
+  category: "Puzzle",
+  categoryIcon: FaPuzzlePiece,
+  gradient: "from-pink-400 to-rose-400",
+  borderGlow: "hover:border-pink-400/50",
+},
+{
+  id: "magic-square",
+  title: "Sehrli Kvadrat",
+  description: "3x3 rangli sudoku. Har bir qator va ustunda barcha 3 rang bo'lishi kerak. Jamoalar navbat bilan o'ynaydi!",
+  mainIcon: GiMagicSwirl,
+  icon: FaMagic,
+  iconBg: "from-purple-500 to-pink-500",
+  iconColor: "text-purple-300",
+  shadowColor: "purple",
+  available: true,
+  path: "/games/magic-square",
+  bgPattern: "bg-gradient-to-br from-purple-500 via-pink-500 to-purple-500",
+  image: magicSquare,
+  players: "2 jamoa",
+  level: "Oson - O'rtacha",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "5-8 min",
+  points: "300+",
+  category: "Mantiq",
+  categoryIcon: GiMagicSwirl,
+  gradient: "from-purple-400 to-pink-400",
+  borderGlow: "hover:border-purple-400/50",
+},
+{
+  id: "reverse-thinking",
+  title: "Teskari Fikr",
+  description: "Mantiqiy tuzoqlar va chalg'ituvchi savollar orqali fikrlash qobiliyatingizni sinang. 2 jamoa musobaqalashadi!",
+  mainIcon: GiBrain,
+  icon: FaBrain,
+  iconBg: "from-green-500 to-emerald-500",
+  iconColor: "text-green-300",
+  shadowColor: "green",
+  available: true,
+  path: "/games/reverse-thinking",
+  bgPattern: "bg-gradient-to-br from-green-500 via-emerald-500 to-green-500",
+  image: reverseThinking,
+  players: "2 jamoa",
+  level: "1-4 daraja",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaRocket,
+  time: "10-15 min",
+  points: "500+",
+  category: "Mantiq",
+  categoryIcon: FaBrain,
+  gradient: "from-green-400 to-emerald-400",
+  borderGlow: "hover:border-green-400/50",
+},
+ ];
 

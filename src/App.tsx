@@ -29,6 +29,9 @@ import BingoPage from "./components/games/bingo/BingoPage";
 import WordChainPage from "./components/games/word_chain/WordChainPage";
 import MemoryChainArenaPage from "./components/games/memory_chain_arena/MemoryChainArenaPage";
 import JumanjiPage from "./components/games/jumanji/JumanjiPage";
+import MiniPuzzlePage from "./components/games/mini_puzzle/MiniPuzzlePage";
+import MagicSquarePage from "./components/games/magic_square/MagicSquarePage";
+import ReverseThinkingPage from "./components/games/reverse_thinking/ReverseThinkingPage";
 function App() {
   const { state: { isLoading } } = useContextPro();
 
@@ -90,6 +93,9 @@ function App() {
         <Route path="/games/word-chain" element={<WordChainPage />} />
         <Route path="/games/memory-chain" element={<MemoryChainArenaPage />} />
         <Route path="/games/jumanji" element={<JumanjiPage />} />
+        <Route path="/games/mini-puzzle" element={<MiniPuzzlePage />} />
+        <Route path="/games/magic-square" element={<MagicSquarePage />} />
+        <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

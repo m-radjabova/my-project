@@ -392,9 +392,9 @@ function WordChain() {
           </div>
         ) : phase === "game" ? (
           /* ========== O'YIN JARAYONI ========== */
-          <div className="space-y-6">
+          <div className="space-y-6 xl:space-y-7">
             {/* Jamoalar kartalari */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               {[0, 1].map((idx) => {
                 const team = teams[idx];
                 const isActive = currentTeamIndex === idx;
@@ -404,36 +404,36 @@ function WordChain() {
                   <div
                     key={idx}
                     className={`
-                      relative rounded-2xl p-6 border-2 transition-all duration-300
-                      ${isActive 
-                        ? `bg-gradient-to-r ${colors.primary} text-white scale-105 border-white shadow-2xl` 
-                        : 'bg-slate-800/90 border-slate-700'}
+                      relative rounded-2xl border-2 p-5 sm:p-6 transition-all duration-300
+                      ${isActive
+                        ? `bg-gradient-to-r ${colors.primary} border-white/90 text-white shadow-2xl lg:scale-[1.02]`
+                        : "border-slate-600 bg-slate-800/90 text-slate-100"}
                     `}
                   >
                     {isActive && (
-                      <div className="absolute -top-3 -right-3 bg-yellow-500 text-yellow-950 text-xs font-black px-3 py-1 rounded-full animate-bounce">
+                      <div className="absolute -top-3 right-4 rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-yellow-950 shadow-lg">
                         NAVBAT
                       </div>
                     )}
-                    
-                    <div className="flex items-center gap-3 mb-4">
+
+                    <div className="mb-4 flex items-center gap-3">
                       <span className="text-3xl">{team?.avatar || (idx === 0 ? "⚔️" : "🛡️")}</span>
                       <div>
-                        <h3 className="text-xl font-black">{idx + 1}-JAMOA</h3>
-                        <p className={isActive ? 'text-white/80' : 'text-slate-400'}>
+                        <h3 className="text-2xl font-black">{idx + 1}-JAMOA</h3>
+                        <p className={isActive ? "text-lg text-white/85" : "text-lg text-slate-300"}>
                           {team?.name || `Jamoa ${idx + 1}`}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm opacity-80">Ball</span>
-                      <span className="text-3xl font-black">{team?.score || 0}</span>
+                    <div className="mb-3 flex items-end justify-between">
+                      <span className="text-sm font-bold opacity-90">Ball</span>
+                      <span className="text-4xl font-black leading-none sm:text-5xl">{team?.score || 0}</span>
                     </div>
 
                     {teamWords[team?.id] && (
-                      <div className="mt-2 text-center p-3 bg-white/10 rounded-xl border border-white/20">
-                        <span className="text-lg font-bold">{teamWords[team?.id]}</span>
+                      <div className="mt-2 rounded-xl border border-white/20 bg-white/10 p-3 text-center">
+                        <span className="text-xl font-bold tracking-wide">{teamWords[team?.id]}</span>
                       </div>
                     )}
                   </div>
@@ -443,17 +443,17 @@ function WordChain() {
 
             {/* Oxirgi so'z va kerakli harf */}
             {lastWord && (
-              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl border-2 border-purple-500/30 p-4 text-center backdrop-blur-sm">
-                <p className="text-sm text-slate-400 mb-2">Oxirgi so'z</p>
-                <p className="text-3xl font-bold text-purple-400 mb-2">{lastWord}</p>
-                <p className="text-lg text-slate-300">
-                  Keyingi so'z <span className="text-2xl font-bold text-pink-400">"{lastWord[lastWord.length - 1]}"</span> harfi bilan boshlanishi kerak
+              <div className="rounded-2xl border-2 border-cyan-400/30 bg-gradient-to-r from-cyan-500/15 to-indigo-500/20 p-5 text-center backdrop-blur-sm">
+                <p className="mb-2 text-sm font-semibold text-slate-300">Oxirgi so'z</p>
+                <p className="mb-3 text-3xl font-black text-cyan-300 sm:text-4xl">{lastWord}</p>
+                <p className="text-lg text-slate-200 sm:text-xl">
+                  Keyingi so'z <span className="text-2xl font-black text-yellow-300">"{lastWord[lastWord.length - 1]}"</span> harfi bilan boshlanishi kerak
                 </p>
               </div>
             )}
 
             {/* 2 ta klaviatura */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {[0, 1].map((teamIdx) => {
                 const isActive = currentTeamIndex === teamIdx;
                 const colors = TEAM_COLORS[teamIdx];
@@ -463,33 +463,42 @@ function WordChain() {
                   <div
                     key={teamIdx}
                     className={`
-                      rounded-2xl border-2 p-6 transition-all duration-300
-                      ${isActive 
-                        ? `bg-slate-800/95 border-${teamIdx === 0 ? 'blue' : 'emerald'}-500/50 shadow-2xl` 
-                        : 'bg-slate-800/50 border-slate-700/50'}
+                      rounded-2xl border-2 p-4 transition-all duration-300 sm:p-5 lg:p-6
+                      ${
+                        isActive
+                          ? teamIdx === 0
+                            ? "border-cyan-400/70 bg-slate-800/95 shadow-2xl shadow-cyan-900/40"
+                            : "border-emerald-400/70 bg-slate-800/95 shadow-2xl shadow-emerald-900/40"
+                          : "border-slate-700/60 bg-slate-800/65"
+                      }
                     `}
                   >
-                    <div className="text-center mb-4">
-                      <p className="text-sm text-slate-400 mb-1">
-                        {teamIdx + 1}-JAMOA {team ? `• ${team.name}` : ''}
+                    <div className="mb-4 text-center">
+                      <p className="mb-2 text-sm text-slate-400">
+                        {teamIdx + 1}-JAMOA {team ? `- ${team.name}` : ""}
                       </p>
-                      <div className={`text-3xl font-bold mt-2 min-h-[50px] ${isActive ? 'text-white' : 'text-slate-600'}`}>
+                      <div
+                        className={`mx-auto mt-1 flex min-h-[64px] max-w-md items-center justify-center rounded-xl border px-4 py-3 text-2xl font-black sm:text-3xl ${
+                          isActive
+                            ? "border-cyan-300/50 bg-cyan-400/10 text-white"
+                            : "border-slate-700 bg-slate-900/50 text-slate-500"
+                        }`}
+                      >
                         {isActive ? (currentInput || "—") : "Navbat kutmoqda"}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-7 sm:grid-cols-9 gap-1.5 mb-4">
+                    <div className="mb-4 grid grid-cols-7 gap-2 sm:grid-cols-9">
                       {ALPHABET.map((letter) => (
                         <button
                           key={`${teamIdx}-${letter}`}
                           onClick={() => addLetter(letter)}
                           disabled={!isActive}
                           className={`
-                            aspect-square rounded-lg font-bold text-sm sm:text-base
-                            transition-all duration-200
+                            h-11 rounded-lg text-sm font-black transition-all duration-200 sm:h-12 sm:text-base
                             ${isActive
-                              ? `bg-gradient-to-br ${colors.primary} text-white hover:scale-110 hover:shadow-lg active:scale-95`
-                              : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+                              ? `bg-gradient-to-br ${colors.primary} text-white hover:-translate-y-0.5 hover:shadow-lg active:scale-95`
+                              : "cursor-not-allowed bg-slate-700/90 text-slate-500"}
                           `}
                         >
                           {letter}
@@ -497,49 +506,48 @@ function WordChain() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2.5">
                       <button
                         onClick={backspace}
                         disabled={!isActive}
                         className={`
-                          py-2.5 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 text-sm
-                          ${isActive 
-                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
-                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+                          flex items-center justify-center gap-1.5 rounded-lg py-3 text-sm font-bold transition-all sm:text-base
+                          ${isActive
+                            ? "bg-orange-500 text-white shadow-md hover:bg-orange-600"
+                            : "cursor-not-allowed bg-slate-700/90 text-slate-500"}
                         `}
                       >
-                        <FaEraser /> O'chir
+                        <FaEraser /> 
                       </button>
                       <button
                         onClick={clearInput}
                         disabled={!isActive}
                         className={`
-                          py-2.5 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 text-sm
-                          ${isActive 
-                            ? 'bg-red-600 hover:bg-red-700 text-white' 
-                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+                          flex items-center justify-center gap-1.5 rounded-lg py-3 text-sm font-bold transition-all sm:text-base
+                          ${isActive
+                            ? "bg-rose-600 text-white shadow-md hover:bg-rose-700"
+                            : "cursor-not-allowed bg-slate-700/90 text-slate-500"}
                         `}
                       >
-                        <FaTrash /> Toza
+                        <FaTrash />
                       </button>
                       <button
                         onClick={checkWord}
                         disabled={!isActive}
                         className={`
-                          py-2.5 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 text-sm
-                          ${isActive 
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
-                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+                          flex items-center justify-center gap-1.5 rounded-lg py-3 text-sm font-black transition-all sm:text-base
+                          ${isActive
+                            ? "bg-emerald-500 text-white shadow-md hover:bg-emerald-600"
+                            : "cursor-not-allowed bg-slate-700/90 text-slate-500"}
                         `}
                       >
-                        <FaCheckCircle /> Tekshir
+                        <FaCheckCircle /> 
                       </button>
                     </div>
                   </div>
                 );
               })}
             </div>
-
             {/* O'yin tarixi */}
             {gameHistory.length > 0 && (
               <div className="bg-slate-800/90 rounded-xl border-2 border-purple-500/30 p-4 backdrop-blur-sm">

@@ -384,37 +384,6 @@ function MemoryChainArenaPage() {
           <div className="h-px w-12 bg-gradient-to-r from-cyan-500/30 via-transparent to-transparent" />
         </div>
       </div>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(-5deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes pulse-slower {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-        }
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-          animation: float-delayed 7s ease-in-out infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-pulse-slower {
-          animation: pulse-slower 6s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
