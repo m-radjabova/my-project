@@ -801,6 +801,7 @@ export default function OceanWordFishing() {
                   }}
                 >
                   <div
+                    data-allow-animation="true"
                     style={
                       {
                         animation: `fish-pass-${
@@ -815,6 +816,7 @@ export default function OceanWordFishing() {
                     }
                   >
                     <div
+                      data-allow-animation="true"
                       style={
                         {
                           animation: `fish-float ${fish.floatDuration}s ease-in-out infinite`,

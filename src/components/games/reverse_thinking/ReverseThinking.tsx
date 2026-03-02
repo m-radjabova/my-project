@@ -17,6 +17,7 @@ import {
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { MORE_QUESTIONS } from "./data";
 
 type Team = {
   id: number;
@@ -29,7 +30,7 @@ type Team = {
   timeLeft: number;
 };
 
-type Question = {
+export type Question = {
   id: string;
   level: 1 | 2 | 3 | 4;
   question: string;
@@ -46,136 +47,6 @@ const TEAM_COLORS = [
   { primary: "from-teal-400 to-cyan-400", text: "text-teal-300", bg: "bg-teal-500/10", border: "border-teal-500/30" },
 ];
 
-const DEFAULT_QUESTIONS: Question[] = [
-  // Level 1 - Oddiy chalg'ituvchi
-  {
-    id: "1",
-    level: 1,
-    question: "Qaysi oyda 28 kun bor?",
-    options: ["Fevral", "Yanvar", "Mart", "Hammasida"],
-    correctAnswer: "Hammasida",
-    explanation: "Har bir oyda 28 kun bor, faqat ba'zilarida 29, 30 yoki 31 kun ham bor! 😊",
-  },
-  {
-    id: "2",
-    level: 1,
-    question: "Dunyoda eng ko'p ishlatiladigan til qaysi?",
-    options: ["Ingliz tili", "Xitoy tili", "Ispan tili", "O'zbek tili"],
-    correctAnswer: "Xitoy tili",
-    explanation: "Xitoy tili 1.3 milliarddan ortiq kishi tomonidan so'zlashadi!",
-  },
-  {
-    id: "3",
-    level: 1,
-    question: "Nima sababdan odamlar yomg'irda tez yuguradi?",
-    options: ["Ho'l bo'lmaslik uchun", "Sovuq qotmaslik uchun", "Uyga tez yetish uchun", "Yomg'ir ularni quvadi"],
-    correctAnswer: "Yomg'ir ularni quvadi",
-    explanation: "Albatta, yomg'ir odamlarni quvmaydi! 😄",
-  },
-
-  // Level 2 - Mantiqiy savollar
-  {
-    id: "4",
-    level: 2,
-    question: "Agar samolyot O'zbekiston va Qozog'iston chegarasida qulab tushsa, tirik qolganlarni qayerga dafn qilishadi?",
-    options: ["O'zbekistonga", "Qozog'istonga", "Ikkala davlatga", "Tiriklarni dafn qilishmaydi"],
-    correctAnswer: "Tiriklarni dafn qilishmaydi",
-    explanation: "Tirik odamlarni dafn qilishmaydi! Ular kasalxonaga olib ketiladi 😄",
-  },
-  {
-    id: "5",
-    level: 2,
-    question: "Qaysi hayvon o'zining rangi bilan atalgan?",
-    options: ["Fil", "Qoplon", "Pingvin", "Jirafa"],
-    correctAnswer: "Qoplon",
-    explanation: "Qoplon (qop - qoplon, leopar) – lekin bu hazil edi! Aslida hech qaysi hayvon rang bilan atalmagan.",
-  },
-  {
-    id: "6",
-    level: 2,
-    question: "Odamlar necha marta o'lchab, bir marta kesadi?",
-    options: ["7 marta", "10 marta", "100 marta", "Hech qachon"],
-    correctAnswer: "Hech qachon",
-    explanation: "Bu maqol: 'Yetti o'lchab, bir kes' – lekin odamlar o'lchamaydi, ular maqolni aytadi!",
-  },
-
-  // Level 3 - Juda tricky savollar
-  {
-    id: "7",
-    level: 3,
-    question: "Elektr poyezdi shimolga 100 km/soat tezlikda ketmoqda. Shamol janubga esmoqda. Tutun qaysi tomonga ketadi?",
-    options: ["Shimolga", "Janubga", "Sharqqa", "G'arbga", "Tutun bo'lmaydi"],
-    correctAnswer: "Tutun bo'lmaydi",
-    explanation: "Elektr poyezdda tutun bo'lmaydi! Chunki u elektr bilan ishlaydi 😄",
-  },
-  {
-    id: "8",
-    level: 3,
-    question: "Agar siz musobaqada 2-o'rindagi odamni quvib o'tsangiz, nechanchi o'ringa chiqasiz?",
-    options: ["1-o'rin", "2-o'rin", "3-o'rin", "4-o'rin"],
-    correctAnswer: "2-o'rin",
-    explanation: "2-o'rindagini quvib o'tsangiz, o'zi 2-o'rin edi, siz uning o'rniga 2-o'ringa chiqasiz!",
-  },
-  {
-    id: "9",
-    level: 3,
-    question: "Qaysi so'z har doim noto'g'ri yoziladi?",
-    options: ["Xato", "To'g'ri", "Noto'g'ri", "Ha"],
-    correctAnswer: "Noto'g'ri",
-    explanation: "'Noto'g'ri' so'zi har doim 'noto'g'ri' yoziladi – bu to'g'ri! 😄",
-  },
-
-  // Level 4 - Tezkor qaror
-  {
-    id: "10",
-    level: 4,
-    question: "Bir odam bitta g'ishtni 1 soatda quritadi. 10 odam 10 ta g'ishtni necha soatda quritadi?",
-    options: ["1 soat", "10 soat", "100 soat", "0 soat"],
-    correctAnswer: "1 soat",
-    explanation: "10 odam bir vaqtda ishlasa, 10 ta g'ishtni 1 soatda quritadi!",
-  },
-  {
-    id: "11",
-    level: 4,
-    question: "Maryamning 5 qizi bor. Har bir qizining 1 ukasi bor. Maryamning nechta farzandi bor?",
-    options: ["5", "6", "7", "8"],
-    correctAnswer: "6",
-    explanation: "5 qiz va 1 o'g'il – jami 6 farzand!",
-  },
-  {
-    id: "12",
-    level: 4,
-    question: "Agar bugun ertadan keyingi kun payshanba bo'lsa, kecha qaysi kun edi?",
-    options: ["Dushanba", "Seshanba", "Chorshanba", "Payshanba"],
-    correctAnswer: "Seshanba",
-    explanation: "Ertadan keyin payshanba → ertaga chorshanba → bugun seshanba → kecha dushanba? Kechirasiz, seshanba!",
-  },
-  {
-    id: "13",
-    level: 4,
-    question: "Nimani yeb bo'lmaydi?",
-    options: ["Non", "Olma", "Ovqat", "Va'da"],
-    correctAnswer: "Va'da",
-    explanation: "Va'dani yeb bo'lmaydi!",
-  },
-  {
-    id: "14",
-    level: 2,
-    question: "Qaysi qo'lda choyni aralashtirish yaxshiroq?",
-    options: ["Chap qo'lda", "O'ng qo'lda", "Ikkalasida", "Qoshiq bilan"],
-    correctAnswer: "Qoshiq bilan",
-    explanation: "Choyni qo'l bilan aralashtirib bo'lmaydi, qoshiq kerak!",
-  },
-  {
-    id: "15",
-    level: 3,
-    question: "Siz tun bo'yi uxlab, ertalab soat 8 da uyg'ondingiz. Siz necha soat uxladingiz?",
-    options: ["8 soat", "10 soat", "12 soat", "Bilmayman"],
-    correctAnswer: "Bilmayman",
-    explanation: "Qachon yotganingizni aytmagansiz, shuning uchun bilmayman!",
-  },
-];
-
 function ReverseThinking() {
   // Audio refs
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -188,7 +59,7 @@ function ReverseThinking() {
   const [teamError, setTeamError] = useState("");
   
   // Questions state
-  const [questions, setQuestions] = useState<Question[]>(DEFAULT_QUESTIONS);
+  const [questions, setQuestions] = useState<Question[]>(MORE_QUESTIONS);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -776,7 +647,7 @@ function ReverseThinking() {
               </div>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {questions.map((q, idx) => (
+                {questions.map((q) => (
                   <div key={q.id} className="group relative overflow-hidden rounded-xl border border-green-500/30 bg-green-950/30 p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -849,7 +720,7 @@ function ReverseThinking() {
               <div className="text-center">
                 <p className="text-sm text-green-300 mb-1">Hozirgi navbat</p>
                 <div className="flex items-center gap-3">
-                  {teams.map((team, idx) => (
+                  {teams.map((team) => (
                     <div
                       key={team.id}
                       className={`px-4 py-2 rounded-xl border-2 transition-all ${
@@ -923,7 +794,7 @@ function ReverseThinking() {
 
             {/* Teams Score */}
             <div className="grid grid-cols-2 gap-4">
-              {teams.map((team, idx) => (
+              {teams.map((team) => (
                 <div
                   key={team.id}
                   className="relative group transform-gpu overflow-hidden rounded-xl border-2 p-4 backdrop-blur-xl"
@@ -993,7 +864,7 @@ function ReverseThinking() {
 
               {/* Results */}
               <div className="relative grid grid-cols-2 gap-4 mb-8">
-                {teams.sort((a, b) => b.score - a.score).map((team, idx) => (
+                {teams.sort((a, b) => b.score - a.score).map((team) => (
                   <div key={team.id} className="rounded-xl border border-green-500/30 bg-green-950/30 p-4">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{team.avatar}</span>
@@ -1012,7 +883,7 @@ function ReverseThinking() {
                   className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
                 >
                   <FaRedo className="inline mr-2" />
-                  QAYTA O'YNA
+                  QAYTA O'YNASH
                 </button>
                 <button
                   onClick={() => window.location.reload()}

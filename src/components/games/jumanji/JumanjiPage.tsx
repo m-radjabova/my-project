@@ -19,7 +19,7 @@ import {
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import Jumanji from './Jumanji';
-import img from "../../../assets/Jumanji-board.png"
+import img from "../../../assets/jumanji_board.png"
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function JumanjiPage() {

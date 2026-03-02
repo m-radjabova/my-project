@@ -286,6 +286,21 @@
   animation: screen-shake 300ms ease-in-out;
 }
 
+.game-layout [class*="animate-"]:not([data-allow-animation="true"]),
+.game-layout [style*="animation"]:not([data-allow-animation="true"]) {
+  animation: none !important;
+}
+
+.game-layout .backdrop-blur-sm,
+.game-layout .backdrop-blur,
+.game-layout .backdrop-blur-md,
+.game-layout .backdrop-blur-lg,
+.game-layout .backdrop-blur-xl,
+.game-layout .backdrop-blur-2xl {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 
 /* --- Mystic UI helpers (cosmic + dungeon) --- */
 .glass {

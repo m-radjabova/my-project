@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Confetti from "react-confetti-boom";
 import {
   FaDice,
@@ -17,7 +17,7 @@ import correctSound from "../../../assets/sounds/correct.m4a";
 import wrongSound from "../../../assets/sounds/wrong.m4a";
 import winSound from "../../../assets/sounds/tada.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
-import jumanjiBoardImage from "../../../assets/Jumanji-board.png";
+import jumanjiBoardImage from "../../../assets/jumanji_board.png";
 import fireMedallion from "../../../assets/fire_medallion_transparent-Photoroom.png";
 import leafMedallion from "../../../assets/leaf_medallion_transparent-Photoroom.png";
 import maskMedallion from "../../../assets/mask_medallion_transparent-Photoroom.png";
@@ -56,6 +56,13 @@ type Tile = {
 };
 
 type Phase = "setup" | "game" | "question" | "result" | "finish";
+type ScoreAnnouncement = {
+  teamId: number;
+  teamName: string;
+  points: number;
+  title: string;
+  detail: string;
+};
 
 const TEAM_AVATARS = ["🦁", "🐅", "🐘", "🦒"];
 const TEAM_TITLES = ["AZURE", "EMERALD", "CRIMSON", "ONYX"];
@@ -108,38 +115,50 @@ const BOARD_STACK_OFFSETS: [number, number][] = [
   [1.1, 1.1],
 ];
 
+const SPECIAL_TILE_INDEXES = new Set([2, 4, 6, 9, 11, 14, 16, 19, 21, 24, 26, 28]);
+
+const ROAD_Y_SHIFT = -3.9;
 const ROAD_POINTS = [
-  { x: 24.5, y: 84.7 },
-  { x: 29.4, y: 84.6 },
-  { x: 34.4, y: 84.4 },
-  { x: 39.5, y: 84.3 },
-  { x: 44.8, y: 84.2 },
-  { x: 50.0, y: 84.1 },
-  { x: 55.2, y: 84.0 },
-  { x: 60.4, y: 83.8 },
-  { x: 65.5, y: 83.4 },
-  { x: 70.2, y: 81.8 },
-  { x: 73.1, y: 77.5 },
-  { x: 71.9, y: 72.9 },
-  { x: 67.8, y: 70.2 },
-  { x: 62.7, y: 70.0 },
-  { x: 57.5, y: 70.0 },
-  { x: 52.2, y: 70.0 },
-  { x: 46.9, y: 70.0 },
-  { x: 41.8, y: 69.9 },
-  { x: 37.4, y: 67.8 },
-  { x: 34.8, y: 63.8 },
-  { x: 34.2, y: 58.8 },
-  { x: 35.6, y: 53.9 },
-  { x: 39.1, y: 50.8 },
-  { x: 44.0, y: 49.0 },
-  { x: 49.1, y: 48.8 },
-  { x: 54.3, y: 48.8 },
-  { x: 59.5, y: 48.7 },
-  { x: 64.7, y: 48.4 },
-  { x: 69.6, y: 47.2 },
-  { x: 74.2, y: 44.6 },
-];
+  { x: 21.5, y: 91.2 },
+  { x: 26.0, y: 91.2 },
+  { x: 30.5, y: 91.0 },
+  { x: 35.0, y: 90.8 },
+  { x: 39.0, y: 90.7 },
+  { x: 43.0, y: 90.6 },
+  { x: 47.0, y: 90.5 },
+  { x: 51.0, y: 90.4 },
+  { x: 55.0, y: 90.1 },
+  { x: 59.0, y: 89.0 },
+  { x: 63.0, y: 86.2 },
+  { x: 66.0, y: 81.0 },
+  { x: 66.8, y: 75.0 },
+  { x: 66.8, y: 69.0 },
+  { x: 66.0, y: 63.0 },
+  { x: 64.0, y: 58.0 },
+  { x: 60.0, y: 54.8 },
+  { x: 55.2, y: 54.3 },
+  { x: 50.0, y: 54.2 },
+  { x: 44.8, y: 54.3 },
+  { x: 40.0, y: 55.0 },
+  { x: 35.8, y: 56.6 },
+  { x: 33.2, y: 53.8 },
+  { x: 31.2, y: 49.2 },
+  { x: 31.0, y: 44.0 },
+  { x: 32.6, y: 38.8 },
+  { x: 35.6, y: 34.0 },
+  { x: 39.2, y: 29.8 },
+  { x: 43.8, y: 26.2 },
+  { x: 49.5, y: 22.8 },
+].map((point, idx, arr) => {
+  const baseY = point.y + ROAD_Y_SHIFT;
+  const topSegmentStart = arr.length - 6;
+  const topPullDown =
+    idx >= topSegmentStart
+      ? Math.min(3.5, (idx - topSegmentStart + 1) * 0.7)
+      : 0;
+
+  return { ...point, y: baseY + topPullDown };
+});
 
 const TILES: Tile[] = [
   {
@@ -367,39 +386,54 @@ const JUMANJI_MAP_IMAGE = jumanjiBoardImage;
 const DEFAULT_QUESTIONS: Question[] = [
   {
     id: "1",
-    subject: "Matematika",
-    question: "25 + 17 = ?",
-    options: ["32", "42", "52", "62"],
-    correctAnswer: "42",
+    subject: "Dasturlash",
+    question: "JavaScriptda o'zgaruvchi e'lon qilish uchun qaysi kalit so'z ishlatiladi?",
+    options: ["var", "int", "string", "define"],
+    correctAnswer: "var",
     difficulty: "easy",
     timeLimit: 30,
   },
   {
     id: "2",
-    subject: "Geografiya",
-    question: "O'zbekistonning poytaxti?",
-    options: ["Samarqand", "Buxoro", "Toshkent", "Xiva"],
-    correctAnswer: "Toshkent",
+    subject: "Dasturlash",
+    question: "Quyidagilardan qaysi biri array yaratishning to'g'ri usuli?",
+    options: [
+      "let arr = {}",
+      "let arr = []",
+      "let arr = ()",
+      "let arr = <>"
+    ],
+    correctAnswer: "let arr = []",
     difficulty: "easy",
     timeLimit: 30,
   },
   {
     id: "3",
-    subject: "Tarix",
-    question: "Amir Temur qachon tug'ilgan?",
-    options: ["1336", "1405", "1370", "1325"],
-    correctAnswer: "1336",
+    subject: "Dasturlash",
+    question: "Reactda state bilan ishlash uchun qaysi hook ishlatiladi?",
+    options: [
+      "useEffect",
+      "useState",
+      "useRef",
+      "useContext"
+    ],
+    correctAnswer: "useState",
     difficulty: "medium",
     timeLimit: 40,
   },
   {
     id: "4",
-    subject: "Kimyo",
-    question: "Suvning kimyoviy formulasi?",
-    options: ["H2O", "CO2", "NaCl", "O2"],
-    correctAnswer: "H2O",
-    difficulty: "easy",
-    timeLimit: 30,
+    subject: "Dasturlash",
+    question: "JavaScriptda '===' operatori nimani bildiradi?",
+    options: [
+      "Faqat qiymatni tekshiradi",
+      "Qiymat va tipni tekshiradi",
+      "Faqat tipni tekshiradi",
+      "O'zlashtirish operatori"
+    ],
+    correctAnswer: "Qiymat va tipni tekshiradi",
+    difficulty: "medium",
+    timeLimit: 40,
   },
 ];
 
@@ -451,21 +485,11 @@ function Jumanji() {
   const [gameTime, setGameTime] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [winner, setWinner] = useState<Team | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] =
+    useState<ScoreAnnouncement | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
 
-  // Vintage paper texture
-  const [paperTexture] = useState(() => (
-    <div
-      className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
-        backgroundSize: "200px 200px",
-      }}
-    />
-  ));
-
-  // Initialize audio
   useEffect(() => {
     diceAudioRef.current = new Audio(diceSound);
     correctAudioRef.current = new Audio(correctSound);
@@ -534,6 +558,21 @@ function Jumanji() {
   const showToastMessage = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(null), 2000);
+  };
+
+  const announceScoreChange = (
+    team: Team,
+    points: number,
+    title: string,
+    detail: string,
+  ) => {
+    setScoreAnnouncement({
+      teamId: team.id,
+      teamName: team.name,
+      points,
+      title,
+      detail,
+    });
   };
 
   // Play sound
@@ -681,6 +720,7 @@ function Jumanji() {
     if (isRolling) return;
     if (isMoving) return;
     if (phase !== "game") return;
+    if (scoreAnnouncement) return;
 
     setIsRolling(true);
     playSound("dice");
@@ -783,6 +823,12 @@ function Jumanji() {
       ...prev,
       `🎁 ${currentTeam.name} bonus oldi: +${bonus} ball`,
     ]);
+    announceScoreChange(
+      currentTeam,
+      bonus,
+      "BONUS BALL",
+      "Maxsus katak: qo'shimcha ball yutildi",
+    );
     showToastMessage(`🎁 ${currentTeam.name} +${bonus} ball`);
 
     setTimeout(() => {
@@ -807,6 +853,12 @@ function Jumanji() {
       ...prev,
       `🐍 ${currentTeam.name} tuzoqqa tushdi: -${penalty} ball`,
     ]);
+    announceScoreChange(
+      currentTeam,
+      -penalty,
+      "TRAP JARIMA",
+      "Tuzoq katagi: ball kamaydi",
+    );
     showToastMessage(`🐍 ${currentTeam.name} -${penalty} ball`);
 
     setTimeout(() => {
@@ -873,6 +925,14 @@ function Jumanji() {
         ? `✅ ${currentTeam.name} to'g'ri javob berdi: +${10 + timeBonus} ball`
         : `❌ ${currentTeam.name} xato javob berdi: -5 ball`,
     ]);
+    announceScoreChange(
+      currentTeam,
+      points,
+      correct ? "TO'G'RI JAVOB" : "XATO JAVOB",
+      correct
+        ? `Asosiy +10 va vaqt bonusi +${timeBonus}`
+        : "Noto'g'ri javob uchun jarima",
+    );
 
     setTimeout(() => {
       checkDoubleTurn();
@@ -887,6 +947,7 @@ function Jumanji() {
       setCurrentQuestion(null);
       setSelectedAnswer(null);
       setShowResult(false);
+      setScoreAnnouncement(null);
       setTimeLeft(30);
     };
 
@@ -939,6 +1000,7 @@ function Jumanji() {
     setGameTime(0);
     setIsTimerActive(false);
     setWinner(null);
+    setScoreAnnouncement(null);
   };
 
   // Toggle mute
@@ -954,12 +1016,11 @@ function Jumanji() {
   const getTeamsOnTile = (tileIndex: number) =>
     teams.filter((team) => getDisplayPosition(team) === tileIndex);
 
-  const getTileRotation = (idx: number) => {
-    const prev = ROAD_POINTS[Math.max(0, idx - 1)];
-    const next = ROAD_POINTS[Math.min(ROAD_POINTS.length - 1, idx + 1)];
-    const angle = Math.atan2(next.y - prev.y, next.x - prev.x);
-    return (angle * 180) / Math.PI;
-  };
+  const furthestDisplayPosition = teams.reduce(
+    (maxPos, team) => Math.max(maxPos, getDisplayPosition(team)),
+    0,
+  );
+
 
   const getDicePips = (value: number) => {
     const map: Record<number, [number, number][]> = {
@@ -1002,6 +1063,20 @@ function Jumanji() {
     .filter((item) => /[+-]\d+\s*ball/i.test(item))
     .slice(-5)
     .reverse();
+
+  const floatingJungleItems = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 5}s`,
+        animationDuration: `${15 + Math.random() * 20}s`,
+        transform: `rotate(${Math.random() * 360}deg)`,
+        symbol: ["🌿", "🌴", "🍃", "🌱", "🌵", "🌳"][i % 6],
+      })),
+    [],
+  );
 
   // Medallion token renderer
   const renderPawn = (team: Team, size = 34) => {
@@ -1159,19 +1234,19 @@ function Jumanji() {
 
         {/* Floating Jungle Elements */}
         <div className="pointer-events-none absolute inset-0">
-          {[...Array(20)].map((_, i) => (
+          {floatingJungleItems.map((item) => (
             <div
-              key={i}
+              key={item.id}
               className="absolute text-4xl opacity-10 animate-float"
               style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${15 + Math.random() * 20}s`,
-                transform: `rotate(${Math.random() * 360}deg)`,
+                top: item.top,
+                left: item.left,
+                animationDelay: item.animationDelay,
+                animationDuration: item.animationDuration,
+                transform: item.transform,
               }}
             >
-              {["🌿", "🌴", "🍃", "🌱", "🌵", "🌳"][i % 6]}
+              {item.symbol}
             </div>
           ))}
         </div>
@@ -1393,7 +1468,7 @@ function Jumanji() {
               </div>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {questions.map((q, idx) => (
+                {questions.map((q) => (
                   <div
                     key={q.id}
                     className="group relative overflow-hidden rounded-xl border border-amber-500/30 bg-amber-950/30 p-3"
@@ -1509,20 +1584,142 @@ function Jumanji() {
                     viewBox="0 0 100 100"
                     className="pointer-events-none absolute inset-0 z-10 h-full w-full"
                   >
+                    <defs>
+                      <linearGradient id="roadBase" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3f2b1b" />
+                        <stop offset="50%" stopColor="#5c4028" />
+                        <stop offset="100%" stopColor="#2d1d10" />
+                      </linearGradient>
+                      <linearGradient id="roadGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#e3be7a" />
+                        <stop offset="100%" stopColor="#bb8a49" />
+                      </linearGradient>
+                      <radialGradient id="tileFill" cx="35%" cy="30%" r="75%">
+                        <stop offset="0%" stopColor="#fff6d8" />
+                        <stop offset="55%" stopColor="#d5ae67" />
+                        <stop offset="100%" stopColor="#71502c" />
+                      </radialGradient>
+                      <radialGradient id="bossAura" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#fde68a" stopOpacity="0.65" />
+                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                      </radialGradient>
+                    </defs>
+
+                    {ROAD_POINTS.map((point, idx) => {
+                      const next = ROAD_POINTS[idx + 1];
+                      if (!next) return null;
+
+                      return (
+                        <g key={`road-${idx}`}>
+                          <line
+                            x1={point.x}
+                            y1={point.y}
+                            x2={next.x}
+                            y2={next.y}
+                            stroke="url(#roadBase)"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            opacity="0.9"
+                          />
+                          <line
+                            x1={point.x}
+                            y1={point.y}
+                            x2={next.x}
+                            y2={next.y}
+                            stroke="url(#roadGlow)"
+                            strokeWidth="1.15"
+                            strokeLinecap="round"
+                            strokeDasharray="1.1 1"
+                            opacity="0.85"
+                          />
+                        </g>
+                      );
+                    })}
+
+                    {ROAD_POINTS.map((point, idx) => {
+                      const next = ROAD_POINTS[idx + 1];
+                      if (!next) return null;
+                      if (idx >= furthestDisplayPosition) return null;
+
+                      return (
+                        <line
+                          key={`progress-road-${idx}`}
+                          x1={point.x}
+                          y1={point.y}
+                          x2={next.x}
+                          y2={next.y}
+                          stroke="#fcd34d"
+                          strokeWidth="1.55"
+                          strokeLinecap="round"
+                          opacity="0.95"
+                        />
+                      );
+                    })}
+
+                    {ROAD_POINTS.map((point, idx) => {
+                      const isBoss = idx === ROAD_POINTS.length - 1;
+                      const isSpecial = SPECIAL_TILE_INDEXES.has(idx);
+
+                      return (
+                        <g key={`tile-${idx}`}>
+                          <circle
+                            cx={point.x}
+                            cy={point.y}
+                            r={isBoss ? 3.05 : isSpecial ? 2.15 : 1.85}
+                            fill="url(#tileFill)"
+                            stroke={isBoss ? "#f59e0b" : isSpecial ? "#facc15" : "#8b5e34"}
+                            strokeWidth={isBoss ? 0.35 : 0.18}
+                            opacity={isBoss ? 1 : 0.96}
+                          />
+                          {isBoss && (
+                            <circle
+                              cx={point.x}
+                              cy={point.y}
+                              r={3.9}
+                              fill="none"
+                              stroke="#fcd34d"
+                              strokeWidth={0.22}
+                              strokeDasharray="0.7 0.8"
+                              opacity={0.9}
+                            />
+                          )}
+                          <circle
+                            cx={point.x - 0.18}
+                            cy={point.y - 0.2}
+                            r={0.28}
+                            fill="#ffffff"
+                            opacity="0.38"
+                          />
+                          <text
+                            x={point.x}
+                            y={point.y - 1.45}
+                            textAnchor="middle"
+                            fontSize="1.05"
+                            fill="#fde68a"
+                            fontWeight="bold"
+                            opacity="0.85"
+                          >
+                            {idx + 1}
+                          </text>
+                          {isBoss && (
+                            <circle
+                              cx={point.x}
+                              cy={point.y}
+                              r={5.2}
+                              fill="url(#bossAura)"
+                            />
+                          )}
+                        </g>
+                      );
+                    })}
+
                     {teams.map((team) => {
                       const idx = getDisplayPosition(team);
                       const point = ROAD_POINTS[idx];
                       if (!point) return null;
-                      const sameTileTeams = teams.filter(
-                        (t) => getDisplayPosition(t) === idx,
-                      );
+                      const sameTileTeams = getTeamsOnTile(idx);
                       const teamIndex = teams.findIndex((t) => t.id === team.id);
-                      const orderedSameTileTeams = [...sameTileTeams].sort(
-                        (a, b) =>
-                          teams.findIndex((t) => t.id === a.id) -
-                          teams.findIndex((t) => t.id === b.id),
-                      );
-                      const stackIdx = orderedSameTileTeams.findIndex(
+                      const stackIdx = sameTileTeams.findIndex(
                         (t) => t.id === team.id,
                       );
                       const [ox, oy] = BOARD_STACK_OFFSETS[stackIdx] ?? [0, 0];
@@ -1536,6 +1733,20 @@ function Jumanji() {
                           className="token-move"
                           transform={`translate(${point.x + ox + BOARD_TOKEN_NUDGE_X} ${point.y + oy + BOARD_TOKEN_NUDGE_Y})`}
                         >
+                          <circle
+                            cx={0}
+                            cy={0}
+                            r={BOARD_TOKEN_SIZE / 2}
+                            fill="none"
+                            stroke="rgba(253,230,138,0.45)"
+                            strokeWidth="0.25"
+                          />
+                          <circle
+                            cx={0.35}
+                            cy={0.45}
+                            r={BOARD_TOKEN_SIZE / 2.05}
+                            fill="rgba(0,0,0,0.15)"
+                          />
                           <image
                             href={medal}
                             x={-BOARD_TOKEN_SIZE / 2}
@@ -1636,9 +1847,13 @@ function Jumanji() {
                                   : "border-red-500 bg-red-500/20 text-red-300"
                               }`}
                             >
-                              {isCorrect
-                                ? "CORRECT ANSWER!"
-                                : "WRONG ANSWER!"}
+                              <p>{isCorrect ? "CORRECT ANSWER!" : "WRONG ANSWER!"}</p>
+                              {scoreAnnouncement && (
+                                <p className="mt-2 text-2xl font-black">
+                                  {scoreAnnouncement.points >= 0 ? "+" : ""}
+                                  {scoreAnnouncement.points} ball
+                                </p>
+                              )}
                             </div>
                           )}
 
@@ -1662,6 +1877,49 @@ function Jumanji() {
                               )}
                             </div>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {phase === "game" && scoreAnnouncement && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]">
+                      <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-900/85 to-yellow-900/85 p-6 shadow-2xl">
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" />
+
+                        <div className="relative mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                          {teams.map((team) => (
+                            <div
+                              key={`score-popup-${team.id}`}
+                              className={`rounded-xl border p-3 ${
+                                team.id === scoreAnnouncement.teamId
+                                  ? "border-amber-400/70 bg-amber-500/20"
+                                  : "border-amber-500/30 bg-amber-950/30"
+                              }`}
+                            >
+                              <p className="truncate text-xs text-amber-200/80">{team.name}</p>
+                              <p className="text-xl font-black text-white">{team.score}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="relative rounded-2xl border border-amber-400/40 bg-black/20 p-6 text-center">
+                          <p className="text-sm font-bold tracking-widest text-amber-200/80">
+                            {scoreAnnouncement.title}
+                          </p>
+                          <p
+                            className={`mt-2 text-5xl font-black ${
+                              scoreAnnouncement.points >= 0
+                                ? "text-emerald-300"
+                                : "text-red-300"
+                            }`}
+                          >
+                            {scoreAnnouncement.teamName} {scoreAnnouncement.points >= 0 ? "+" : ""}
+                            {scoreAnnouncement.points}
+                          </p>
+                          <p className="mt-2 text-sm text-amber-100/85">
+                            {scoreAnnouncement.detail}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1777,7 +2035,7 @@ function Jumanji() {
               <div className="relative grid grid-cols-2 gap-4 mb-8">
                 {teams
                   .sort((a, b) => b.score - a.score)
-                  .map((team, idx) => (
+                  .map((team) => (
                     <div
                       key={team.id}
                       className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-4"

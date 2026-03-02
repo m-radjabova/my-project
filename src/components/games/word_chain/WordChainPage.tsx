@@ -372,22 +372,6 @@ function WordChainPage() {
           <div className="h-px w-12 bg-gradient-to-r from-purple-400/30 via-transparent to-transparent" />
         </div>
       </div>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse 4s ease-in-out infinite;
-        }
-        .animate-pulse-slower {
-          animation: pulse 6s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

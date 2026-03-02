@@ -5,17 +5,10 @@ type Props = {
   value: CountdownValue;
 };
 
-function getPositionClass(value: CountdownValue): string {
-  if (value === 3) return "countdown-right";
-  if (value === 2) return "countdown-left";
-  return "countdown-center";
-}
-
 export default function GameStartCountdownOverlay({ visible, value }: Props) {
   if (!visible || value === null) return null;
 
   const isStarted = value === "BOSHLANDI";
-  const positionClass = getPositionClass(value);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-md">
@@ -32,7 +25,7 @@ export default function GameStartCountdownOverlay({ visible, value }: Props) {
             <p className="mt-2 text-5xl font-black text-white md:text-6xl">BOSHLANDI!</p>
           </div>
         ) : (
-          <div className={`countdown-card ${positionClass} rounded-3xl border border-white/35 bg-black/45 px-10 py-7 text-center shadow-2xl`}>
+          <div className="countdown-card countdown-center rounded-3xl border border-white/35 bg-black/45 px-10 py-7 text-center shadow-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">{value}-o'rin</p>
             <p className="mt-2 text-7xl font-black leading-none text-white md:text-8xl">{value}</p>
           </div>
@@ -51,14 +44,6 @@ export default function GameStartCountdownOverlay({ visible, value }: Props) {
         }
         .countdown-center {
           transform: translateX(0);
-        }
-        @media (max-width: 768px) {
-          .countdown-left {
-            transform: translateX(-20vw);
-          }
-          .countdown-right {
-            transform: translateX(20vw);
-          }
         }
         @keyframes countdown-pop {
           0% {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
@@ -8,7 +8,7 @@ export default function GameLayout() {
   const location = useLocation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
 
   const showGameControls = location.pathname.startsWith("/games/") && location.pathname !== "/games";
 
@@ -28,17 +28,14 @@ export default function GameLayout() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setShowControls(false);
-      } else {
-        setShowControls(true);
-      }
-      setLastScrollY(currentScrollY);
+      const nextShowControls = !(currentScrollY > lastScrollYRef.current && currentScrollY > 100);
+      setShowControls((prev) => (prev === nextShowControls ? prev : nextShowControls));
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   const toggleFullscreen = async () => {
     try {
@@ -58,27 +55,6 @@ export default function GameLayout() {
 
   return (
     <div className="game-layout relative min-h-screen">
-      {/* Decorative Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] animate-pulse rounded-full bg-purple-600/5 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse rounded-full bg-pink-600/5 blur-3xl delay-1000" />
-        <div className="absolute top-1/3 left-1/3 h-[500px] w-[500px] animate-pulse rounded-full bg-blue-600/5 blur-3xl delay-500" />
-        
-        {/* Floating Particles */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute h-1 w-1 rounded-full bg-white/10 animate-float"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 10}s`,
-            }}
-          />
-        ))}
-      </div>
-
       {showGameControls && (
         <>
           {/* Left Button - Back to Games */}

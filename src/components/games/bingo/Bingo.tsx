@@ -9,6 +9,7 @@ import {
 import { GiCardJoker, GiJigsawPiece} from "react-icons/gi";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { SAMPLE_16_LINES } from "./data";
 
 type Difficulty = "easy" | "medium" | "hard";
 type BonusType = "none" | "double" | "joker" | "swap";
@@ -26,6 +27,7 @@ type BingoCell = {
   foundBy?: string;
   difficulty: Difficulty;
   bonus: BonusType;
+  wrong: boolean;
   lastMarkedAt?: number;
 };
 
@@ -37,9 +39,36 @@ type Student = {
 };
 
 type ParseResult = {
-  cells: Omit<BingoCell, "found" | "foundBy" | "difficulty" | "bonus" | "lastMarkedAt">[];
+  cells: Omit<BingoCell, "found" | "foundBy" | "difficulty" | "bonus" | "wrong" | "lastMarkedAt">[];
   errors: string[];
 };
+type CellInputRow = {
+  emoji: string;
+  title: string;
+  type: CellType;
+  prompt: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  correct: string;
+};
+
+const EMPTY_INPUT_ROW: CellInputRow = {
+  emoji: "",
+  title: "",
+  type: "quiz",
+  prompt: "",
+  optionA: "",
+  optionB: "",
+  optionC: "",
+  correct: "",
+};
+
+function defaultCorrectByType(type: CellType): string {
+  if (type === "quiz") return "A";
+  if (type === "tf") return "true";
+  return "";
+}
 
 const LINES_4x4: number[][] = [
   [0, 1, 2, 3],
@@ -54,24 +83,6 @@ const LINES_4x4: number[][] = [
   [3, 6, 9, 12],
 ];
 
-const SAMPLE_16_LINES = [
-  "🪐 | Sayyora | quiz | Quyoshga eng yaqin sayyora qaysi? | Merkuriy | Mars | Yupiter | A",
-  "💧 | Ilm | tf | Suv normal bosimda 100°C da qaynaydi. |  |  |  | true",
-  "💃 | Challenge | task | 5 soniyada 3 ta hayvon nomini ayting! |  |  |  |",
-  "📚 | Adabiyot | quiz | \"O'tkan kunlar\" asari muallifi kim? | Abdulla Qodiriy | Cho'lpon | Erkin Vohidov | A",
-  "🧠 | Mantiq | quiz | 2, 4, 8, 16 dan keyingi son qaysi? | 18 | 32 | 24 | B",
-  "🌍 | Geografiya | tf | Afrika dunyodagi eng katta qit'adir. |  |  |  | false",
-  "🎤 | Nutq | task | 10 soniyada mini nutq qiling: \"Mening orzum\". |  |  |  |",
-  "⚡ | Fizika | quiz | Elektr toki birligi qaysi? | Volt | Amper | Vatt | B",
-  "🧮 | Matematika | quiz | 12 ning 25 foizi nechaga teng? | 2 | 3 | 4 | B",
-  "🌱 | Biologiya | tf | O'simliklar fotosintezda kislorod ajratadi. |  |  |  | true",
-  "🎯 | Challenge | task | 5 soniyada 5 gacha teskari sanang! |  |  |  |",
-  "🗣️ | Ingliz tili | quiz | \"Apple\" so'zining tarjimasi qaysi? | Olma | Anor | Gilos | A",
-  "🏛️ | Tarix | quiz | Amir Temur qaysi shaharda tug'ilgan? | Buxoro | Shahrisabz | Xiva | B",
-  "☀️ | Tabiat | tf | Quyosh sharqdan chiqadi. |  |  |  | true",
-  "🎨 | Ijod | task | Bitta hayvonni imo-ishora bilan ko'rsating! |  |  |  |",
-  "💡 | Topqirlik | quiz | Bir haftada nechta kun bor? | 5 | 6 | 7 | C",
-].join("\n");
 
 function shuffle<T>(items: T[]): T[] {
   return [...items].sort(() => Math.random() - 0.5);
@@ -149,6 +160,47 @@ function parseCards(text: string): ParseResult {
   return { cells, errors };
 }
 
+function createEmptyRows(count = 16): CellInputRow[] {
+  return Array.from({ length: count }, () => ({ ...EMPTY_INPUT_ROW }));
+}
+
+function parseTextToRows(text: string, count = 16): CellInputRow[] {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const rows = createEmptyRows(count);
+
+  lines.slice(0, count).forEach((line, index) => {
+    const parts = line.split("|").map((p) => p.trim());
+    const [emoji = "", title = "", type = "quiz", prompt = "", A = "", B = "", C = "", correct = ""] = parts;
+    rows[index] = {
+      emoji,
+      title,
+      type: (["quiz", "tf", "task"].includes(type) ? type : "quiz") as CellType,
+      prompt,
+      optionA: A,
+      optionB: B,
+      optionC: C,
+      correct: correct || defaultCorrectByType((["quiz", "tf", "task"].includes(type) ? type : "quiz") as CellType),
+    };
+  });
+
+  return rows;
+}
+
+function rowsToText(rows: CellInputRow[]): string {
+  return rows
+    .map((row) => [
+      row.emoji.trim(),
+      row.title.trim(),
+      row.type,
+      row.prompt.trim(),
+      row.optionA.trim(),
+      row.optionB.trim(),
+      row.optionC.trim(),
+      row.correct.trim(),
+    ].join(" | "))
+    .join("\n");
+}
+
 function withBonusesAndDifficulty(parsed: ParseResult["cells"]): BingoCell[] {
   const difficulties = randomDifficulties();
   const base: BingoCell[] = parsed.map((cell, index) => ({
@@ -158,6 +210,7 @@ function withBonusesAndDifficulty(parsed: ParseResult["cells"]): BingoCell[] {
     foundBy: undefined,
     difficulty: difficulties[index],
     bonus: "none",
+    wrong: false,
     lastMarkedAt: undefined,
   }));
 
@@ -177,13 +230,14 @@ function withBonusesAndDifficulty(parsed: ParseResult["cells"]): BingoCell[] {
 function Bingo() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const [phase, setPhase] = useState<"teacher" | "game">("teacher");
-  const [inputText, setInputText] = useState("");
+  const [inputRows, setInputRows] = useState<CellInputRow[]>(() => createEmptyRows());
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [newStudentName, setNewStudentName] = useState("");
   const [cells, setCells] = useState<BingoCell[]>([]);
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [answerError, setAnswerError] = useState<string | null>(null);
   const [selectedJokerStudentId, setSelectedJokerStudentId] = useState("");
   const [jokerConfirmCellId, setJokerConfirmCellId] = useState<string | null>(null);
   const [jokerCredits, setJokerCredits] = useState(0);
@@ -200,6 +254,7 @@ function Bingo() {
   const [turboEndsAt, setTurboEndsAt] = useState<number | null>(null);
   const [turboStarted, setTurboStarted] = useState(false);
 
+  const inputText = useMemo(() => rowsToText(inputRows), [inputRows]);
   const parsedLive = useMemo(() => parseCards(inputText), [inputText]);
   const canStart = parsedLive.cells.length === 16 && parsedLive.errors.length === 0;
   const foundCount = useMemo(() => cells.filter((c) => c.found).length, [cells]);
@@ -241,6 +296,9 @@ function Bingo() {
   }, [foundCount, turboStarted, gameOver]);
 
   const showToastMessage = (m: string) => setToast(m);
+  const updateInputRow = (index: number, patch: Partial<CellInputRow>) => {
+    setInputRows((prev) => prev.map((row, i) => i === index ? { ...row, ...patch } : row));
+  };
   
   const addStudent = () => {
     const name = newStudentName.trim();
@@ -265,7 +323,7 @@ function Bingo() {
   };
   
   const resetTeacherForm = () => {
-    setInputText(""); setValidationErrors([]); setCells([]); setPhase("teacher");
+    setInputRows(createEmptyRows()); setValidationErrors([]); setCells([]); setPhase("teacher");
     setSelectedCellId(null); setSelectedStudentId(""); setSelectedJokerStudentId("");
     setJokerConfirmCellId(null); setJokerCredits(0); setJokerActive(false);
     setSwapMode(false); setSwapFirstCellId(null); setLineSet(new Set()); setCompletedLines(0);
@@ -337,7 +395,7 @@ function Bingo() {
     const points = computePoints(target, half);
     const studentName = studentId ? students.find((s) => s.id === studentId)?.name : undefined;
     setCells((prev) => {
-      const next = prev.map((c) => c.id === cellId ? { ...c, found: true, foundBy: studentName, lastMarkedAt: Date.now() } : c);
+      const next = prev.map((c) => c.id === cellId ? { ...c, found: true, wrong: false, foundBy: studentName, lastMarkedAt: Date.now() } : c);
       const nextSet = updateLineState(next);
       checkEndGame(next, nextSet);
       return next;
@@ -357,21 +415,40 @@ function Bingo() {
       showToastMessage(`✅ To'g'ri! +${points} ball`);
     }
   };
+
+  const markWrongAnswer = (cellId: string) => {
+    setCells((prev) =>
+      prev.map((c) =>
+        c.id === cellId && !c.found
+          ? { ...c, wrong: true, lastMarkedAt: Date.now() }
+          : c,
+      ),
+    );
+  };
   
   const handleAnswer = (answer: "A" | "B" | "C" | boolean | "task_done") => {
     if (!selectedCell || gameOver) return;
+    setAnswerError(null);
     if (selectedCell.type === "task") {
       applyCorrectAnswer(selectedCell.id, false, selectedStudentId || undefined);
       setSelectedCellId(null); setSelectedStudentId("");
       return;
     }
     if (selectedCell.type === "quiz") {
-      if (selectedCell.correct !== answer) return showToastMessage("❌ Noto'g'ri. Qayta urinib ko'ring");
+      if (selectedCell.correct !== answer) {
+        markWrongAnswer(selectedCell.id);
+        setAnswerError(`Xato. To'g'ri javob: ${selectedCell.correct}`);
+        return showToastMessage("❌ Noto'g'ri. Qayta urinib ko'ring");
+      }
       applyCorrectAnswer(selectedCell.id, false, selectedStudentId || undefined);
       setSelectedCellId(null); setSelectedStudentId("");
       return;
     }
-    if (selectedCell.correct !== (answer === true)) return showToastMessage("❌ Noto'g'ri. Qayta urinib ko'ring");
+    if (selectedCell.correct !== (answer === true)) {
+      markWrongAnswer(selectedCell.id);
+      setAnswerError(`Xato. To'g'ri javob: ${selectedCell.correct ? "To'g'ri" : "Noto'g'ri"}`);
+      return showToastMessage("❌ Noto'g'ri. Qayta urinib ko'ring");
+    }
     applyCorrectAnswer(selectedCell.id, false, selectedStudentId || undefined);
     setSelectedCellId(null); setSelectedStudentId("");
   };
@@ -403,6 +480,7 @@ function Bingo() {
       return;
     }
     setSelectedCellId(cell.id);
+    setAnswerError(null);
     setSelectedStudentId("");
   };
   
@@ -430,6 +508,7 @@ function Bingo() {
   
   const resetGame = () => {
     setPhase("teacher"); setCells([]); setSelectedCellId(null); setSelectedStudentId("");
+    setAnswerError(null);
     setSelectedJokerStudentId(""); setJokerConfirmCellId(null); setJokerCredits(0);
     setJokerActive(false); setSwapMode(false); setSwapFirstCellId(null); setLineSet(new Set());
     setCompletedLines(0); setTotalScore(0); setGameOver(false); setShowConfetti(false);
@@ -482,15 +561,108 @@ function Bingo() {
                 <h2 className="text-xl font-black text-white">KATAK KIRITISH</h2>
               </div>
 
-              <textarea 
-                value={inputText} 
-                onChange={(e) => setInputText(e.target.value)} 
-                placeholder="emoji | sarlavha | tur | prompt | A | B | C | correct" 
-                className="w-full h-64 rounded-xl border-2 border-indigo-500/30 bg-indigo-950/50 px-4 py-3 text-sm text-white placeholder-indigo-300/50 focus:border-indigo-400 focus:outline-none font-mono"
-              />
+              <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+                {inputRows.map((row, index) => (
+                  <div key={index} className="rounded-xl border border-indigo-500/30 bg-indigo-950/40 p-3">
+                    <div className="mb-2 text-xs font-bold text-indigo-200">Katak #{index + 1}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                      <input
+                        type="text"
+                        value={row.emoji}
+                        onChange={(e) => updateInputRow(index, { emoji: e.target.value })}
+                        placeholder="Emoji"
+                        className="md:col-span-2 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={row.title}
+                        onChange={(e) => updateInputRow(index, { title: e.target.value })}
+                        placeholder="Sarlavha"
+                        className="md:col-span-4 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                      />
+                      <select
+                        value={row.type}
+                        onChange={(e) => {
+                          const nextType = e.target.value as CellType;
+                          updateInputRow(index, {
+                            type: nextType,
+                            correct: defaultCorrectByType(nextType),
+                            optionA: "",
+                            optionB: "",
+                            optionC: "",
+                          });
+                        }}
+                        className="md:col-span-3 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                      >
+                        <option value="quiz">quiz</option>
+                        <option value="tf">tf</option>
+                        <option value="task">task</option>
+                      </select>
+                      {row.type === "quiz" && (
+                        <select
+                          value={row.correct || "A"}
+                          onChange={(e) => updateInputRow(index, { correct: e.target.value })}
+                          className="md:col-span-3 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                        >
+                          <option value="A">To'g'ri javob: A</option>
+                          <option value="B">To'g'ri javob: B</option>
+                          <option value="C">To'g'ri javob: C</option>
+                        </select>
+                      )}
+                      {row.type === "tf" && (
+                        <select
+                          value={row.correct || "true"}
+                          onChange={(e) => updateInputRow(index, { correct: e.target.value })}
+                          className="md:col-span-3 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                        >
+                          <option value="true">To'g'ri</option>
+                          <option value="false">Noto'g'ri</option>
+                        </select>
+                      )}
+                      {row.type === "task" && (
+                        <div className="md:col-span-3 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/30 text-indigo-200 text-sm">
+                          `task` uchun correct kerak emas
+                        </div>
+                      )}
+                      <input
+                        type="text"
+                        value={row.prompt}
+                        onChange={(e) => updateInputRow(index, { prompt: e.target.value })}
+                        placeholder="Savol yoki topshiriq"
+                        className="md:col-span-12 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                      />
+                      {row.type === "quiz" && (
+                        <>
+                          <input
+                            type="text"
+                            value={row.optionA}
+                            onChange={(e) => updateInputRow(index, { optionA: e.target.value })}
+                            placeholder="Variant A"
+                            className="md:col-span-4 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={row.optionB}
+                            onChange={(e) => updateInputRow(index, { optionB: e.target.value })}
+                            placeholder="Variant B"
+                            className="md:col-span-4 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={row.optionC}
+                            onChange={(e) => updateInputRow(index, { optionC: e.target.value })}
+                            placeholder="Variant C"
+                            className="md:col-span-4 px-3 py-2 rounded-lg border border-indigo-500/30 bg-indigo-900/60 text-white text-sm focus:border-indigo-400 focus:outline-none"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <button onClick={() => { setInputText(SAMPLE_16_LINES); setValidationErrors([]); }} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
+                <button onClick={() => { setInputRows(parseTextToRows(SAMPLE_16_LINES)); setValidationErrors([]); }} className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
                   <FaDice /> Namuna
                 </button>
                 <button onClick={validateInput} className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold text-sm border border-white/20 shadow-lg flex items-center gap-2">
@@ -636,12 +808,15 @@ function Bingo() {
                     className={`relative rounded-xl min-h-[140px] p-3 border-2 transition-all text-left group
                       ${cell.found 
                         ? "bg-gradient-to-br from-emerald-600 to-green-600 border-emerald-400 text-white cursor-not-allowed" 
-                        : "bg-gradient-to-br from-indigo-800/80 to-purple-800/80 hover:from-indigo-700 hover:to-purple-700 border-indigo-500/50 hover:border-indigo-400 cursor-pointer shadow-lg hover:shadow-2xl"
+                        : cell.wrong
+                          ? "bg-gradient-to-br from-red-700 to-rose-700 border-red-400 text-white cursor-pointer shadow-lg"
+                          : "bg-gradient-to-br from-indigo-800/80 to-purple-800/80 hover:from-indigo-700 hover:to-purple-700 border-indigo-500/50 hover:border-indigo-400 cursor-pointer shadow-lg hover:shadow-2xl"
                       }
                       ${cell.lastMarkedAt && Date.now() - cell.lastMarkedAt < 1500 ? "animate-pulse ring-4 ring-white/30" : ""}
                     `}
                   >
                     {cell.found && <FaCheckCircle className="absolute top-2 right-2 text-white text-lg" />}
+                    {!cell.found && cell.wrong && <FaTimes className="absolute top-2 right-2 text-white text-lg" />}
                     
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="text-3xl">{cell.emoji}</div>
@@ -699,6 +874,12 @@ function Bingo() {
                     </div>
                   )}
 
+                  {answerError && (
+                    <div className="mb-4 rounded-lg border border-red-400/40 bg-red-500/15 px-3 py-2 text-sm font-semibold text-red-200">
+                      {answerError}
+                    </div>
+                  )}
+
                   {selectedCell.type === "quiz" && selectedCell.options && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <button onClick={() => handleAnswer("A")} className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold p-4 border border-white/20 shadow-lg transition-all hover:scale-105">
@@ -733,7 +914,7 @@ function Bingo() {
                     </button>
                   )}
 
-                  <button onClick={() => { setSelectedCellId(null); setSelectedStudentId(""); }} className="mt-4 w-full rounded-xl bg-gradient-to-br from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-bold p-3 border border-white/20 shadow-lg">
+                  <button onClick={() => { setSelectedCellId(null); setSelectedStudentId(""); setAnswerError(null); }} className="mt-4 w-full rounded-xl bg-gradient-to-br from-gray-600 to-slate-600 hover:from-gray-500 hover:to-slate-500 text-white font-bold p-3 border border-white/20 shadow-lg">
                     Yopish
                   </button>
                 </div>

@@ -19,7 +19,7 @@ import {
 } from "react-icons/md";
 import { Link } from "react-router-dom";
 import FindDifferentColor from "./FindDifferentColor";
-import GameFeedbackPanel from "../games/shared/GameFeedbackPanel";
+import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 
 function FindDifferentColorPage() {
   const gameStats = [

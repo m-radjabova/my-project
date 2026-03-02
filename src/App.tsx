@@ -23,7 +23,7 @@ import Profile from "./components/profile/Profile";
 import OceanWordFishingPage from "./components/games/ocean_word_fishing/OceanWordFishingPage";
 import MathRacePage from "./components/games/math_race/MathRacePage";
 import BaamboozlePage from "./components/games/baamboozle/BaamboozlePage";
-import FindDifferentColorPage from "./components/find_color/FindDifferentColorPage";
+import FindDifferentColorPage from "./components/games/find_color/FindDifferentColorPage";
 import NotFoundPage from "./components/NotFoundPage";
 import BingoPage from "./components/games/bingo/BingoPage";
 import WordChainPage from "./components/games/word_chain/WordChainPage";

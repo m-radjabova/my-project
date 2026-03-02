@@ -95,13 +95,13 @@ function Games() {
 
             <div className="absolute -top-6 -right-6">
               <div className="relative">
-                <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
+                <div data-allow-animation="true" className="absolute inset-0   animate-ping rounded-full bg-yellow-400/30" />
                 <FaStar className="relative text-3xl text-yellow-400 animate-spin-slow" />
               </div>
             </div>
             <div className="absolute -bottom-4 -left-8">
               <div className="relative">
-                <div className="absolute inset-0 animate-ping rounded-full bg-pink-400/30" />
+                <div data-allow-animation="true" className="absolute inset-0 animate-ping rounded-full bg-pink-400/30" />
                 <FaCrown className="relative text-3xl text-pink-400 animate-bounce-slow" />
               </div>
             </div>
@@ -180,7 +180,7 @@ function Games() {
                       : "border-white/10 bg-gray-800/50 cursor-not-allowed"
                   }`}
                 >
-                  <div className="relative h-68 w-full overflow-hidden sm:h-72">
+                  <div className="relative h-54 w-full overflow-hidden sm:h-60">
                     <img
                       src={game.image}
                       alt={game.title}

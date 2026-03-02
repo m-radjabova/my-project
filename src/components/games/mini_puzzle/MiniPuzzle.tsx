@@ -27,6 +27,8 @@ type Team = {
   puzzlePieces: PuzzlePiece[];
   placedPieces: number[];
   timeLeft: number;
+  streak: number;
+  hintsLeft: number;
 };
 
 type PuzzlePiece = {
@@ -48,6 +50,11 @@ type Puzzle = {
   pieces: PuzzlePiece[];
   difficulty: "easy" | "medium" | "hard";
   pieceCount: number;
+  viewTransform: {
+    zoom: number;
+    offsetX: number;
+    offsetY: number;
+  };
 };
 
 type Phase = "teacher" | "game" | "result" | "finish";
@@ -63,6 +70,7 @@ const DIFFICULTY_CONFIG = {
   medium: { pieces: 6, gridCols: 2, gridRows: 3 },
   hard: { pieces: 9, gridCols: 3, gridRows: 3 },
 };
+
 
 function MiniPuzzle() {
   // Audio refs
@@ -80,7 +88,6 @@ function MiniPuzzle() {
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   
-  // Gameplay state
   const [draggedPiece, setDraggedPiece] = useState<{
     teamId: number;
     pieceId: number;
@@ -95,6 +102,10 @@ function MiniPuzzle() {
   const [roundWinner, setRoundWinner] = useState<number | null>(null);
   const [roundTimer, setRoundTimer] = useState(60);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [isRoundTransitioning, setIsRoundTransitioning] = useState(false);
+  const [nextRoundCountdown, setNextRoundCountdown] = useState(0);
+  const [hintActiveTeams, setHintActiveTeams] = useState<number[]>([]);
+  const [shakeCellKey, setShakeCellKey] = useState<string | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
 
@@ -151,6 +162,22 @@ function MiniPuzzle() {
     setTimeout(() => setToast(null), 2000);
   };
 
+  const getComboBonus = (streak: number) => {
+    if (streak >= 4) return 20;
+    if (streak === 3) return 10;
+    if (streak === 2) return 5;
+    return 0;
+  };
+  const getRandomViewTransform = () => {
+    const zoom = 1 + Math.random() * 0.35;
+    const maxOffset = Math.max(0, 300 * zoom - 300);
+    return {
+      zoom: Number(zoom.toFixed(2)),
+      offsetX: Math.floor(Math.random() * (maxOffset + 1)),
+      offsetY: Math.floor(Math.random() * (maxOffset + 1)),
+    };
+  };
+
   // Add team
   const addTeam = () => {
     const name = newTeamName.trim();
@@ -179,6 +206,8 @@ function MiniPuzzle() {
       puzzlePieces: [],
       placedPieces: [],
       timeLeft: 60,
+      streak: 0,
+      hintsLeft: 2,
     };
 
     setTeams([...teams, newTeam]);
@@ -211,11 +240,12 @@ function MiniPuzzle() {
   };
 
   // Create puzzle
-  const createPuzzle = (imageUrl: string, name: string) => {
+  const createPuzzle = (imageUrl: string, name: string, options?: { silent?: boolean }) => {
     const config = DIFFICULTY_CONFIG[difficulty];
     const pieces: PuzzlePiece[] = [];
     const pieceWidth = 300 / config.gridCols;
     const pieceHeight = 300 / config.gridRows;
+    const viewTransform = getRandomViewTransform();
 
     for (let row = 0; row < config.gridRows; row++) {
       for (let col = 0; col < config.gridCols; col++) {
@@ -247,13 +277,12 @@ function MiniPuzzle() {
       pieces: shuffledPieces,
       difficulty,
       pieceCount: config.pieces,
+      viewTransform,
     };
 
-    setPuzzles((prev) => [...prev, newPuzzle]);
-    showToast(`✅ "${name}" rasmi qo'shildi`);
+    setPuzzles((prev) => [...prev, newPuzzle]);  if (!options?.silent) {showToast(`✅ ${name} rasm qo'shildi`);}
   };
 
-  // Remove puzzle
   const removePuzzle = (id: string) => {
     setPuzzles(puzzles.filter(p => p.id !== id));
     showToast("🗑️ Rasm o'chirildi");
@@ -272,22 +301,29 @@ function MiniPuzzle() {
     const firstPuzzle = puzzles[0];
 
     // Reset teams
-    setTeams(prev => prev.map((t, idx) => ({
+    setTeams(prev => prev.map((t) => ({
       ...t,
       score: 0,
-      isActive: idx === 0,
+      isActive: true,
       completedPuzzles: 0,
       currentPuzzleId: firstPuzzle.id,
       puzzlePieces: createTeamPieces(firstPuzzle),
       placedPieces: [],
       timeLeft: 60,
+      streak: 0,
+      hintsLeft: 2,
     })));
 
     setCurrentPuzzleIndex(0);
     setRoundTimer(60);
     setIsTimerActive(true);
+    setIsRoundTransitioning(false);
+    setNextRoundCountdown(0);
+    setRoundWinner(null);
+    setHintActiveTeams([]);
+    setShakeCellKey(null);
     setPhase("game");
-    showToast("🎮 O'yin boshlandi! 1-jamoa boshlaydi");
+    showToast("🎮 O'yin boshlandi! Ikkala jamoa bir vaqtda boshlaydi");
   };
 
   const startGame = () => {
@@ -304,10 +340,10 @@ function MiniPuzzle() {
 
   // Handle drag start
   const handleDragStart = (e: React.DragEvent, teamId: number, pieceId: number) => {
-    if (phase !== "game") return;
+    if (phase !== "game" || isRoundTransitioning) return;
     
     const team = teams.find(t => t.id === teamId);
-    if (!team?.isActive) return;
+    if (!team) return;
 
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
@@ -323,13 +359,27 @@ function MiniPuzzle() {
     e.preventDefault();
     
     if (!draggedPiece) return;
-    if (phase !== "game") return;
+    if (phase !== "game" || isRoundTransitioning) return;
 
     const team = teams.find(t => t.id === draggedPiece.teamId);
-    if (!team?.isActive) return;
+    if (!team) return;
 
     const pieceIndex = team.puzzlePieces.findIndex(p => p.id === draggedPiece.pieceId);
     if (pieceIndex === -1) return;
+    const movingPiece = team.puzzlePieces[pieceIndex];
+
+    if (movingPiece.correctPosition !== targetPosition) {
+      setTeams(prev => prev.map(t =>
+        t.id === team.id
+          ? { ...t, score: Math.max(0, t.score - 5), streak: 0, timeLeft: Math.max(0, t.timeLeft - 1) }
+          : t
+      ));
+      setShakeCellKey(`${team.id}-${targetPosition}`);
+      setTimeout(() => setShakeCellKey(null), 400);
+      showToast(`${team.name}: xato joy (-5 ball, streak 0)`);
+      setDraggedPiece(null);
+      return;
+    }
 
     // Update piece position
     const updatedPieces = [...team.puzzlePieces];
@@ -348,9 +398,19 @@ function MiniPuzzle() {
       currentPosition: targetPosition,
     };
 
-    setTeams(prev => prev.map(t => 
-      t.id === team.id ? { ...t, puzzlePieces: updatedPieces } : t
+    const nextStreak = team.streak + 1;
+    const comboBonus = getComboBonus(nextStreak);
+    const dropPoints = 10 + comboBonus;
+
+    setTeams(prev => prev.map(t =>
+      t.id === team.id
+        ? { ...t, puzzlePieces: updatedPieces, score: t.score + dropPoints, streak: nextStreak }
+        : t
     ));
+    playSound("correct");
+    if (comboBonus > 0) {
+      showToast(`${team.name}: COMBO x${nextStreak} (+${comboBonus})`);
+    }
 
     // Check if puzzle is complete
     const isComplete = updatedPieces.every(p => p.currentPosition === p.correctPosition);
@@ -363,10 +423,12 @@ function MiniPuzzle() {
 
   // Handle puzzle complete
   const handlePuzzleComplete = (teamId: number) => {
-    playSound("correct");
-    
+    if (isRoundTransitioning) return;
+    setIsTimerActive(false);
+    setIsRoundTransitioning(true);
+
     const timeBonus = Math.floor(roundTimer / 10) * 5;
-    const points = 50 + timeBonus;
+    const points = 100 + timeBonus;
 
     setTeams(prev => prev.map(t => {
       if (t.id === teamId) {
@@ -374,67 +436,122 @@ function MiniPuzzle() {
           ...t,
           score: t.score + points,
           completedPuzzles: t.completedPuzzles + 1,
+          streak: 0,
         };
       }
       return t;
     }));
 
     setRoundWinner(teamId);
-    setGameHistory(prev => [...prev, `✅ Jamoa ${teamId + 1} rasmni yig'di! +${points} ball`]);
-    showToast(`🎉 Ajoyib! +${points} ball`);
+    const team = teams.find((t) => t.id === teamId);
+    const roundNumber = currentPuzzleIndex + 1;
+    setGameHistory(prev => [...prev, `${team?.name ?? "Jamoa"} ${roundNumber}-rasmni birinchi bo'lib yig'di! +${points} ball`]);
+    showToast(`Round winner: ${team?.name ?? "Jamoa"} (+${points} ball)`);
 
-    // Move to next puzzle
+    const isLastPuzzle = currentPuzzleIndex >= puzzles.length - 1;
+    if (isLastPuzzle) {
+      setTimeout(() => {
+        finishGame(teamId);
+      }, 1200);
+      return;
+    }
+
+    setNextRoundCountdown(3);
+    const countdown = setInterval(() => {
+      setNextRoundCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdown);
+          const nextIndex = currentPuzzleIndex + 1;
+          const nextPuzzle = puzzles[nextIndex];
+          if (nextPuzzle) {
+            setCurrentPuzzleIndex(nextIndex);
+            setTeams(prevTeams => prevTeams.map(t => ({
+              ...t,
+              currentPuzzleId: nextPuzzle.id,
+              puzzlePieces: createTeamPieces(nextPuzzle),
+              placedPieces: [],
+              streak: 0,
+            })));
+            setRoundTimer(60);
+            setRoundWinner(null);
+            setHintActiveTeams([]);
+            setIsRoundTransitioning(false);
+            setIsTimerActive(true);
+            showToast(`Keyingi rasm: ${nextIndex + 1}/${puzzles.length}`);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleHint = (teamId: number) => {
+    if (phase !== "game" || isRoundTransitioning) return;
+
+    const team = teams.find((t) => t.id === teamId);
+    if (!team) return;
+    if (team.hintsLeft <= 0) {
+      showToast(`${team.name}: hint qolmagan`);
+      return;
+    }
+    if (hintActiveTeams.includes(teamId)) return;
+
+    setTeams(prev => prev.map(t =>
+      t.id === teamId
+        ? { ...t, hintsLeft: t.hintsLeft - 1, score: Math.max(0, t.score - 20), streak: 0 }
+        : t
+    ));
+    setHintActiveTeams(prev => [...prev, teamId]);
+    showToast(`${team.name}: 👁 Hint ishlatdi (-20 ball)`);
+
     setTimeout(() => {
-      if (currentPuzzleIndex + 1 < puzzles.length) {
-        const nextPuzzleIndex = currentPuzzleIndex + 1;
-        const nextPuzzle = puzzles[nextPuzzleIndex];
-
-        setCurrentPuzzleIndex(nextPuzzleIndex);
-        setRoundTimer(60);
-        setRoundWinner(null);
-
-        setTeams((prev) => {
-          const activeIndex = prev.findIndex((t) => t.isActive);
-          const nextActive = activeIndex === -1 ? 0 : (activeIndex + 1) % prev.length;
-
-          return prev.map((t, idx) => ({
-            ...t,
-            isActive: idx === nextActive,
-            currentPuzzleId: nextPuzzle.id,
-            puzzlePieces: createTeamPieces(nextPuzzle),
-            placedPieces: [],
-            timeLeft: 60,
-          }));
-        });
-      } else {
-        finishGame();
-      }
+      setHintActiveTeams(prev => prev.filter(id => id !== teamId));
     }, 2000);
   };
 
   // Handle timeout
   const handleTimeout = () => {
     setIsTimerActive(false);
-    showToast("⏰ Vaqt tugadi! Keyingi jamoa boshlaydi");
-    
-    setTimeout(() => {
-      const nextActive = (teams.findIndex(t => t.isActive) + 1) % 2;
-      setTeams(prev => prev.map((t, idx) => ({ ...t, isActive: idx === nextActive })));
-      setRoundTimer(60);
-      setIsTimerActive(true);
-    }, 2000);
+
+    const ranked = [...teams].sort((a, b) => {
+      const aPlaced = a.puzzlePieces.filter((p) => p.currentPosition === p.correctPosition).length;
+      const bPlaced = b.puzzlePieces.filter((p) => p.currentPosition === p.correctPosition).length;
+      if (bPlaced !== aPlaced) return bPlaced - aPlaced;
+      return b.score - a.score;
+    });
+
+    const top = ranked[0];
+    const second = ranked[1];
+    const topPlaced = top.puzzlePieces.filter((p) => p.currentPosition === p.correctPosition).length;
+    const secondPlaced = second.puzzlePieces.filter((p) => p.currentPosition === p.correctPosition).length;
+    const isTie = topPlaced === secondPlaced && top.score === second.score;
+
+    if (isTie) {
+      setWinner(null);
+      setPhase("finish");
+      showToast("Vaqt tugadi! Durrang.");
+      return;
+    }
+
+    showToast(`Vaqt tugadi! ${top.name} g'olib.`);
+    finishGame(top.id);
   };
 
   // Finish game
-  const finishGame = () => {
+  const finishGame = (winningTeamId?: number) => {
     setIsTimerActive(false);
     playSound("win");
     setShowConfetti(true);
-    
-    const sorted = [...teams].sort((a, b) => b.score - a.score);
-    setWinner(sorted[0]);
+
+    if (winningTeamId !== undefined) {
+      setWinner(teams.find((t) => t.id === winningTeamId) ?? null);
+    } else {
+      const sorted = [...teams].sort((a, b) => b.score - a.score);
+      setWinner(sorted[0] ?? null);
+    }
     setPhase("finish");
-    showToast("🏆 O'yin tugadi!");
+    showToast("O'yin tugadi!");
   };
 
   // Reset game
@@ -449,6 +566,10 @@ function MiniPuzzle() {
     setGameHistory([]);
     setWinner(null);
     setRoundWinner(null);
+    setIsRoundTransitioning(false);
+    setNextRoundCountdown(0);
+    setHintActiveTeams([]);
+    setShakeCellKey(null);
   };
 
   // Toggle mute
@@ -463,6 +584,7 @@ function MiniPuzzle() {
 
     const config = DIFFICULTY_CONFIG[difficulty];
     const gridSize = 300;
+    const isHintActive = hintActiveTeams.includes(team.id);
 
     return (
       <div className="space-y-4">
@@ -475,11 +597,11 @@ function MiniPuzzle() {
             return (
               <div
                 key={piece.id}
-                draggable={team.isActive && !isPlaced}
+                draggable={!isPlaced}
                 onDragStart={(e) => handleDragStart(e, team.id, piece.id)}
                 className={`
                   relative cursor-move rounded-lg overflow-hidden shadow-lg
-                  ${team.isActive ? 'hover:scale-105 hover:shadow-2xl' : 'opacity-50 cursor-not-allowed'}
+                  hover:scale-105 hover:shadow-2xl
                   transition-all duration-200
                 `}
                 style={{
@@ -514,8 +636,9 @@ function MiniPuzzle() {
                 onDrop={(e) => handleDrop(e, idx)}
                 className={`
                   border border-pink-400/30 bg-pink-100/5
-                  ${team.isActive ? 'cursor-pointer' : 'cursor-not-allowed'}
+                  cursor-pointer
                   transition-all duration-200 hover:bg-pink-500/10
+                  ${shakeCellKey === `${team.id}-${idx}` ? "animate-[shake_0.35s_ease-in-out_2] border-red-400" : ""}
                 `}
               >
                 {placedPiece && (
@@ -532,6 +655,15 @@ function MiniPuzzle() {
             );
           })}
         </div>
+        {isHintActive && (
+          <div className="pointer-events-none -mt-[300px] mx-auto w-[300px] h-[300px] rounded-xl overflow-hidden border-2 border-yellow-300/70 shadow-2xl">
+            <img
+              src={currentPuzzle.imageUrl}
+              alt="Hint preview"
+              className="w-full h-full object-cover opacity-70"
+            />
+          </div>
+        )}
       </div>
     );
   };
@@ -677,7 +809,7 @@ function MiniPuzzle() {
               <div className="space-y-3 mb-4">
                 <select
                   value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as any)}
+                  onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
                   className="w-full px-4 py-2 rounded-xl border border-pink-500/30 bg-pink-950/30 text-white"
                 >
                   <option value="easy">Oson (4 bo'lak)</option>
@@ -702,7 +834,7 @@ function MiniPuzzle() {
               </div>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {puzzles.map((puzzle, idx) => (
+                {puzzles.map((puzzle) => (
                   <div key={puzzle.id} className="group relative overflow-hidden rounded-xl border border-pink-500/30 bg-pink-950/30 p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -763,24 +895,15 @@ function MiniPuzzle() {
               </div>
 
               <div className="text-center">
-                <p className="text-sm text-pink-300 mb-1">Hozirgi navbat</p>
+                <p className="text-sm text-pink-300 mb-1">Race holati (ikkala jamoa bir vaqtda)</p>
                 <div className="flex items-center gap-3">
-                  {teams.map((team, idx) => (
+                  {teams.map((team) => (
                     <div
                       key={team.id}
-                      className={`px-4 py-2 rounded-xl border-2 transition-all ${
-                        team.isActive 
-                          ? `bg-gradient-to-r ${team.color} border-white scale-105 shadow-2xl` 
-                          : 'border-pink-500/30 bg-pink-900/30'
-                      }`}
+                      className={`px-4 py-2 rounded-xl border-2 transition-all bg-gradient-to-r ${team.color} border-white/40 shadow-2xl`}
                     >
                       <span className="text-2xl mr-2">{team.avatar}</span>
                       <span className="font-bold text-white">{team.name}</span>
-                      {team.isActive && (
-                        <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full animate-pulse">
-                          NAVBAT
-                        </span>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -794,9 +917,7 @@ function MiniPuzzle() {
                   key={team.id}
                   className={`
                     relative group transform-gpu overflow-hidden rounded-2xl border-2 p-6 backdrop-blur-xl
-                    ${team.isActive 
-                      ? `border-pink-400/50 bg-gradient-to-br ${team.color} scale-105 shadow-2xl` 
-                      : 'border-pink-500/30 bg-pink-950/30'}
+                    border-pink-400/50 bg-gradient-to-br ${team.color} scale-105 shadow-2xl
                   `}
                 >
                   <div className={`absolute inset-0 pointer-events-none bg-gradient-to-r ${TEAM_COLORS[idx].primary} opacity-0 group-hover:opacity-10 transition-opacity`} />
@@ -812,6 +933,16 @@ function MiniPuzzle() {
                         <p className="text-2xl font-bold text-white">{team.score}</p>
                         <p className="text-xs text-pink-300">ball</p>
                       </div>
+                    </div>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <p className="text-xs text-pink-200/80">Streak: <span className="font-bold text-white">{team.streak}</span></p>
+                      <button
+                        onClick={() => handleHint(team.id)}
+                        disabled={team.hintsLeft <= 0 || isRoundTransitioning}
+                        className="px-3 py-1.5 rounded-lg text-sm font-bold bg-yellow-500/80 text-black disabled:opacity-40 disabled:cursor-not-allowed hover:bg-yellow-400 transition-colors"
+                      >
+                        👁 Hint ({team.hintsLeft})
+                      </button>
                     </div>
 
                     {renderTeamPuzzle(team)}
@@ -835,7 +966,7 @@ function MiniPuzzle() {
           </div>
         )}
 
-        {phase === "finish" && winner && (
+        {phase === "finish" && (
           /* ========== YAKUNIY NATIJALAR ========== */
           <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
             {showConfetti && <Confetti mode="boom" particleCount={500} effectCount={1} x={0.5} y={0.3} colors={['#f9a8d4', '#f472b6', '#ec4899', '#db2777', '#be185d']} />}
@@ -852,15 +983,15 @@ function MiniPuzzle() {
               </div>
 
               <h2 className="relative text-4xl font-black text-transparent bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text mb-2">
-                {winner.name} G'OLIB!
+                {winner ? `${winner.name} G'OLIB!` : "DURRANG!"}
               </h2>
               <p className="relative text-xl text-pink-300 mb-8">
-                {winner.score} ball to'pladi
+                {winner ? `${teams.find((t) => t.id === winner.id)?.score ?? winner.score} ball to'pladi` : "Ikki jamoa bir xil natija ko'rsatdi"}
               </p>
 
               {/* Results */}
               <div className="relative grid grid-cols-2 gap-4 mb-8">
-                {teams.sort((a, b) => b.score - a.score).map((team, idx) => (
+                {[...teams].sort((a, b) => b.score - a.score).map((team) => (
                   <div key={team.id} className="rounded-xl border border-pink-500/30 bg-pink-950/30 p-4">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{team.avatar}</span>
@@ -892,6 +1023,27 @@ function MiniPuzzle() {
             </div>
           </div>
         )}
+        {phase === "game" && isRoundTransitioning && (
+          <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="rounded-2xl border-2 border-pink-400/40 bg-gradient-to-br from-pink-900/90 to-rose-900/90 px-10 py-8 text-center shadow-2xl">
+              <p className="text-pink-200 text-sm mb-2">Round yakunlandi</p>
+              <p className="text-3xl font-black text-white mb-2">
+                {teams.find((t) => t.id === roundWinner)?.name ?? "Jamoa"} birinchi tugatdi
+              </p>
+              <p className="text-xl font-bold text-pink-300">
+                {nextRoundCountdown > 0 ? `Keyingi round: ${nextRoundCountdown}` : "Yakunlanmoqda..."}
+              </p>
+            </div>
+          </div>
+        )}
+        <style>{`
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-3px); }
+          }
+        `}</style>
         <GameStartCountdownOverlay
           visible={countdownVisible}
           value={countdownValue}
@@ -902,3 +1054,4 @@ function MiniPuzzle() {
 }
 
 export default MiniPuzzle;
+

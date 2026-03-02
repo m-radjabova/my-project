@@ -1,0 +1,18 @@
+export const SAMPLE_16_LINES = [
+  "🪐 | Sayyora | quiz | Quyoshga eng yaqin sayyora qaysi? | Merkuriy | Mars | Yupiter | A",
+  "💧 | Ilm | tf | Suv normal bosimda 100°C da qaynaydi. |  |  |  | true",
+  "💃 | Challenge | task | 5 soniyada 3 ta hayvon nomini ayting! |  |  |  |",
+  "📚 | Adabiyot | quiz | \"O'tkan kunlar\" asari muallifi kim? | Abdulla Qodiriy | Cho'lpon | Erkin Vohidov | A",
+  "🧠 | Mantiq | quiz | 2, 4, 8, 16 dan keyingi son qaysi? | 18 | 32 | 24 | B",
+  "🌍 | Geografiya | tf | Afrika dunyodagi eng katta qit'adir. |  |  |  | false",
+  "🎤 | Nutq | task | 10 soniyada mini nutq qiling: \"Mening orzum\". |  |  |  |",
+  "⚡ | Fizika | quiz | Elektr toki birligi qaysi? | Volt | Amper | Vatt | B",
+  "🧮 | Matematika | quiz | 12 ning 25 foizi nechaga teng? | 2 | 3 | 4 | B",
+  "🌱 | Biologiya | tf | O'simliklar fotosintezda kislorod ajratadi. |  |  |  | true",
+  "🎯 | Challenge | task | 5 soniyada 5 gacha teskari sanang! |  |  |  |",
+  "🗣️ | Ingliz tili | quiz | \"Apple\" so'zining tarjimasi qaysi? | Olma | Anor | Gilos | A",
+  "🏛️ | Tarix | quiz | Amir Temur qaysi shaharda tug'ilgan? | Buxoro | Shahrisabz | Xiva | B",
+  "☀️ | Tabiat | tf | Quyosh sharqdan chiqadi. |  |  |  | true",
+  "🎨 | Ijod | task | Bitta hayvonni imo-ishora bilan ko'rsating! |  |  |  |",
+  "💡 | Topqirlik | quiz | Bir haftada nechta kun bor? | 5 | 6 | 7 | C",
+].join("\n");
