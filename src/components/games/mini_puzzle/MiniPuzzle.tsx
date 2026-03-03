@@ -14,62 +14,9 @@ import {
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-
-type Team = {
-  id: number;
-  name: string;
-  color: string;
-  avatar: string;
-  score: number;
-  isActive: boolean;
-  completedPuzzles: number;
-  currentPuzzleId: string | null;
-  puzzlePieces: PuzzlePiece[];
-  placedPieces: number[];
-  timeLeft: number;
-  streak: number;
-  hintsLeft: number;
-};
-
-type PuzzlePiece = {
-  id: number;
-  imageId: string;
-  correctPosition: number;
-  currentPosition: number;
-  imageUrl: string;
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-};
-
-type Puzzle = {
-  id: string;
-  name: string;
-  imageUrl: string;
-  pieces: PuzzlePiece[];
-  difficulty: "easy" | "medium" | "hard";
-  pieceCount: number;
-  viewTransform: {
-    zoom: number;
-    offsetX: number;
-    offsetY: number;
-  };
-};
-
-type Phase = "teacher" | "game" | "result" | "finish";
-
-const TEAM_AVATARS = ["🐶", "🐱"];
-const TEAM_COLORS = [
-  { primary: "from-pink-400 to-rose-400", text: "text-pink-300", bg: "bg-pink-500/10", border: "border-pink-500/30" },
-  { primary: "from-purple-400 to-violet-400", text: "text-purple-300", bg: "bg-purple-500/10", border: "border-purple-500/30" },
-];
-
-const DIFFICULTY_CONFIG = {
-  easy: { pieces: 4, gridCols: 2, gridRows: 2 },
-  medium: { pieces: 6, gridCols: 2, gridRows: 3 },
-  hard: { pieces: 9, gridCols: 3, gridRows: 3 },
-};
+import { TEAM_AVATARS, TEAM_COLORS, DIFFICULTY_CONFIG } from "./constants";
+import type { Phase, Puzzle, PuzzlePiece, Team } from "./types";
+import { getComboBonus, getRandomViewTransform } from "./utils";
 
 
 function MiniPuzzle() {
@@ -160,22 +107,6 @@ function MiniPuzzle() {
   const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(null), 2000);
-  };
-
-  const getComboBonus = (streak: number) => {
-    if (streak >= 4) return 20;
-    if (streak === 3) return 10;
-    if (streak === 2) return 5;
-    return 0;
-  };
-  const getRandomViewTransform = () => {
-    const zoom = 1 + Math.random() * 0.35;
-    const maxOffset = Math.max(0, 300 * zoom - 300);
-    return {
-      zoom: Number(zoom.toFixed(2)),
-      offsetX: Math.floor(Math.random() * (maxOffset + 1)),
-      offsetY: Math.floor(Math.random() * (maxOffset + 1)),
-    };
   };
 
   // Add team

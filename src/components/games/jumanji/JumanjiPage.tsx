@@ -1,4 +1,4 @@
-import {
+﻿import {
   FaDice,
   FaUsers,
   FaTrophy,
@@ -40,7 +40,7 @@ function JumanjiPage() {
     {
       icon: <FaDice className="text-2xl text-white" />,
       label: "KATAKLAR",
-      value: "30 ta",
+      value: "Dinamik",
       color: "from-amber-600 to-orange-500",
     },
     {
@@ -106,7 +106,7 @@ function JumanjiPage() {
   const gameRules = [
     { text: "Kubik tashlab, jungle bo'ylab sayohat qiling", icon: "🎲" },
     { text: "Juft tashlasangiz, yana bir marta tashlash huquqi", icon: "⚡" },
-    { text: "Marraga birinchi yetgan jamoa g'olib", icon: "👑" },
+    { text: "Marraga birinchi yetgan jamoa g'olib", icon: "🏁" },
   ];
 
   return (
@@ -251,7 +251,7 @@ function JumanjiPage() {
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-4">
                   <div className="inline-flex items-center gap-3 rounded-2xl bg-black/50 backdrop-blur-md px-4 py-2 border border-amber-500/30">
                     <FaDice className="text-amber-400 text-lg animate-bounce" />
-                    <span className="text-sm font-black text-white">30 KATAK · 4 JAMOA</span>
+                    <span className="text-sm font-black text-white">DINAMIK KATAK - 4 JAMOA</span>
                   </div>
                 </div>
               </div>
@@ -337,7 +337,7 @@ function JumanjiPage() {
                   </h2>
                   <p className="flex items-center gap-2 text-sm text-amber-200/80">
                     <RiTeamFill className="text-amber-400" />
-                    Jungle sarguzashti · 4 jamoa
+                    Jungle sarguzashti - 4 jamoa
                   </p>
                 </div>
               </div>
@@ -345,7 +345,7 @@ function JumanjiPage() {
               <div className="flex gap-2">
                 <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
                   <FaDice className="text-amber-400 text-sm" />
-                  <span className="text-xs font-bold text-white">30 katak</span>
+                  <span className="text-xs font-bold text-white">Dinamik katak</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-full bg-amber-900/50 px-4 py-2 border border-amber-500/30 backdrop-blur-sm">
                   <GiChest className="text-yellow-400 text-sm" />
@@ -397,3 +397,5 @@ function JumanjiPage() {
 }
 
 export default JumanjiPage;
+
+

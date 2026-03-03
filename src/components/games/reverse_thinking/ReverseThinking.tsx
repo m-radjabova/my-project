@@ -15,39 +15,16 @@ import {
   FaEdit,
   FaSave,
 } from "react-icons/fa";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 import { MORE_QUESTIONS } from "./data";
 
-type Team = {
-  id: number;
-  name: string;
-  color: string;
-  avatar: string;
-  score: number;
-  isActive: boolean;
-  streak: number;
-  timeLeft: number;
-};
-
-export type Question = {
-  id: string;
-  level: 1 | 2 | 3 | 4;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-};
-
-type Phase = "teacher" | "game" | "result" | "finish";
-
-const TEAM_AVATARS = ["🦉", "🐘"];
-const TEAM_COLORS = [
-  { primary: "from-green-400 to-emerald-400", text: "text-green-300", bg: "bg-green-500/10", border: "border-green-500/30" },
-  { primary: "from-teal-400 to-cyan-400", text: "text-teal-300", bg: "bg-teal-500/10", border: "border-teal-500/30" },
-];
+import { REVERSE_THINKING_GAME_KEY, TEAM_AVATARS, TEAM_COLORS } from "./constants";
+import type { Phase, Question, Team } from "./types";
 
 function ReverseThinking() {
+  const skipInitialRemoteSaveRef = useRef(true);
   // Audio refs
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -77,6 +54,7 @@ function ReverseThinking() {
   });
   const [questionError, setQuestionError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
   
   // Gameplay state
   const [toast, setToast] = useState<string | null>(null);
@@ -88,6 +66,36 @@ function ReverseThinking() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<Question>(REVERSE_THINKING_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestions(remoteQuestions);
+      }
+      setRemoteLoaded(true);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void saveGameQuestions<Question>(REVERSE_THINKING_GAME_KEY, questions);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [questions, remoteLoaded]);
 
   // Initialize audio
   useEffect(() => {
@@ -906,3 +914,4 @@ function ReverseThinking() {
 }
 
 export default ReverseThinking;
+

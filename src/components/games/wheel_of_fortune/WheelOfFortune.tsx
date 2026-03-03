@@ -18,72 +18,9 @@ import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQu
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
-type Student = { id: string; name: string; score: number };
-type Question = {
-  id: string;
-  question: string;
-  options: [string, string, string, string];
-  answerIndex: number;
-  points: number;
-  category: string;
-  timeLimit: number;
-};
-type Phase = "setup" | "spinning" | "question" | "finish";
-
-const SAMPLE_QUESTIONS: Question[] = [
-  { id: "q1", question: "O'zbekiston poytaxti qayer?", options: ["Samarqand", "Buxoro", "Toshkent", "Xiva"], answerIndex: 2, points: 100, category: "Geografiya", timeLimit: 30 },
-  { id: "q2", question: "9 ning kvadrati nechiga teng?", options: ["72", "81", "99", "91"], answerIndex: 1, points: 80, category: "Matematika", timeLimit: 25 },
-  { id: "q3", question: "Eng katta okean qaysi?", options: ["Atlantika", "Tinch okeani", "Hind okeani", "Shimoliy muz"], answerIndex: 1, points: 120, category: "Geografiya", timeLimit: 35 },
-  { id: "q4", question: "Qaysi hayvon 'sahro kemasi' deb ataladi?", options: ["Ot", "Sigir", "Tuya", "Eshak"], answerIndex: 2, points: 90, category: "Biologiya", timeLimit: 30 },
-  { id: "q5", question: "20 + 35 - 12 = ?", options: ["43", "41", "45", "47"], answerIndex: 0, points: 70, category: "Matematika", timeLimit: 20 },
-];
-
-const WHEEL_COLORS = [
-  "#3b82f6", "#14b8a6", "#22c55e", "#eab308", "#f97316", "#ef4444", "#ec4899", "#a855f7",
-  "#6366f1", "#06b6d4", "#84cc16", "#f59e0b", "#f43f5e", "#d946ef", "#8b5cf6", "#0ea5e9"
-];
-
-const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
-const WHEEL_OF_FORTUNE_GAME_KEY = "wheel_of_fortune";
-const EMPTY_OPTIONS: [string, string, string, string] = ["", "", "", ""];
-
-const normalizeQuestions = (items: unknown[]): Question[] =>
-  items
-    .map((item, idx) => {
-      const row = item as Partial<Question> & { answer?: string };
-      const q = (row.question || "").toString().trim();
-      if (!q) return null;
-
-      const rawOptions = Array.isArray(row.options)
-        ? row.options.map((v) => String(v).trim())
-        : [];
-      let options: [string, string, string, string];
-      let answerIndex = Number.isInteger(row.answerIndex)
-        ? Number(row.answerIndex)
-        : 0;
-
-      if (rawOptions.length >= 4) {
-        options = [rawOptions[0], rawOptions[1], rawOptions[2], rawOptions[3]];
-      } else {
-        const answer = (row.answer || "").toString().trim();
-        if (!answer) return null;
-        options = [answer, "Variant B", "Variant C", "Variant D"];
-        answerIndex = 0;
-      }
-
-      if (answerIndex < 0 || answerIndex > 3) answerIndex = 0;
-
-      return {
-        id: row.id || `q-import-${idx}`,
-        question: q,
-        options,
-        answerIndex,
-        points: Number(row.points) || 100,
-        category: (row.category || "Umumiy").toString(),
-        timeLimit: Number(row.timeLimit) || 30,
-      } as Question;
-    })
-    .filter((q): q is Question => q !== null);
+import { EMPTY_OPTIONS, SAMPLE_QUESTIONS, WHEEL_COLORS, WHEEL_OF_FORTUNE_GAME_KEY } from "./constants";
+import type { Phase, Question, Student } from "./types";
+import { normalizeQuestions, shuffle } from "./utils";
 
 export default function WheelOfFortune() {
   const skipInitialRemoteSaveRef = useRef(true);
@@ -944,3 +881,4 @@ export default function WheelOfFortune() {
     </div>
   );
 }
+

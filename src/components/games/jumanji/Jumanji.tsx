@@ -17,427 +17,37 @@ import correctSound from "../../../assets/sounds/correct.m4a";
 import wrongSound from "../../../assets/sounds/wrong.m4a";
 import winSound from "../../../assets/sounds/tada.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
-import jumanjiBoardImage from "../../../assets/jumanji_board.png";
-import fireMedallion from "../../../assets/fire_medallion_transparent-Photoroom.png";
-import leafMedallion from "../../../assets/leaf_medallion_transparent-Photoroom.png";
-import maskMedallion from "../../../assets/mask_medallion_transparent-Photoroom.png";
-import snakeMedallion from "../../../assets/snake_medallion_transparent-Photoroom.png";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import type { Phase, Question, ScoreAnnouncement, Team, Tile } from "./types";
+import {
+  DICE_ROLL_STEPS,
+  DICE_ROLL_TICK_MS,
+  MOVE_FINISH_BUFFER_MS,
+  MOVE_STEP_DURATION_MS,
+  SUBJECTS,
+  TEAM_AVATARS,
+  TEAM_COLORS,
+  TEAM_MEDALLIONS,
+  TEAM_TITLES,
+  createTiles,
+} from "./constants/gameData";
+import {
+  BOARD_STACK_OFFSETS,
+  BOARD_TOKEN_NUDGE_X,
+  BOARD_TOKEN_NUDGE_Y,
+  BOARD_TOKEN_SIZE,
+  JUMANJI_MAP_IMAGE,
+  createRoadPoints,
+} from "./constants/board";
+import { DEFAULT_QUESTIONS } from "./constants/questions";
+import RealisticDice from "./components/RealisticDice";
 
-type Team = {
-  id: number;
-  name: string;
-  color: string;
-  avatar: string;
-  position: number;
-  score: number;
-  isActive: boolean;
-};
-
-type Question = {
-  id: string;
-  subject: string;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  difficulty: "easy" | "medium" | "hard";
-  timeLimit: number;
-};
-
-type TileType = "question" | "bonus" | "trap" | "challenge" | "boss";
-
-type Tile = {
-  id: number;
-  type: TileType;
-  icon: string;
-  color: string;
-  name: string;
-};
-
-type Phase = "setup" | "game" | "question" | "result" | "finish";
-type ScoreAnnouncement = {
-  teamId: number;
-  teamName: string;
-  points: number;
-  title: string;
-  detail: string;
-};
-
-const TEAM_AVATARS = ["🦁", "🐅", "🐘", "🦒"];
-const TEAM_TITLES = ["AZURE", "EMERALD", "CRIMSON", "ONYX"];
-const TEAM_COLORS = [
-  {
-    primary: "from-amber-500 to-yellow-500",
-    text: "text-amber-300",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/30",
-  },
-  {
-    primary: "from-red-500 to-rose-500",
-    text: "text-red-300",
-    bg: "bg-red-500/10",
-    border: "border-red-500/30",
-  },
-  {
-    primary: "from-green-500 to-emerald-500",
-    text: "text-green-300",
-    bg: "bg-green-500/10",
-    border: "border-green-500/30",
-  },
-  {
-    primary: "from-purple-500 to-pink-500",
-    text: "text-purple-300",
-    bg: "bg-purple-500/10",
-    border: "border-purple-500/30",
-  },
-];
-
-const TEAM_MEDALLIONS = [
-  fireMedallion,
-  leafMedallion,
-  maskMedallion,
-  snakeMedallion,
-];
-const DICE_ROLL_TICK_MS = 120;
-const DICE_ROLL_STEPS = 12;
-const MOVE_STEP_DURATION_MS = 460;
-const MOVE_FINISH_BUFFER_MS = 160;
-const BOARD_TOKEN_SIZE = 7.74;
-const BOARD_TOKEN_NUDGE_X = 0;
-const BOARD_TOKEN_NUDGE_Y = -0.35;
-
-const BOARD_STACK_OFFSETS: [number, number][] = [
-  [0, 0],
-  [-1.1, -1.1],
-  [1.1, -1.1],
-  [-1.1, 1.1],
-  [1.1, 1.1],
-];
-
-const SPECIAL_TILE_INDEXES = new Set([2, 4, 6, 9, 11, 14, 16, 19, 21, 24, 26, 28]);
-
-const ROAD_Y_SHIFT = -3.9;
-const ROAD_POINTS = [
-  { x: 21.5, y: 91.2 },
-  { x: 26.0, y: 91.2 },
-  { x: 30.5, y: 91.0 },
-  { x: 35.0, y: 90.8 },
-  { x: 39.0, y: 90.7 },
-  { x: 43.0, y: 90.6 },
-  { x: 47.0, y: 90.5 },
-  { x: 51.0, y: 90.4 },
-  { x: 55.0, y: 90.1 },
-  { x: 59.0, y: 89.0 },
-  { x: 63.0, y: 86.2 },
-  { x: 66.0, y: 81.0 },
-  { x: 66.8, y: 75.0 },
-  { x: 66.8, y: 69.0 },
-  { x: 66.0, y: 63.0 },
-  { x: 64.0, y: 58.0 },
-  { x: 60.0, y: 54.8 },
-  { x: 55.2, y: 54.3 },
-  { x: 50.0, y: 54.2 },
-  { x: 44.8, y: 54.3 },
-  { x: 40.0, y: 55.0 },
-  { x: 35.8, y: 56.6 },
-  { x: 33.2, y: 53.8 },
-  { x: 31.2, y: 49.2 },
-  { x: 31.0, y: 44.0 },
-  { x: 32.6, y: 38.8 },
-  { x: 35.6, y: 34.0 },
-  { x: 39.2, y: 29.8 },
-  { x: 43.8, y: 26.2 },
-  { x: 49.5, y: 22.8 },
-].map((point, idx, arr) => {
-  const baseY = point.y + ROAD_Y_SHIFT;
-  const topSegmentStart = arr.length - 6;
-  const topPullDown =
-    idx >= topSegmentStart
-      ? Math.min(3.5, (idx - topSegmentStart + 1) * 0.7)
-      : 0;
-
-  return { ...point, y: baseY + topPullDown };
-});
-
-const TILES: Tile[] = [
-  {
-    id: 1,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 2,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 3,
-    type: "bonus",
-    icon: "🎁",
-    color: "from-green-500 to-emerald-500",
-    name: "BONUS",
-  },
-  {
-    id: 4,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 5,
-    type: "trap",
-    icon: "🐍",
-    color: "from-red-500 to-rose-500",
-    name: "TUZOQ",
-  },
-  {
-    id: 6,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 7,
-    type: "challenge",
-    icon: "⚡",
-    color: "from-purple-500 to-pink-500",
-    name: "CHALLENGE",
-  },
-  {
-    id: 8,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 9,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 10,
-    type: "bonus",
-    icon: "🎁",
-    color: "from-green-500 to-emerald-500",
-    name: "BONUS",
-  },
-  {
-    id: 11,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 12,
-    type: "trap",
-    icon: "🐍",
-    color: "from-red-500 to-rose-500",
-    name: "TUZOQ",
-  },
-  {
-    id: 13,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 14,
-    type: "challenge",
-    icon: "⚡",
-    color: "from-purple-500 to-pink-500",
-    name: "CHALLENGE",
-  },
-  {
-    id: 15,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 16,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 17,
-    type: "bonus",
-    icon: "🎁",
-    color: "from-green-500 to-emerald-500",
-    name: "BONUS",
-  },
-  {
-    id: 18,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 19,
-    type: "trap",
-    icon: "🐍",
-    color: "from-red-500 to-rose-500",
-    name: "TUZOQ",
-  },
-  {
-    id: 20,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 21,
-    type: "boss",
-    icon: "👑",
-    color: "from-yellow-500 to-amber-500",
-    name: "BOSS",
-  },
-  {
-    id: 22,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 23,
-    type: "challenge",
-    icon: "⚡",
-    color: "from-purple-500 to-pink-500",
-    name: "CHALLENGE",
-  },
-  {
-    id: 24,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 25,
-    type: "bonus",
-    icon: "🎁",
-    color: "from-green-500 to-emerald-500",
-    name: "BONUS",
-  },
-  {
-    id: 26,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 27,
-    type: "trap",
-    icon: "🐍",
-    color: "from-red-500 to-rose-500",
-    name: "TUZOQ",
-  },
-  {
-    id: 28,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 29,
-    type: "question",
-    icon: "❓",
-    color: "from-amber-500 to-yellow-500",
-    name: "SAVOL",
-  },
-  {
-    id: 30,
-    type: "boss",
-    icon: "👑",
-    color: "from-yellow-500 to-amber-500",
-    name: "BOSS",
-  },
-];
-
-const SUBJECTS = [
-  "Matematika",
-  "Tarix",
-  "Geografiya",
-  "Kimyo",
-  "Ingliz tili",
-  "Informatika",
-];
-const JUMANJI_MAP_IMAGE = jumanjiBoardImage;
-
-const DEFAULT_QUESTIONS: Question[] = [
-  {
-    id: "1",
-    subject: "Dasturlash",
-    question: "JavaScriptda o'zgaruvchi e'lon qilish uchun qaysi kalit so'z ishlatiladi?",
-    options: ["var", "int", "string", "define"],
-    correctAnswer: "var",
-    difficulty: "easy",
-    timeLimit: 30,
-  },
-  {
-    id: "2",
-    subject: "Dasturlash",
-    question: "Quyidagilardan qaysi biri array yaratishning to'g'ri usuli?",
-    options: [
-      "let arr = {}",
-      "let arr = []",
-      "let arr = ()",
-      "let arr = <>"
-    ],
-    correctAnswer: "let arr = []",
-    difficulty: "easy",
-    timeLimit: 30,
-  },
-  {
-    id: "3",
-    subject: "Dasturlash",
-    question: "Reactda state bilan ishlash uchun qaysi hook ishlatiladi?",
-    options: [
-      "useEffect",
-      "useState",
-      "useRef",
-      "useContext"
-    ],
-    correctAnswer: "useState",
-    difficulty: "medium",
-    timeLimit: 40,
-  },
-  {
-    id: "4",
-    subject: "Dasturlash",
-    question: "JavaScriptda '===' operatori nimani bildiradi?",
-    options: [
-      "Faqat qiymatni tekshiradi",
-      "Qiymat va tipni tekshiradi",
-      "Faqat tipni tekshiradi",
-      "O'zlashtirish operatori"
-    ],
-    correctAnswer: "Qiymat va tipni tekshiradi",
-    difficulty: "medium",
-    timeLimit: 40,
-  },
-];
+const JUMANJI_GAME_KEY = "jumanji";
 
 function Jumanji() {
+  const skipInitialRemoteSaveRef = useRef(true);
   // Audio refs
   const diceAudioRef = useRef<HTMLAudioElement | null>(null);
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -463,6 +73,7 @@ function Jumanji() {
   });
   const [questionError, setQuestionError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   // Gameplay state
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -489,6 +100,36 @@ function Jumanji() {
     useState<ScoreAnnouncement | null>(null);
   const { countdownValue, countdownVisible, runStartCountdown } =
     useGameStartCountdown();
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<Question>(JUMANJI_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestions(remoteQuestions);
+      }
+      setRemoteLoaded(true);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void saveGameQuestions<Question>(JUMANJI_GAME_KEY, questions);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [questions, remoteLoaded]);
 
   useEffect(() => {
     diceAudioRef.current = new Audio(diceSound);
@@ -747,7 +388,7 @@ function Jumanji() {
     const currentTeam = teams[currentTeamIndex];
     const newPosition = Math.min(
       currentTeam.position + steps,
-      TILES.length - 1,
+      tiles.length - 1,
     );
     const totalSteps = newPosition - currentTeam.position;
     const stepDuration = MOVE_STEP_DURATION_MS;
@@ -776,12 +417,12 @@ function Jumanji() {
           `${currentTeam.name} ${steps} tashladi, ${newPosition + 1}-katakka yetib keldi`,
         ]);
 
-        if (newPosition >= TILES.length - 1) {
+        if (newPosition >= tiles.length - 1) {
           finishGame({ ...currentTeam, position: newPosition });
           return;
         }
 
-        const tile = TILES[newPosition];
+        const tile = tiles[newPosition];
         setCurrentTile(tile);
         handleTileAction(tile);
       },
@@ -1008,6 +649,22 @@ function Jumanji() {
     setIsMuted(!isMuted);
   };
 
+  const tiles = useMemo(() => createTiles(questions.length), [questions.length]);
+  const roadPoints = useMemo(() => createRoadPoints(tiles.length), [tiles.length]);
+  const specialTileIndexes = useMemo(
+    () =>
+      new Set(
+        tiles
+          .map((tile, idx) =>
+            tile.type === "bonus" || tile.type === "trap" || tile.type === "challenge"
+              ? idx
+              : null,
+          )
+          .filter((idx): idx is number => idx !== null),
+      ),
+    [tiles],
+  );
+
   const getDisplayPosition = (team: Team) => {
     const rawPosition = visualPositions[team.id] ?? team.position;
     return rawPosition;
@@ -1021,43 +678,6 @@ function Jumanji() {
     0,
   );
 
-
-  const getDicePips = (value: number) => {
-    const map: Record<number, [number, number][]> = {
-      1: [[50, 50]],
-      2: [
-        [30, 30],
-        [70, 70],
-      ],
-      3: [
-        [30, 30],
-        [50, 50],
-        [70, 70],
-      ],
-      4: [
-        [30, 30],
-        [30, 70],
-        [70, 30],
-        [70, 70],
-      ],
-      5: [
-        [30, 30],
-        [30, 70],
-        [50, 50],
-        [70, 30],
-        [70, 70],
-      ],
-      6: [
-        [30, 25],
-        [30, 50],
-        [30, 75],
-        [70, 25],
-        [70, 50],
-        [70, 75],
-      ],
-    };
-    return map[value] ?? map[1];
-  };
 
   const recentScoreEvents = gameHistory
     .filter((item) => /[+-]\d+\s*ball/i.test(item))
@@ -1098,120 +718,6 @@ function Jumanji() {
     );
   };
 
-  // Enhanced Keramik Kubik SVG
-  const renderRealisticDice = () => {
-    const pips = getDicePips(diceValue);
-
-    return (
-      <svg
-        viewBox="0 0 120 120"
-        className="w-24 h-24 drop-shadow-[0_16px_24px_rgba(0,0,0,0.7)] hover:scale-110 transition-all duration-300"
-      >
-        <defs>
-          <linearGradient
-            id="diceGradientTop"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor="#fffaf0" />
-            <stop offset="40%" stopColor="#fef3c7" />
-            <stop offset="100%" stopColor="#f3e8d8" />
-          </linearGradient>
-
-          <linearGradient
-            id="diceGradientSide"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor="#f9e8d4" />
-            <stop offset="100%" stopColor="#e8d5c4" />
-          </linearGradient>
-
-          <filter id="diceShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
-            <feOffset dx="2" dy="5" result="shadow" />
-            <feComponentTransfer>
-              <feFuncA type="linear" slope="0.4" />
-            </feComponentTransfer>
-            <feMerge>
-              <feMergeNode in="shadow" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <radialGradient id="diceShine" cx="30%" cy="30%" r="60%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        <rect
-          x="12"
-          y="12"
-          width="96"
-          height="96"
-          rx="12"
-          fill="url(#diceGradientTop)"
-          stroke="#9b8874"
-          strokeWidth="2.5"
-          filter="url(#diceShadow)"
-        />
-
-        <polygon
-          points="108,12 120,20 120,116 108,108"
-          fill="url(#diceGradientSide)"
-          stroke="#7a6859"
-          strokeWidth="2"
-        />
-        <polygon
-          points="12,108 20,120 116,120 108,108"
-          fill="url(#diceGradientSide)"
-          stroke="#7a6859"
-          strokeWidth="2"
-        />
-
-        <rect
-          x="12"
-          y="12"
-          width="96"
-          height="96"
-          rx="12"
-          fill="url(#diceShine)"
-        />
-
-        {pips.map(([cx, cy], idx) => (
-          <g key={`pip-${idx}`}>
-            <circle
-              cx={cx * 0.96 + 2.4}
-              cy={cy * 0.96 + 2.4}
-              r="4.5"
-              fill="#000000"
-              opacity="0.15"
-            />
-            <circle
-              cx={cx * 0.96}
-              cy={cy * 0.96}
-              r="4.5"
-              fill="#4a3728"
-              stroke="#2d2416"
-              strokeWidth="0.6"
-            />
-            <circle
-              cx={cx * 0.96 - 1}
-              cy={cy * 0.96 - 1}
-              r="1.5"
-              fill="#ffffff"
-              opacity="0.4"
-            />
-          </g>
-        ))}
-      </svg>
-    );
-  };
 
   return (
     <div
@@ -1499,7 +1005,7 @@ function Jumanji() {
               <div className="lg:col-span-2 text-center">
                 <button
                   onClick={startGame}
-                  className="px-12 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold text-2xl hover:scale-105 transition-all shadow-2xl border-2 border-amber-400/50"
+                  className="px-12 py-4 cursor-pointer bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-xl font-bold text-2xl hover:scale-105 transition-all shadow-2xl border-2 border-amber-400/50"
                   style={{ fontFamily: "'Cinzel', serif" }}
                 >
                   <GiJungle className="inline mr-2" />
@@ -1559,7 +1065,7 @@ function Jumanji() {
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 transition-all"
                       style={{
-                        width: `${(getDisplayPosition(team) / (TILES.length - 1)) * 100}%`,
+                        width: `${(getDisplayPosition(team) / (tiles.length - 1)) * 100}%`,
                       }}
                     />
                   </div>
@@ -1605,8 +1111,8 @@ function Jumanji() {
                       </radialGradient>
                     </defs>
 
-                    {ROAD_POINTS.map((point, idx) => {
-                      const next = ROAD_POINTS[idx + 1];
+                    {roadPoints.map((point, idx) => {
+                      const next = roadPoints[idx + 1];
                       if (!next) return null;
 
                       return (
@@ -1636,8 +1142,8 @@ function Jumanji() {
                       );
                     })}
 
-                    {ROAD_POINTS.map((point, idx) => {
-                      const next = ROAD_POINTS[idx + 1];
+                    {roadPoints.map((point, idx) => {
+                      const next = roadPoints[idx + 1];
                       if (!next) return null;
                       if (idx >= furthestDisplayPosition) return null;
 
@@ -1656,33 +1162,21 @@ function Jumanji() {
                       );
                     })}
 
-                    {ROAD_POINTS.map((point, idx) => {
-                      const isBoss = idx === ROAD_POINTS.length - 1;
-                      const isSpecial = SPECIAL_TILE_INDEXES.has(idx);
+                    {roadPoints.map((point, idx) => {
+                      const isBoss = idx === roadPoints.length - 1;
+                      const isSpecial = specialTileIndexes.has(idx);
 
                       return (
                         <g key={`tile-${idx}`}>
                           <circle
                             cx={point.x}
                             cy={point.y}
-                            r={isBoss ? 3.05 : isSpecial ? 2.15 : 1.85}
+                            r={isBoss ? 3.05 : isSpecial ? 2.15 : 1.75}
                             fill="url(#tileFill)"
-                            stroke={isBoss ? "#f59e0b" : isSpecial ? "#facc15" : "#8b5e34"}
-                            strokeWidth={isBoss ? 0.35 : 0.18}
+                            stroke="#8b5e34"
+                            strokeWidth={isBoss ? 0.3 : 0.15}
                             opacity={isBoss ? 1 : 0.96}
                           />
-                          {isBoss && (
-                            <circle
-                              cx={point.x}
-                              cy={point.y}
-                              r={3.9}
-                              fill="none"
-                              stroke="#fcd34d"
-                              strokeWidth={0.22}
-                              strokeDasharray="0.7 0.8"
-                              opacity={0.9}
-                            />
-                          )}
                           <circle
                             cx={point.x - 0.18}
                             cy={point.y - 0.2}
@@ -1715,7 +1209,7 @@ function Jumanji() {
 
                     {teams.map((team) => {
                       const idx = getDisplayPosition(team);
-                      const point = ROAD_POINTS[idx];
+                      const point = roadPoints[idx];
                       if (!point) return null;
                       const sameTileTeams = getTeamsOnTile(idx);
                       const teamIndex = teams.findIndex((t) => t.id === team.id);
@@ -1733,20 +1227,6 @@ function Jumanji() {
                           className="token-move"
                           transform={`translate(${point.x + ox + BOARD_TOKEN_NUDGE_X} ${point.y + oy + BOARD_TOKEN_NUDGE_Y})`}
                         >
-                          <circle
-                            cx={0}
-                            cy={0}
-                            r={BOARD_TOKEN_SIZE / 2}
-                            fill="none"
-                            stroke="rgba(253,230,138,0.45)"
-                            strokeWidth="0.25"
-                          />
-                          <circle
-                            cx={0.35}
-                            cy={0.45}
-                            r={BOARD_TOKEN_SIZE / 2.05}
-                            fill="rgba(0,0,0,0.15)"
-                          />
                           <image
                             href={medal}
                             x={-BOARD_TOKEN_SIZE / 2}
@@ -1940,7 +1420,7 @@ function Jumanji() {
                   `}
                   onClick={rollDice}
                 >
-                  {renderRealisticDice()}
+                  <RealisticDice value={diceValue} />
                 </div>
 
                 {/* Dice Info */}
@@ -2084,3 +1564,4 @@ function Jumanji() {
 }
 
 export default Jumanji;
+

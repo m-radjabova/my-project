@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Confetti from "react-confetti-boom";
 import {
   FaUsers,
@@ -14,73 +14,8 @@ import {
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
-type Team = {
-  id: number;
-  name: string;
-  color: string;
-  avatar: string;
-  score: number;
-  isActive: boolean;
-  completedPuzzles: number;
-  timeLeft: number;
-  grid: (string | null)[][];
-};
-
-type Phase = "teacher" | "game" | "result" | "finish";
-
-const TEAM_AVATARS = ["🦉", "🦜"];
-const TEAM_COLORS = [
-  { primary: "from-orange-400 to-amber-400", text: "text-orange-300", bg: "bg-orange-500/10", border: "border-orange-500/30" },
-  { primary: "from-teal-400 to-cyan-400", text: "text-teal-300", bg: "bg-teal-500/10", border: "border-teal-500/30" },
-];
-
-const COLORS = [
-  { id: 1, name: "Qizil", emoji: "\u{1F534}", color: "bg-red-500", border: "border-red-600", glow: "shadow-red-500/50", text: "text-red-500" },
-  { id: 2, name: "Ko'k", emoji: "\u{1F535}", color: "bg-blue-500", border: "border-blue-600", glow: "shadow-blue-500/50", text: "text-blue-500" },
-  { id: 3, name: "Sariq", emoji: "\u{1F7E1}", color: "bg-yellow-500", border: "border-yellow-600", glow: "shadow-yellow-500/50", text: "text-yellow-500" },
-];
-
-const RED = "\u{1F534}";
-const BLUE = "\u{1F535}";
-const YELLOW = "\u{1F7E1}";
-const PUZZLE_TEMPLATES = [
-  {
-    grid: [
-      [RED, null, YELLOW],
-      [YELLOW, RED, null],
-      [null, YELLOW, RED],
-    ],
-    solution: [
-      [RED, BLUE, YELLOW],
-      [YELLOW, RED, BLUE],
-      [BLUE, YELLOW, RED],
-    ],
-  },
-  {
-    grid: [
-      [BLUE, YELLOW, null],
-      [RED, null, YELLOW],
-      [null, RED, BLUE],
-    ],
-    solution: [
-      [BLUE, YELLOW, RED],
-      [RED, BLUE, YELLOW],
-      [YELLOW, RED, BLUE],
-    ],
-  },
-  {
-    grid: [
-      [null, RED, BLUE],
-      [BLUE, null, RED],
-      [RED, BLUE, null],
-    ],
-    solution: [
-      [YELLOW, RED, BLUE],
-      [BLUE, YELLOW, RED],
-      [RED, BLUE, YELLOW],
-    ],
-  },
-];
+import { COLORS, PUZZLE_TEMPLATES, TEAM_AVATARS, TEAM_COLORS } from "./constants";
+import type { Phase, Team } from "./types";
 function MagicSquare() {
   // Audio refs
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -198,7 +133,7 @@ function MagicSquare() {
     setTeams([...teams, newTeam]);
     setNewTeamName("");
     setTeamError("");
-    showToast(`✅ ${name} qo'shildi`);
+    showToast(`? ${name} qo'shildi`);
   };
 
   // Remove team
@@ -228,7 +163,7 @@ function MagicSquare() {
     setRoundTimer(60);
     setIsTimerActive(true);
     setPhase("game");
-    showToast("🎮 O'yin boshlandi! 1-jamoa boshlaydi");
+    showToast("?? O'yin boshlandi! 1-jamoa boshlaydi");
   };
 
   const startGame = () => {
@@ -373,7 +308,7 @@ function MagicSquare() {
     const sorted = [...teams].sort((a, b) => b.score - a.score);
     setWinner(sorted[0]);
     setPhase("finish");
-    showToast("🏁 O'yin tugadi!");
+    showToast("?? O'yin tugadi!");
   };
 
   // Reset game
@@ -473,7 +408,7 @@ function MagicSquare() {
                 transform: `rotate(${Math.random() * 360}deg)`,
               }}
             >
-              {["✨", "🌟", "💫", "⭐", "✨", "🌟"][i % 6]}
+              {["?", "??", "??", "?", "?", "??"][i % 6]}
             </div>
           ))}
         </div>
@@ -600,19 +535,19 @@ function MagicSquare() {
                   <h3 className="text-sm font-bold text-purple-300 mb-3">QOIDALAR</h3>
                   <ul className="space-y-2 text-sm text-white/70">
                     <li className="flex items-center gap-2">
-                      <span className="text-purple-400">•</span>
+                      <span className="text-purple-400">�</span>
                       Har bir qator va ustunda barcha 3 rang bo'lishi kerak
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-purple-400">•</span>
+                      <span className="text-purple-400">�</span>
                       Hech qanday rang takrorlanmasligi kerak
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-purple-400">•</span>
+                      <span className="text-purple-400">�</span>
                       Jamoalar navbat bilan o'ynaydi
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="text-purple-400">•</span>
+                      <span className="text-purple-400">�</span>
                       To'g'ri yechim uchun 30 ball
                     </li>
                   </ul>
@@ -621,15 +556,15 @@ function MagicSquare() {
                 <div className="bg-purple-950/30 rounded-xl p-4 border border-purple-500/30">
                   <h3 className="text-sm font-bold text-purple-300 mb-3">MISOL</h3>
                   <div className="grid grid-cols-3 gap-2 w-36 mx-auto">
-                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">🔴</div>
-                    <div className="aspect-square rounded-lg bg-blue-500 flex items-center justify-center">🔵</div>
-                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">🟡</div>
-                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">🟡</div>
-                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">🔴</div>
-                    <div className="aspect-square rounded-lg bg-blue-500 flex items-center justify-center">🔵</div>
-                    <div className="aspect-square rounded-lg bg-purple-100/20 border-2 border-dashed border-purple-400/50 flex items-center justify-center">вќ“</div>
-                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">🟡</div>
-                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">🔴</div>
+                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-blue-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-blue-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-purple-100/20 border-2 border-dashed border-purple-400/50 flex items-center justify-center">❓</div>
+                    <div className="aspect-square rounded-lg bg-yellow-500 flex items-center justify-center">??</div>
+                    <div className="aspect-square rounded-lg bg-red-500 flex items-center justify-center">??</div>
                   </div>
                 </div>
               </div>
@@ -795,7 +730,7 @@ function MagicSquare() {
                     {/* Original puzzle reference */}
                     <div className="mt-4 text-center">
                       <p className="text-xs text-purple-300/50">
-                        Berilgan kataklar: 🔴 🔵 🟡
+                        Berilgan kataklar: ?? ?? ??
                       </p>
                     </div>
                   </div>
@@ -808,7 +743,7 @@ function MagicSquare() {
               <p className="text-sm font-bold text-purple-200">Legend</p>
               <div className="mt-3 flex flex-col gap-3 text-sm text-white/90 md:flex-row md:items-center md:gap-6">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white">🔴</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500 text-white">??</div>
                   <span>Berilgan kataklar: o&apos;zgarmaydi</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -825,7 +760,7 @@ function MagicSquare() {
                 <p className="relative text-sm font-bold text-purple-300 mb-2">O'YIN TARIXI</p>
                 <div className="relative space-y-1">
                   {gameHistory.slice(-3).map((item, idx) => (
-                    <p key={idx} className="text-sm text-white/70">• {item}</p>
+                    <p key={idx} className="text-sm text-white/70">� {item}</p>
                   ))}
                 </div>
               </div>
@@ -900,5 +835,6 @@ function MagicSquare() {
 }
 
 export default MagicSquare;
+
 
 

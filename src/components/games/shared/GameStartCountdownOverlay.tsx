@@ -26,7 +26,6 @@ export default function GameStartCountdownOverlay({ visible, value }: Props) {
           </div>
         ) : (
           <div className="countdown-card countdown-center rounded-3xl border border-white/35 bg-black/45 px-10 py-7 text-center shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">{value}-o'rin</p>
             <p className="mt-2 text-7xl font-black leading-none text-white md:text-8xl">{value}</p>
           </div>
         )}

@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
+import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
@@ -27,95 +28,12 @@ import sfxWrong from "../../../assets/sounds/wrong.m4a";
 import sfxNitro from "../../../assets/sounds/whoosh.m4a";
 import sfxFinish from "../../../assets/sounds/tada.mp3";
 
-type Phase = "teacher" | "play" | "finish";
-type PlayerId = 0 | 1;
-type Difficulty = "easy" | "medium" | "hard";
-
-type Player = {
-  id: PlayerId;
-  name: string;
-  position: number;
-};
-
-type MathQuestion = {
-  id: string;
-  question: string;
-  answer: number;
-  difficulty: Difficulty;
-  points: number;
-};
-
-type QuestionDraft = {
-  question: string;
-  answer: string;
-  difficulty: Difficulty;
-  points: number;
-};
-
-type PlayerStats = {
-  streak: number;
-  bestStreak: number;
-  correct: number;
-  wrong: number;
-  used5050: boolean;
-  usedTime: boolean;
-  shieldCharges: number;
-  shieldArmed: boolean;
-  reducedOptions: number[] | null;
-};
-
-const RACE_TRACK_LENGTH = 100;
-const BASE_MOVE_AMOUNT = 10;
-const TIME_BONUS_MULTIPLIER = 0.3;
-const ROUND_TIME = 15;
-
-const DEFAULT_QUESTIONS: MathQuestion[] = [
-  { id: "1", question: "5 + 3 = ?", answer: 8, difficulty: "easy", points: 10 },
-  { id: "2", question: "12 - 7 = ?", answer: 5, difficulty: "easy", points: 10 },
-  { id: "3", question: "4 × 3 = ?", answer: 12, difficulty: "easy", points: 10 },
-  { id: "4", question: "15 ÷ 3 = ?", answer: 5, difficulty: "easy", points: 10 },
-  { id: "5", question: "9 + 6 = ?", answer: 15, difficulty: "easy", points: 10 },
-  { id: "6", question: "18 - 9 = ?", answer: 9, difficulty: "medium", points: 15 },
-  { id: "7", question: "7 × 6 = ?", answer: 42, difficulty: "medium", points: 15 },
-  { id: "8", question: "24 ÷ 4 = ?", answer: 6, difficulty: "medium", points: 15 },
-  { id: "9", question: "13 + 18 = ?", answer: 31, difficulty: "medium", points: 15 },
-  { id: "10", question: "45 - 17 = ?", answer: 28, difficulty: "medium", points: 15 },
-  { id: "11", question: "16 × 3 = ?", answer: 48, difficulty: "hard", points: 20 },
-  { id: "12", question: "56 ÷ 7 = ?", answer: 8, difficulty: "hard", points: 20 },
-  { id: "13", question: "84 - 39 = ?", answer: 45, difficulty: "hard", points: 20 },
-  { id: "14", question: "12 × 12 = ?", answer: 144, difficulty: "hard", points: 20 },
-  { id: "15", question: "125 ÷ 5 = ?", answer: 25, difficulty: "hard", points: 20 },
-];
-
-const shuffleArray = <T,>(arr: T[]) => {
-  const next = [...arr];
-  for (let i = next.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [next[i], next[j]] = [next[j], next[i]];
-  }
-  return next;
-};
-
-const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-
-const createDefaultStats = (): Record<PlayerId, PlayerStats> => ({
-  0: { streak: 0, bestStreak: 0, correct: 0, wrong: 0, used5050: false, usedTime: false, shieldCharges: 1, shieldArmed: false, reducedOptions: null },
-  1: { streak: 0, bestStreak: 0, correct: 0, wrong: 0, used5050: false, usedTime: false, shieldCharges: 1, shieldArmed: false, reducedOptions: null },
-});
-
-const wrongPenalty = (difficulty: Difficulty) => {
-  if (difficulty === "easy") return 0;
-  if (difficulty === "medium") return 2;
-  return 4;
-};
-
-const nitroBonusFromStreak = (streakAfter: number) => {
-  if (streakAfter >= 3) return 5;
-  if (streakAfter >= 2) return 3;
-  return 0;
-};
+import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
+import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";
+import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPenalty } from "./utils";
 
 export default function MathRace() {
+  const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
   const [players, setPlayers] = useState<Player[]>([
     { id: 0, name: "Qora", position: 0 },
@@ -148,6 +66,7 @@ export default function MathRace() {
     question: "", answer: "", difficulty: "medium", points: 15,
   });
   const [draftError, setDraftError] = useState("");
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const countdownTimerRef = useRef<number | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
@@ -163,6 +82,36 @@ export default function MathRace() {
   // Track sizing
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [trackWidth, setTrackWidth] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const remoteQuestions = await fetchGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY);
+      if (!alive) return;
+      if (remoteQuestions && remoteQuestions.length > 0) {
+        setQuestions(remoteQuestions);
+      }
+      setRemoteLoaded(true);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!remoteLoaded) return;
+    if (skipInitialRemoteSaveRef.current) {
+      skipInitialRemoteSaveRef.current = false;
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void saveGameQuestions<MathQuestion>(MATH_RACE_GAME_KEY, questions);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [questions, remoteLoaded]);
 
   useEffect(() => {
     if (phase !== "play" || !trackRef.current) return;
@@ -949,3 +898,4 @@ export default function MathRace() {
     </div>
   );
 }
+

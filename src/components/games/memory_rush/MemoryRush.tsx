@@ -7,85 +7,15 @@ import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
-type Difficulty = "easy" | "normal" | "hard";
-type Phase = "setup" | "preview" | "play" | "finish";
-type PlayerId = 0 | 1;
-
-type CardItem = {
-  id: string;
-  pairId: string;
-  label: string; 
-};
-
-const PREVIEW_SECONDS = 3;
-const TURN_TIME_LIMIT_SECONDS = 0;
-const GAME_TIME_LIMIT_SECONDS = 8 * 60;
-
-const DIFFICULTY_SIZES: Record<Difficulty, number> = {
-  easy: 12,
-  normal: 16,
-  hard: 20,
-};
-
-const DIFFICULTY_GAME_TIME_SECONDS: Record<Difficulty, number> = {
-  easy: 160,
-  normal: 200,
-  hard: 240,
-};
-
-function shuffle<T>(arr: T[]) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function formatTime(total: number) {
-  const s = Math.max(0, total);
-  const mm = Math.floor(s / 60);
-  const ss = s % 60;
-  return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
-}
-
-const PAIRS_POOL: Array<{ pairId: string; a: string; b: string }> = [
-  { pairId: "p1", a: "🍎", b: "🍎" },
-  { pairId: "p2", a: "🐱", b: "🐱" },
-  { pairId: "p3", a: "🚗", b: "🚗" },
-  { pairId: "p4", a: "🏀", b: "🏀" },
-  { pairId: "p5", a: "📘", b: "📘" },
-  { pairId: "p6", a: "🎵", b: "🎵" },
-  { pairId: "p7", a: "🌞", b: "🌞" },
-  { pairId: "p8", a: "🧩", b: "🧩" },
-  { pairId: "p9", a: "🧪", b: "🧪" },
-  { pairId: "p10", a: "🗺️", b: "🗺️" },
-  { pairId: "p11", a: "🌳", b: "🌳" },
-  { pairId: "p12", a: "🏫", b: "🏫" },
-  { pairId: "p13", a: "⏳", b: "⏳" },
-  { pairId: "p14", a: "💡", b: "💡" },
-  { pairId: "p15", a: "🏹", b: "🏹" },
-  { pairId: "p16", a: "🦋", b: "🦋" }
-];
-
-function buildDeck(totalCards: number) {
-  const pairsNeeded = Math.floor(totalCards / 2);
-  const selectedPairs = shuffle(PAIRS_POOL).slice(0, pairsNeeded);
-
-  const cards: CardItem[] = [];
-  selectedPairs.forEach((p) => {
-    cards.push({ id: `${p.pairId}-a-${Math.random().toString(16).slice(2)}`, pairId: p.pairId, label: p.a });
-    cards.push({ id: `${p.pairId}-b-${Math.random().toString(16).slice(2)}`, pairId: p.pairId, label: p.b });
-  });
-
-  return shuffle(cards);
-}
-
-type CardState = {
-  isFaceUp: boolean;
-  isMatched: boolean;
-  shake: boolean;
-};
+import {
+  DIFFICULTY_GAME_TIME_SECONDS,
+  DIFFICULTY_SIZES,
+  GAME_TIME_LIMIT_SECONDS,
+  PREVIEW_SECONDS,
+  TURN_TIME_LIMIT_SECONDS,
+} from "./constants";
+import type { CardItem, CardState, Difficulty, Phase, PlayerId } from "./types";
+import { buildDeck, formatTime } from "./utils";
 
 function DiffButton({ active, onClick, label, color }: { active: boolean; onClick: () => void; label: string; color: string }) {
   return (
@@ -872,3 +802,4 @@ export default function MemoryRush() {
     </div>
   );
 }
+

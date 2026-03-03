@@ -19,35 +19,8 @@ import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQu
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
 
-type TeamId = 0 | 1;
-
-type Question = {
-  question: string;
-  options: string[];
-  answerIndex: number;
-  category: string;
-};
-
-type Phase = "question-setup" | "team-setup" | "play" | "finish";
-
-type QuestionDraft = {
-  question: string;
-  options: [string, string, string, string];
-  answerIndex: number;
-  category: string;
-};
-
-const SECONDS_PER_QUESTION = 18;
-const BASE_POINTS = 10;
-const STREAK_BONUS = 5;
-const QUIZ_BATTLE_GAME_KEY = "quiz_battle";
-
-const createEmptyDraft = (): QuestionDraft => ({
-  question: "",
-  options: ["", "", "", ""],
-  answerIndex: 0,
-  category: "Umumiy",
-});
+import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
+import type { Phase, Question, QuestionDraft, TeamId } from "./types";
 
 function QuizBattle() {
   const finishViewRef = useRef<HTMLDivElement | null>(null);
@@ -814,3 +787,4 @@ function QuizBattle() {
 }
 
 export default QuizBattle;
+
