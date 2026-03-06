@@ -361,6 +361,7 @@ function Hangman() {
   useEffect(() => {
     if (phase !== "play" || !timerOn) return;
     if (secondsLeft > 0) return;
+    addDrawSteps(1);
     setWrong((prev) => Math.min(MAX_WRONG, prev + 1));
     setSecondsLeft(60);
     setMessage("⏳ Vaqt tugadi! -1 jon");
@@ -416,13 +417,13 @@ function Hangman() {
     setGuessedCounts((prev) => ({ ...prev, [L]: (prev[L] ?? 0) + 1 }));
 
     if (!normalizedSecret.includes(L)) {
+      addDrawSteps(1);
       setWrong((prev) => {
         const next = Math.min(MAX_WRONG, prev + 1);
         setMessage(`❌ '${L}' harfi yo‘q! (${MAX_WRONG - next} jon qoldi)`);
         return next;
       });
     } else {
-      addDrawSteps(1);
       setMessage(`✅ '${L}' harfi bor!`);
     }
   }
@@ -440,6 +441,7 @@ function Hangman() {
     
     const pick = remainingPool[Math.floor(Math.random() * remainingPool.length)];
     setGuessedCounts((prev) => ({ ...prev, [pick]: (prev[pick] ?? 0) + 1 }));
+    addDrawSteps(1);
     setWrong((prev) => Math.min(MAX_WRONG, prev + 1));
     setHintAnimation(true);
     setTimeout(() => setHintAnimation(false), 1000);
@@ -469,6 +471,7 @@ function Hangman() {
       setGuessedCounts((prev) => ({ ...prev, [pick]: (prev[pick] ?? 0) + 1 }));
     });
     
+    addDrawSteps(2);
     setWrong((prev) => Math.min(MAX_WRONG, prev + 2));
     setMessage(`🔮 SUPER HINT: ${picks.join(', ')} harflari ochildi! (-2 jon)`);
   }
@@ -851,5 +854,4 @@ function Hangman() {
 }
 
 export default Hangman;
-
 

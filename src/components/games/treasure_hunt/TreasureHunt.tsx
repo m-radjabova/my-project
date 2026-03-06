@@ -18,6 +18,7 @@ import { MdOutlineTimer } from "react-icons/md";
 import { IoMdNuclear } from "react-icons/io";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { generateTreasureHuntRiddle } from "../../../apiClient/gemini";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import pirateOrchestra from "../../../assets/sounds/pirate_orchestra.m4a";
@@ -360,6 +361,8 @@ export default function TreasureHunt() {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [questionError, setQuestionError] = useState("");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [pathIndex, setPathIndex] = useState(0);
@@ -376,6 +379,7 @@ export default function TreasureHunt() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
 
   const canManageQuestions = hasAnyRole(user, ["teacher", "admin"]);
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
   const current = riddles[questionIndex];
   const targetPath = Math.max(1, riddles.length - 1);
   const minScoreToWin = Math.max(900, riddles.length * STEP_SCORE_REQUIREMENT);
@@ -444,6 +448,31 @@ export default function TreasureHunt() {
   }, [phase, questionIndex]);
 
   const resetDraft = () => { setDraft(EMPTY_DRAFT); setEditingIdx(null); setQuestionError(""); };
+
+  const generateWithAi = async () => {
+    if (isGeneratingAi) return;
+    setQuestionError("");
+    setIsGeneratingAi(true);
+    try {
+      const generated = await generateTreasureHuntRiddle(aiTopic);
+      setDraft({
+        title: generated.title,
+        story: generated.story,
+        question: generated.question,
+        options: generated.options,
+        answerIndex: generated.answerIndex,
+        hint: generated.hint,
+        reward: String(generated.reward),
+      });
+      setEditingIdx(null);
+      setToast("AI savol tayyor");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI savol yaratib bo'lmadi.";
+      setQuestionError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
 
   const saveRiddle = () => {
     const title = draft.title.trim();
@@ -569,6 +598,24 @@ export default function TreasureHunt() {
               <h3 className="mb-5 flex items-center gap-2 text-xl font-black tracking-wider text-amber-300">
                 <GiPirateFlag className="text-2xl" />O'QITUVCHI PANELI
               </h3>
+              <div className="mb-3 grid gap-2 md:grid-cols-[1fr_auto]">
+                <input
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  className="rounded-xl border border-cyan-500/30 bg-black/40 px-4 py-3 text-cyan-100 outline-none transition-all placeholder-cyan-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                  placeholder="AI mavzusi (masalan: geografiya)"
+                />
+                <button
+                  onClick={() => void generateWithAi()}
+                  disabled={!hasGeminiKey || isGeneratingAi}
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-3 font-bold text-slate-950 shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-cyan-500/40"
+                >
+                  {isGeneratingAi ? "Yaratilmoqda..." : "AI bilan yaratish"}
+                </button>
+              </div>
+              {!hasGeminiKey && (
+                <p className="mb-3 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>
+              )}
               <div className="grid gap-3 md:grid-cols-2">
                 {[
                   { val: draft.title, ph: "📝 Sarlavha", key: "title" },

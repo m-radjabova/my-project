@@ -97,7 +97,7 @@ function TreasureHuntPage() {
       icon: FaStar,
       color: "from-amber-400 to-yellow-400",
       progress: 33,
-      chest: "??",
+      chest: "🥉",
     },
     {
       level: "O'RTA",
@@ -106,7 +106,7 @@ function TreasureHuntPage() {
       icon: FaGem,
       color: "from-yellow-400 to-amber-500",
       progress: 66,
-      chest: "??",
+      chest: "🥈",
     },
     {
       level: "PROFESSIONAL",
@@ -115,7 +115,7 @@ function TreasureHuntPage() {
       icon: FaCrown,
       color: "from-amber-500 to-orange-400",
       progress: 100,
-      chest: "??",
+      chest: "🥇",
     },
   ];
 
@@ -152,7 +152,7 @@ function TreasureHuntPage() {
                 transform: `rotate(${Math.random() * 360}deg)`,
               }}
             >
-              {i % 3 === 0 ? "?" : i % 3 === 1 ? "?" : "?"}
+              {i % 3 === 0 ? "🗺️" : i % 3 === 1 ? "⚓" : "☠️"}
             </div>
           ))}
         </div>
@@ -272,10 +272,10 @@ function TreasureHuntPage() {
             {/* Right Content - Vintage Map Image */}
             <div className="relative">
               {/* Decorative rope corners */}
-              <div className="absolute -top-4 -left-4 text-3xl text-amber-700/50 rotate-45">?</div>
-              <div className="absolute -top-4 -right-4 text-3xl text-amber-700/50 -rotate-45">?</div>
-              <div className="absolute -bottom-4 -left-4 text-3xl text-amber-700/50 -rotate-45">?</div>
-              <div className="absolute -bottom-4 -right-4 text-3xl text-amber-700/50 rotate-45">?</div>
+              <div className="absolute -top-4 -left-4 text-3xl text-amber-700/50 rotate-45">⚓</div>
+              <div className="absolute -top-4 -right-4 text-3xl text-amber-700/50 -rotate-45">⚓</div>
+              <div className="absolute -bottom-4 -left-4 text-3xl text-amber-700/50 -rotate-45">⚓</div>
+              <div className="absolute -bottom-4 -right-4 text-3xl text-amber-700/50 rotate-45">⚓</div>
 
               {/* Main image container with vintage frame */}
               <div className="relative transform-gpu overflow-hidden rounded-2xl border-4 border-amber-700/50 shadow-2xl transition-all duration-500 hover:scale-[1.02] group-hover:border-amber-600/70">
@@ -400,9 +400,9 @@ function TreasureHuntPage() {
                   <div
                     className={`relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r ${level.color} text-white text-3xl shadow-2xl border-2 border-white/30`}
                   >
-                    {level.icon === FaStar && "?"}
-                    {level.icon === FaGem && "??"}
-                    {level.icon === FaCrown && "??"}
+                    {level.icon === FaStar && "⭐"}
+                    {level.icon === FaGem && "💎"}
+                    {level.icon === FaCrown && "👑"}
                   </div>
                 </div>
               </div>
@@ -472,11 +472,11 @@ function TreasureHuntPage() {
                 <div>
                   <h2 className="text-2xl font-black text-white tracking-wider flex items-center gap-2">
                     Treasure Hunt
-                    <span className="text-sm font-normal text-amber-400/70">?????</span>
+                    <span className="text-sm font-normal text-amber-400/70">PIRATE MODE</span>
                   </h2>
                   <p className="flex items-center gap-2 text-sm text-amber-200/70">
                     <RiCompassDiscoverFill className="text-amber-400" />
-                    Xazina topish sarguzashti � 12 node
+                    Xazina topish sarguzashti • 12 node
                   </p>
                 </div>
               </div>

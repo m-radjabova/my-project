@@ -283,6 +283,7 @@ function Millionaire() {
   const [players, setPlayers] = useState<PlayerState[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [answeringPlayerIndex, setAnsweringPlayerIndex] = useState<number | null>(null);
+  const [attemptedPlayerIds, setAttemptedPlayerIds] = useState<Set<string>>(new Set());
   const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
   const [question, setQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<OptionKey | null>(null);
@@ -458,6 +459,7 @@ function Millionaire() {
     setPlayers(init);
     setCurrentPlayerIndex(0);
     setAnsweringPlayerIndex(null);
+    setAttemptedPlayerIds(new Set());
     setSelectedAnswer(null);
     setReveal(false);
     setMessage("Savol uchun birinchi bo'lib o'yinchi tanlang.");
@@ -528,6 +530,10 @@ function Millionaire() {
       return p;
     }));
 
+    if (!isCorrect) {
+      setAttemptedPlayerIds((prev) => new Set(prev).add(currentPlayer.id));
+    }
+
     setResultModal({
       correct: isCorrect,
       message: isCorrect 
@@ -542,9 +548,40 @@ function Millionaire() {
   }
 
   function closeResultModal() {
+    const wasCorrect = resultModal?.correct === true;
+    const lastAnsweringPlayer = currentPlayer;
     setResultModal(null);
     setSelectedAnswer(null);
     setReveal(false);
+
+    if (wasCorrect) {
+      prepareNextRound();
+      return;
+    }
+
+    const attemptedWithCurrent = new Set(attemptedPlayerIds);
+    if (lastAnsweringPlayer) {
+      attemptedWithCurrent.add(lastAnsweringPlayer.id);
+    }
+
+    const remainingPlayers = players.some(
+      (p) => p.isActive && !p.hasLost && !attemptedWithCurrent.has(p.id)
+    );
+
+    if (remainingPlayers) {
+      setAnsweringPlayerIndex(null);
+      setDisabledOptions([]);
+      setLifelines({
+        fiftyFifty: true,
+        phoneFriend: true,
+        askAudience: true,
+        switchQuestion: true,
+      });
+      setMessage("Noto'g'ri javob. Shu savol ochiq, boshqa o'yinchi javob berishi mumkin.");
+      return;
+    }
+
+    setMessage("Barcha o'yinchilar urinib bo'ldi. Keyingi savolga o'tiladi.");
     prepareNextRound();
   }
 
@@ -558,6 +595,7 @@ function Millionaire() {
     }
     setQuestion(q);
     setUsedQuestions(prev => new Set(prev).add(q.id));
+    setAttemptedPlayerIds(new Set());
   }
 
   function firstActiveIndex(sourcePlayers: PlayerState[]) {
@@ -596,6 +634,7 @@ function Millionaire() {
     if (phase !== "play" || answeringPlayerIndex !== null || reveal || modalType || resultModal) return;
     const player = players[playerIndex];
     if (!player || !player.isActive || player.hasLost) return;
+    if (attemptedPlayerIds.has(player.id)) return;
 
     setCurrentPlayerIndex(playerIndex);
     setAnsweringPlayerIndex(playerIndex);
@@ -674,6 +713,7 @@ function Millionaire() {
     }
     setQuestion(q);
     setUsedQuestions(prev => new Set(prev).add(q.id));
+    setAttemptedPlayerIds(new Set());
     setDisabledOptions([]);
     setLifelines(prev => ({ ...prev, switchQuestion: false }));
     setMessage("🔄 Savol almashtirildi!");
@@ -700,6 +740,7 @@ function Millionaire() {
     setPlayers([]);
     setCurrentPlayerIndex(0);
     setAnsweringPlayerIndex(null);
+    setAttemptedPlayerIds(new Set());
     setUsedQuestions(new Set());
     setQuestion(null);
     setSelectedAnswer(null);
@@ -1147,7 +1188,16 @@ function Millionaire() {
               <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-xl p-4 border-2 border-yellow-500 sticky top-4">
                 <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center">O'YINCHILAR</h3>
                 <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-                  {players.map((player, idx) => (
+                  {players.map((player, idx) => {
+                    const alreadyAttempted = attemptedPlayerIds.has(player.id);
+                    const claimDisabled =
+                      answeringPlayerIndex !== null ||
+                      reveal ||
+                      !!resultModal ||
+                      modalType !== null ||
+                      alreadyAttempted;
+
+                    return (
                     <div
                       key={player.id}
                       className={`
@@ -1173,14 +1223,19 @@ function Millionaire() {
                       {player.isActive && !player.hasLost && (
                         <button
                           onClick={() => claimQuestion(idx)}
-                          disabled={answeringPlayerIndex !== null || reveal || !!resultModal || modalType !== null}
+                          disabled={claimDisabled}
                           className="mt-2 w-full py-1.5 rounded-md border border-yellow-400 bg-blue-800/40 text-xs font-bold text-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700/40 transition-all"
                         >
-                          {idx === answeringPlayerIndex ? "JAVOB BERMOQDA" : "BIRINCHI TANLAYMAN"}
+                          {idx === answeringPlayerIndex
+                            ? "JAVOB BERMOQDA"
+                            : alreadyAttempted
+                            ? "URINIB BO'LGAN"
+                            : "BIRINCHI TANLAYMAN"}
                         </button>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Control Buttons */}

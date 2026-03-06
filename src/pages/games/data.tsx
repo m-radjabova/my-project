@@ -22,7 +22,9 @@ import {
   FaDice,
   FaMagic,
   FaSkull,
-  FaKeyboard
+  FaKeyboard,
+  FaBrush,
+  FaEye
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -34,20 +36,23 @@ import {
   GiPodiumWinner,
   GiFishing,
   GiRaceCar,
-  GiGamepad,
   GiLetterBomb,
   GiBrain,
   GiJungle,
   GiMagicSwirl,
   GiJigsawPiece,
   GiMoneyStack,
+  GiPaintBrush,
+  GiPerspectiveDiceSixFacesRandom,
 } from "react-icons/gi";
-import { MdQuiz, MdMemory, MdGames, MdNumbers, MdOutlineGamepad } from "react-icons/md";
+import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
 import ocean from "../../assets/ocean.jpg";
 import memoryChain from "../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
 import magicSquare from "../../assets/magic_square.png";
 import reverseThinking from "../../assets/reverse_thinking.png";
+import baamboozle from "../../assets/Baamboozle_img.png";
+import { PiDetective } from "react-icons/pi";
 
 export const gameCards = [
   {
@@ -314,30 +319,30 @@ export const gameCards = [
     gradient: "from-yellow-400 to-orange-400",
     borderGlow: "hover:border-yellow-400/50",
   },
-  {
+{
   id: "baamboozle",
   title: "Baamboozle",
-  description: "25 katakli interaktiv o'yin. Savollar, bonus, jarima, steal va double kartalari bilan jamoa bo'lib o'ynang.",
-  mainIcon: MdOutlineGamepad,
-  icon: GiGamepad,
-  iconBg: "from-indigo-500 to-purple-500",
-  iconColor: "text-indigo-300",
-  shadowColor: "indigo",
+  description: "2-3 jamoa, 16/24 katak. Savollarga javob bering, maxsus kartalar bilan o'yinni qiziqarli qiling. Burn, Swap, Steal va Double sizni kutmoqda!",
+  mainIcon: GiPerspectiveDiceSixFacesRandom,
+  icon: FaDice,
+  iconBg: "from-yellow-500 to-orange-500",
+  iconColor: "text-yellow-300",
+  shadowColor: "yellow",
   available: true,
   path: "/games/baamboozle",
-  bgPattern: "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600",
-  image: "https://media.istockphoto.com/id/1268465415/photo/quiz-time-concept-speech-bubble-with-pencil-on-yellow-background.jpg?s=612x612&w=0&k=20&c=ZowfYpCJeyknpWhnfyWqV1_If6aJmFUiSqqqEUBhvAg=",
-  players: "2 jamoa",
-  level: "Boshlang'ich - Professional",
+  bgPattern: "bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500",
+  image: baamboozle,
+  players: "2-3 jamoa",
+  level: "Oson - Qiyin",
   levelIcon: FaStar,
   badge: "YANGI",
-  badgeIcon: FaRocket,
-  time: "15-25 min",
-  points: "5000+",
-  category: "Bilim",
-  categoryIcon: FaQuestion,
-  gradient: "from-indigo-400 to-purple-400",
-  borderGlow: "hover:border-indigo-400/50",
+  badgeIcon: FaCrown,
+  time: "10-25 min",
+  points: "100-800 ball",
+  category: "Savol-javob",
+  categoryIcon: FaDice,
+  gradient: "from-yellow-400 to-orange-400",
+  borderGlow: "hover:border-yellow-400/50",
 },
 {
   id: "find-color",
@@ -588,6 +593,57 @@ export const gameCards = [
   categoryIcon: FaQuestion,
   gradient: "from-yellow-400 to-amber-400",
   borderGlow: "hover:border-yellow-400/50",
+},
+{
+  id: "pictionary",
+  title: "Chiz va Top!",
+  description: "2 jamoa. Bir jamoa chizadi, ikkinchisi so'zni topadi. Har bir to'g'ri javob uchun 1 ball. Raund oshgani sari so'zlar qiyinlashadi!",
+  mainIcon: GiPaintBrush,
+  icon: FaBrush,
+  iconBg: "from-indigo-500 to-purple-500",
+  iconColor: "text-indigo-300",
+  shadowColor: "indigo",
+  available: true,
+  path: "/games/pictionary",
+  bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
+  image: "https://media.istockphoto.com/id/2225108078/vector/hand-drawn-doodle-rock-punk-pop-music-festival-funky-background-karaoke-bachelorette-girly.jpg?s=612x612&w=0&k=20&c=fQGF0A9QZClxs8hFGG6RbtSsxqfWIy0X2NiB31G1aUU=",
+  // image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  players: "2 jamoa",
+  level: "3 daraja",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaCrown,
+  time: "30-90 s",
+  points: "1 ball / raund",
+  category: "Chizish",
+  categoryIcon: FaBrush,
+  gradient: "from-indigo-400 to-purple-400",
+  borderGlow: "hover:border-indigo-400/50",
+},
+{
+  id: "truth-detector",
+  title: "Truth Detector",
+  description: "3-5 o'yinchi. Har raundda 3 ta claim beriladi. 2 tasi TRUE, 1 tasi FAKE. FAKE'ni topgan o'yinchi +1 ball oladi.",
+  mainIcon: PiDetective,
+  icon: FaEye,
+  iconBg: "from-indigo-500 to-purple-500",
+  iconColor: "text-indigo-300",
+  shadowColor: "indigo",
+  available: true,
+  path: "/games/truth-detector",
+  bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
+  image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  players: "3-5 o'yinchi",
+  level: "3 daraja",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaCrown,
+  time: "10-20 min",
+  points: "1 ball / FAKE",
+  category: "Mantiq",
+  categoryIcon: GiBrain,
+  gradient: "from-indigo-400 to-purple-400",
+  borderGlow: "hover:border-indigo-400/50",
 },
  ];
 
