@@ -8,8 +8,8 @@ import {
   MdTimer, MdSpeed, MdStars, MdMemory,
   MdEmojiEvents} from "react-icons/md";
 import { RiBrainFill} from "react-icons/ri";
-import MemoryRush from "./MemoryRush";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function MemoryRushPage() {
   const memoryRushImg = "https://media.istockphoto.com/id/1434154110/vector/reminder-yellow-note-circled.jpg?s=612x612&w=0&k=20&c=2mfjGFRNi7htNGB47t3fzlfg5mCGLQSfUXMoWBogWL0=";
@@ -293,8 +293,16 @@ function MemoryRushPage() {
             </div>
 
             {/* MemoryRush Component */}
-                        <GameFeedbackPanel gameKey="memory-rush" />
-            <MemoryRush />
+            <GamePageCta
+              to="/games/memory-rush/play"
+              title="Memory Rush o'yin sahifasini ochish"
+              description="Xotira mashqi uchun alohida play page tayyorlandi. Shu yerdan o'yinni boshlaysiz."
+              icon={GiBrain}
+              colorClassName="from-emerald-500 to-cyan-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="memory-rush" />
+            </div>
           </div>
         </div>
 

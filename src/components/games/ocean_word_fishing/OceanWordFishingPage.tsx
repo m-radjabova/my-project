@@ -26,8 +26,8 @@ import {
   IoWaterOutline,
   IoVolumeHighOutline 
 } from "react-icons/io5";
-import OceanWordFishing from "./OceanWordFishing";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 import ocean from "../../../assets/ocean.jpg";
 
 
@@ -406,8 +406,16 @@ function OceanWordFishingPage() {
             </div>
 
             {/* OceanWordFishing Component */}
-                        <GameFeedbackPanel gameKey="ocean-word-fishing" />
-            <OceanWordFishing />
+            <GamePageCta
+              to="/games/ocean-word-fishing/play"
+              title="Ocean Word Fishing alohida play sahifada"
+              description="Baliqlar bilan so'z yig'ish o'yini uchun alohida o'ynash sahifasi tayyor."
+              icon={FaFish}
+              colorClassName="from-blue-500 to-cyan-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="ocean-word-fishing" />
+            </div>
           </div>
         </div>
 

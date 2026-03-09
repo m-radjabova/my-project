@@ -14,8 +14,8 @@ import {
 } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import ReverseThinking from './ReverseThinking';
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function ReverseThinkingPage() {
   const gameStats = [
@@ -325,8 +325,16 @@ function ReverseThinkingPage() {
 
             {/* Game Component */}
             <div className="relative">
-            <GameFeedbackPanel gameKey="reverse-thinking" />
-              <ReverseThinking />
+            <GamePageCta
+              to="/games/reverse-thinking/play"
+              title="Reverse Thinking alohida play sahifada"
+              description="Teskari fikrlash bellashuvi endi maxsus o'yin sahifasida ochiladi."
+              icon={GiLightBulb}
+              colorClassName="from-pink-500 to-red-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="reverse-thinking" />
+            </div>
             </div>
           </div>
         </div>

@@ -20,7 +20,8 @@ import {
 } from "react-icons/gi";
 import { MdGridOn } from "react-icons/md";
 import { RiTeamFill, RiSwordFill } from "react-icons/ri";
-import Baamboozle from "./Baamboozle";
+import GamePageCta from "../shared/GamePageCta";
+import GameFeedbackPanel from '../shared/GameFeedbackPanel';
 
 function BaamboozlePage() {
   const gameStats = [
@@ -412,13 +413,14 @@ function BaamboozlePage() {
 
             {/* Game Component */}
             <div className="relative">
-              <Baamboozle initialQuestions={[
-                { question: "O'zbekiston poytaxti qaysi?", answer: "Toshkent" },
-                { question: "Dunyoning eng baland tog'i?", answer: "Everest" },
-                { question: "Suvning kimyoviy formulasi?", answer: "H2O" },
-                { question: "Alisher Navoiy qaysi asrda yashagan?", answer: "15-asr" },
-                { question: "Yer Quyosh atrofini necha kunda aylanadi?", answer: "365 kunda" },
-              ]} />
+              <GamePageCta
+                to="/games/baamboozle/play"
+                title="Baamboozle alohida play sahifada"
+                description="Katakli savol o'yinini boshlash uchun endi maxsus play sahifa ishlatiladi."
+                icon={GiPerspectiveDiceSixFacesRandom}
+                colorClassName="from-yellow-500 to-red-500"
+              />
+              <GameFeedbackPanel gameKey="baamboozle" />
             </div>
           </div>
         </div>

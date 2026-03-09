@@ -21,8 +21,8 @@ import {
   MdLanguage
 } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import FlagBattle from "./FlagBattle";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function FlagBattlePage() {
   const flagBattleImg = "https://media.istockphoto.com/id/1030295058/photo/flags-of-different-countries-together-us-flag-in-focus.jpg?s=612x612&w=0&k=20&c=fZ67LXjSvX6LlHflpGF5YpD8bZHNUfzcQW_DvtU3lNQ="
@@ -286,8 +286,16 @@ function FlagBattlePage() {
               </div>
             </div>
 
-                        <GameFeedbackPanel gameKey="flag-battle" />
-            <FlagBattle />
+            <GamePageCta
+              to="/games/flag-battle/play"
+              title="Flag Battle alohida play sahifada"
+              description="Bayroq topish bellashuviga kirish uchun endi bitta qulay o'ynash tugmasi bor."
+              icon={FaFlag}
+              colorClassName="from-blue-500 to-teal-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="flag-battle" />
+            </div>
           </div>
         </div>
 

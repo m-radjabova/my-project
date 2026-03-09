@@ -3,8 +3,8 @@ import {
 import { GiBrain, GiPodium, GiAchievement, GiBrainTentacle } from "react-icons/gi";
 import { MdQuiz, MdTimer, MdEmojiEvents, MdSpeed } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import QuizBattle from "./QuizBattle";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function QuizBattlePage() {
   const quizBattleImg = "https://media.istockphoto.com/id/1336313511/vector/vector-funny-sign-quiz-game-set-of-creative-alphabet-letters-and-numbers.jpg?s=612x612&w=0&k=20&c=V7G9_GmHnJK89C-kt1U1kGDz2uBskO1-Z5fpxph9rX8=";
@@ -288,8 +288,16 @@ function QuizBattlePage() {
             </div>
 
             {/* QuizBattle Component */}
-                        <GameFeedbackPanel gameKey="quiz-battle" />
-            <QuizBattle />
+            <GamePageCta
+              to="/games/quiz-battle/play"
+              title="Quiz Battle alohida sahifada ochiladi"
+              description="O'ynash tugmasi orqali to'g'ridan-to'g'ri quiz rejimiga o'ting. Bu sahifa endi ma'lumot va tayyorgarlik uchun qoladi."
+              icon={MdQuiz}
+              colorClassName="from-yellow-500 to-red-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="quiz-battle" />
+            </div>
           </div>
         </div>
 

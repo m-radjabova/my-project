@@ -1,13 +1,3 @@
-export type TreasureHuntGeneratedRiddle = {
-  title: string;
-  story: string;
-  question: string;
-  options: [string, string, string, string];
-  answerIndex: number;
-  hint: string;
-  reward: number;
-};
-
 type GeminiGenerateResponse = {
   candidates?: Array<{
     content?: {
@@ -35,6 +25,8 @@ type GeminiListModelsResponse = {
   models?: GeminiModelInfo[];
 };
 
+export type GameDifficulty = "easy" | "medium" | "hard" | "mixed";
+
 const PREFERRED_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.0-flash",
@@ -49,31 +41,6 @@ function extractJsonBlock(rawText: string): string {
   if (!trimmed.startsWith("```")) return trimmed;
   const match = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   return match?.[1]?.trim() ?? trimmed;
-}
-
-function toValidatedRiddle(payload: unknown): TreasureHuntGeneratedRiddle {
-  if (!payload || typeof payload !== "object") {
-    throw new Error("AI javobi yaroqsiz formatda keldi.");
-  }
-
-  const body = payload as Partial<TreasureHuntGeneratedRiddle>;
-  const title = String(body.title ?? "").trim();
-  const story = String(body.story ?? "").trim();
-  const question = String(body.question ?? "").trim();
-  const hint = String(body.hint ?? "").trim();
-  const rewardNum = Number(body.reward);
-  const reward = Number.isFinite(rewardNum) && rewardNum >= 10 ? Math.round(rewardNum) : 120;
-
-  const optionsRaw = Array.isArray(body.options) ? body.options.slice(0, 4).map((x) => String(x).trim()) : [];
-  if (!title || !story || !question || !hint || optionsRaw.length !== 4 || optionsRaw.some((x) => !x)) {
-    throw new Error("AI yetarli maydonlarni qaytarmadi. Qayta urinib ko'ring.");
-  }
-
-  const options = optionsRaw as [string, string, string, string];
-  const answerIndexNum = Number(body.answerIndex);
-  const answerIndex = Number.isInteger(answerIndexNum) && answerIndexNum >= 0 && answerIndexNum <= 3 ? answerIndexNum : 0;
-
-  return { title, story, question, options, answerIndex, hint, reward };
 }
 
 const normalizeModelName = (name: string) => name.replace(/^models\//, "");
@@ -103,24 +70,11 @@ async function getAvailableGenerateModels(apiKey: string): Promise<string[]> {
   }
 }
 
-export async function generateTreasureHuntRiddle(topic?: string): Promise<TreasureHuntGeneratedRiddle> {
+export async function generateGeminiJson(prompt: string): Promise<unknown> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("VITE_GEMINI_API_KEY topilmadi. .env faylni tekshiring.");
   }
-
-  const theme = topic?.trim() || "general knowledge";
-  const prompt = [
-    "Treasure Hunt o'yini uchun Uzbek (Latin) tilida bitta savol to'plami yarating.",
-    "Javob faqat JSON bo'lsin, hech qanday qo'shimcha matn yozmang.",
-    "JSON formati:",
-    '{"title":"...","story":"...","question":"...","options":["...","...","...","..."],"answerIndex":0,"hint":"...","reward":120}',
-    "Talablar:",
-    "- options aniq 4 ta bo'lsin.",
-    "- answerIndex 0-3 oralig'ida bo'lsin va to'g'ri javobga mos bo'lsin.",
-    "- Matnlar bolalar uchun tushunarli va qisqa bo'lsin.",
-    `- Mavzu: ${theme}.`,
-  ].join("\n");
 
   const requestBody = JSON.stringify({
     contents: [{ parts: [{ text: prompt }] }],
@@ -176,12 +130,9 @@ export async function generateTreasureHuntRiddle(topic?: string): Promise<Treasu
   }
 
   const jsonText = extractJsonBlock(text);
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonText);
+    return JSON.parse(jsonText);
   } catch {
     throw new Error("AI javobi JSON emas. Qayta urinib ko'ring.");
   }
-
-  return toValidatedRiddle(parsed);
 }

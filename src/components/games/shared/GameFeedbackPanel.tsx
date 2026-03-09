@@ -95,7 +95,7 @@ function GameFeedbackPanel({ gameKey }: Props) {
   };
 
   return (
-    <section className="mb-8 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-sm md:p-5">
+    <section className="mb-8 mt-4 rounded-2xl border border-white/15 bg-black/30 p-4 backdrop-blur-sm md:p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-black uppercase tracking-wide text-white/80">Reyting va Izohlar</h3>
         <p className="text-xs font-semibold text-white/75">

@@ -21,8 +21,8 @@ import {
   MdOutlineGridOn
 } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
-import WordSearchPuzzle from "./WordSearchPuzzle";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function WordSearchPuzzlePage() {
   const wordSearchImg = "https://media.istockphoto.com/id/2260590479/vector/vector-easter-village-placemat-spring-holiday-printable-activity-mat-with-maze-crossword.jpg?s=612x612&w=0&k=20&c=YpKwS6BpAuc6dSzcfFuBfTHFyNf9hDxWgwQXHjZOJ7E=";
@@ -305,8 +305,16 @@ function WordSearchPuzzlePage() {
             </div>
 
             {/* WordSearchPuzzle Component */}
-                        <GameFeedbackPanel gameKey="word-search" />
-            <WordSearchPuzzle />
+            <GamePageCta
+              to="/games/word-search/play"
+              title="So'z qidirish o'yini alohida sahifaga o'tdi"
+              description="Endi o'yin pastda qolib ketmaydi. Boshlash tugmasi sizni to'g'ridan-to'g'ri Word Search play sahifasiga olib o'tadi."
+              icon={FaSearch}
+              colorClassName="from-emerald-500 to-cyan-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="word-search" />
+            </div>
           </div>
         </div>
 

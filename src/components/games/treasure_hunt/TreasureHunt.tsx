@@ -18,7 +18,7 @@ import { MdOutlineTimer } from "react-icons/md";
 import { IoMdNuclear } from "react-icons/io";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
-import { generateTreasureHuntRiddle } from "../../../apiClient/gemini";
+import { generateTreasureHuntRiddles } from "./ai";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import pirateOrchestra from "../../../assets/sounds/pirate_orchestra.m4a";
@@ -43,6 +43,13 @@ const SECONDS_PER_QUESTION = 45;
 const HINT_PENALTY = 40;
 const WRONG_PENALTY = 25;
 const STEP_SCORE_REQUIREMENT = 95;
+const AI_GENERATE_OPTIONS = [1, 3, 5, 10, 20] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rta" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 const EMPTY_DRAFT: RiddleDraft = {
   title: "", story: "", question: "",
   options: ["", "", "", ""],
@@ -362,6 +369,8 @@ export default function TreasureHunt() {
   const [questionError, setQuestionError] = useState("");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
+  const [aiCount, setAiCount] = useState<number>(1);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -454,18 +463,26 @@ export default function TreasureHunt() {
     setQuestionError("");
     setIsGeneratingAi(true);
     try {
-      const generated = await generateTreasureHuntRiddle(aiTopic);
-      setDraft({
-        title: generated.title,
-        story: generated.story,
-        question: generated.question,
-        options: generated.options,
-        answerIndex: generated.answerIndex,
-        hint: generated.hint,
-        reward: String(generated.reward),
+      const generated = await generateTreasureHuntRiddles({
+        topic: aiTopic,
+        count: aiCount,
+        difficulty: aiDifficulty,
       });
+      const generatedItems: Riddle[] = generated.map((item, index) => ({
+        id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+        title: item.title,
+        story: item.story,
+        question: item.question,
+        options: item.options,
+        answerIndex: item.answerIndex,
+        hint: item.hint,
+        reward: item.reward,
+      }));
+      setQuestionBank(generatedItems);
+      setRiddles(randomizeRiddles(generatedItems));
       setEditingIdx(null);
-      setToast("AI savol tayyor");
+      setDraft(EMPTY_DRAFT);
+      setToast(`${generatedItems.length} ta ${AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol yangilandi`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "AI savol yaratib bo'lmadi.";
       setQuestionError(message);
@@ -599,20 +616,47 @@ export default function TreasureHunt() {
                 <GiPirateFlag className="text-2xl" />O'QITUVCHI PANELI
               </h3>
               <div className="mb-3 grid gap-2 md:grid-cols-[1fr_auto]">
-                <input
-                  value={aiTopic}
-                  onChange={(e) => setAiTopic(e.target.value)}
-                  className="rounded-xl border border-cyan-500/30 bg-black/40 px-4 py-3 text-cyan-100 outline-none transition-all placeholder-cyan-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
-                  placeholder="AI mavzusi (masalan: geografiya)"
-                />
+                <div className="grid gap-2 md:grid-cols-[1fr_140px_140px]">
+                  <input
+                    value={aiTopic}
+                    onChange={(e) => setAiTopic(e.target.value)}
+                    className="rounded-xl border border-cyan-500/30 bg-black/40 px-4 py-3 text-cyan-100 outline-none transition-all placeholder-cyan-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
+                    placeholder="AI mavzusi (masalan: geografiya)"
+                  />
+                  <select
+                    value={aiCount}
+                    onChange={(e) => setAiCount(Number(e.target.value))}
+                    className="rounded-xl border border-cyan-500/30 bg-slate-950 px-4 py-3 text-cyan-100 outline-none focus:border-cyan-400"
+                  >
+                    {AI_GENERATE_OPTIONS.map((count) => (
+                      <option key={count} value={count} className="bg-slate-950">
+                        {count} ta savol
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={aiDifficulty}
+                    onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                    className="rounded-xl border border-cyan-500/30 bg-slate-950 px-4 py-3 text-cyan-100 outline-none focus:border-cyan-400"
+                  >
+                    {AI_DIFFICULTY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value} className="bg-slate-950">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   onClick={() => void generateWithAi()}
                   disabled={!hasGeminiKey || isGeneratingAi}
                   className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-3 font-bold text-slate-950 shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-cyan-500/40"
                 >
-                  {isGeneratingAi ? "Yaratilmoqda..." : "AI bilan yaratish"}
+                  {isGeneratingAi ? `${aiCount} ta yaratilmoqda...` : `AI bilan ${aiCount} ta yangilash`}
                 </button>
               </div>
+              <p className="mb-3 text-xs text-cyan-200/80">
+                AI yaratganda hozirgi savollar o'chadi va o'rniga yangi {aiCount} ta {AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol yoziladi.
+              </p>
               {!hasGeminiKey && (
                 <p className="mb-3 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>
               )}

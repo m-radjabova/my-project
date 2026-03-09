@@ -15,8 +15,8 @@ import {
 } from "react-icons/gi";
 import { MdTimer, MdSpeed } from "react-icons/md";
 import {RiMentalHealthFill } from "react-icons/ri";
-import MemoryChainArena from './MemoryChainArena';
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 import memoryChain from "../../../assets/Gemini_Generated_Image_cbujqgcbujqgcbuj.png";
 
@@ -355,14 +355,16 @@ function MemoryChainArenaPage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="memory-chain" />
-              <MemoryChainArena
-                gameTitle="Memory Chain"
-                gameTone="from-cyan-500 to-blue-500"
-                leftTeamName="1-Jamoa"
-                rightTeamName="2-Jamoa"
-                initialDifficulty="O'rta"
+              <GamePageCta
+                to="/games/memory-chain/play"
+                title="Memory Chain Arena alohida play sahifada"
+                description="Ketma-ket xotira mashqini boshlash uchun endi alohida o'yin sahifasi bor."
+                icon={GiBrain}
+                colorClassName="from-sky-500 to-blue-500"
               />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="memory-chain" />
+              </div>
             </div>
           </div>
 

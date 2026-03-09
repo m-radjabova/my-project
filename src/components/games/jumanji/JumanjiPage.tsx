@@ -18,9 +18,9 @@ import {
 } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import Jumanji from './Jumanji';
 import img from "../../../assets/jumanji_board.png"
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function JumanjiPage() {
   const JumanjiImg = img; 
@@ -356,8 +356,16 @@ function JumanjiPage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="jumanji" />
-              <Jumanji />
+              <GamePageCta
+                to="/games/jumanji/play"
+                title="Jumanji alohida sarguzasht sahifasida"
+                description="Jumanji o'yinini boshlash uchun maxsus play page ajratildi."
+                icon={GiJungle}
+                colorClassName="from-amber-500 to-yellow-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="jumanji" />
+              </div>
             </div>
           </div>
         </div>

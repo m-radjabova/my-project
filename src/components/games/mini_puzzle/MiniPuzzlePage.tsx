@@ -16,8 +16,8 @@ import {
 } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import MiniPuzzle from './MiniPuzzle';
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function MiniPuzzlePage() {
     // const img = "https://media.istockphoto.com/id/2249204910/photo/jigsaw-puzzle-pieces-colorful-background-with-small-puzzle-pieces-messy-some-colored-pieces.jpg?s=612x612&w=0&k=20&c=r43dtrUR7kvYbZHLZa6OVcbETVnFLOVhayJWwMwLUUc=";
@@ -364,8 +364,16 @@ function MiniPuzzlePage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="mini-puzzle" />
-              <MiniPuzzle />
+              <GamePageCta
+                to="/games/mini-puzzle/play"
+                title="Mini Puzzle alohida play sahifada"
+                description="Mini puzzle'larni o'ynash uchun endi qulay alohida sahifa mavjud."
+                icon={GiJigsawPiece}
+                colorClassName="from-green-500 to-lime-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="mini-puzzle" />
+              </div>
             </div>
           </div>
         </div>

@@ -2,8 +2,8 @@ import { FaUsers, FaTrophy, FaClock, FaBolt } from "react-icons/fa";
 import { GiPuzzle, GiBrain, GiAchievement, GiPodium, GiConsoleController} from "react-icons/gi";
 import { MdGames, MdSportsEsports, MdTimer, MdSpeed, MdEmojiEvents } from "react-icons/md";
 import { RiTeamFill} from "react-icons/ri";
-import ClassicArcade from "./ClassicArcade";
-import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+// import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function ClassicArcadePage() {
   const classicArcadeImg =
@@ -287,8 +287,16 @@ function ClassicArcadePage() {
             </div>
 
             {/* ClassicArcade Component */}
-                        <GameFeedbackPanel gameKey="classic-arcade" />
-            <ClassicArcade />
+            <GamePageCta
+              to="/games/classic-arcade/play"
+              title="Classic Arcade uchun alohida o'yin sahifasi"
+              description="Mini challenge'larni bir joyda o'ynash uchun play sahifa ajratildi. Shu tugmadan o'yinga kirasiz."
+              icon={MdSportsEsports}
+              colorClassName="from-fuchsia-500 to-orange-500"
+            />
+            {/* <div className="mt-6">
+              <GameFeedbackPanel gameKey="classic-arcade" />
+            </div> */}
           </div>
         </div>
 

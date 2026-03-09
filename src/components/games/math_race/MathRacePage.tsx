@@ -28,8 +28,8 @@ import {
 import { 
   IoFlashOutline
 } from "react-icons/io5";
-import MathRace from "./MathRace";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function MathRacePage() {
   const raceImg = "https://media.istockphoto.com/id/1409623927/vector/formula-racing-sport-car-reach-on-race-circuit-the-finish-line-cartoon-illustration-to-win.jpg?s=612x612&w=0&k=20&c=n5leemMDNJv1g_EFkTJxW9T5XiVQXx0CIA6R2z6Op1U="
@@ -413,7 +413,7 @@ function MathRacePage() {
                   <h2 className="text-xl font-black text-white">Math Race</h2>
                   <p className="flex items-center gap-2 text-sm text-gray-300">
                     <GiCarWheel className="text-amber-400" />
-                    Tezkor misollar � 2 o'yinchi
+                    Tezkor misollar В· 2 o'yinchi
                   </p>
                 </div>
               </div>
@@ -435,8 +435,16 @@ function MathRacePage() {
             </div>
 
             {/* MathRace Component */}
-                        <GameFeedbackPanel gameKey="math-race" />
-            <MathRace />
+            <GamePageCta
+              to="/games/math-race/play"
+              title="Math Race alohida o'yin sahifasida"
+              description="Matematik poyga uchun endi to'g'ridan-to'g'ri play route mavjud."
+              icon={GiRaceCar}
+              colorClassName="from-yellow-500 to-red-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="math-race" />
+            </div>
           </div>
         </div>
 

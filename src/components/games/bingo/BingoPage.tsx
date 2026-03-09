@@ -17,7 +17,7 @@ import {
 } from "react-icons/gi";
 import {MdQuiz } from "react-icons/md";
 import {  RiMentalHealthFill } from "react-icons/ri";
-import Bingo from "./Bingo";
+import GamePageCta from "../shared/GamePageCta";
 
 function BingoPage() {
   // const bingoImg = "https://media.istockphoto.com/id/495611580/vector/bingo-or-lottery-retro-game-illustration-with-balls-and-cards.jpg?s=612x612&w=0&k=20&c=lyncdZNnRRPcClMJuAGV10F-a-6iTutSKilAuxaHKu4=";
@@ -491,7 +491,13 @@ function BingoPage() {
 
             {/* Bingo Component */}
             <div className="relative">
-              <Bingo />
+              <GamePageCta
+                to="/games/bingo/play"
+                title="Bingo alohida play sahifada"
+                description="Bingo challenge o'yinini endi alohida sahifada boshlaysiz."
+                icon={GiJigsawPiece}
+                colorClassName="from-indigo-500 to-fuchsia-500"
+              />
             </div>
           </div>
         </div>

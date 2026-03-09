@@ -18,8 +18,8 @@ import {
   MdQuiz 
 } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import WheelOfFortune from "./WheelOfFortune";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function WheelOfFortunePage() {
   const wheelOfFortuneImg = "https://media.istockphoto.com/id/2177986731/photo/wheel-of-fortune-with-rewards.jpg?s=612x612&w=0&k=20&c=dkony3LqMPl7Mftei-8AkXfoGQgWsOQlqo_7NBeLOT0=";
@@ -283,8 +283,16 @@ function WheelOfFortunePage() {
               </div>
             </div>
 
-                        <GameFeedbackPanel gameKey="wheel-of-fortune" />
-            <WheelOfFortune />
+            <GamePageCta
+              to="/games/wheel-of-fortune/play"
+              title="Wheel Of Fortune play sahifasini oching"
+              description="Baraban o'yini endi ma'lumot sahifasidan alohida ishlaydi. O'ynash tugmasi bilan darhol game mode'ga o'tasiz."
+              icon={GiSpinningWheel}
+              colorClassName="from-purple-500 to-rose-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="wheel-of-fortune" />
+            </div>
           </div>
         </div>
 

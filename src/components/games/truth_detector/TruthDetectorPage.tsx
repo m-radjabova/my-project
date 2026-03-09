@@ -15,8 +15,8 @@ import {
   GiBrain,
 } from "react-icons/gi";
 import { RiSwordFill } from "react-icons/ri";
-import TruthDetector from "./TruthDetector";
 import { PiDetective } from "react-icons/pi";
+import GamePageCta from "../shared/GamePageCta";
 
 function TruthDetectorPage() {
   const gameStats = [
@@ -396,7 +396,13 @@ function TruthDetectorPage() {
 
             {/* Game Component */}
             <div className="relative">
-              <TruthDetector />
+              <GamePageCta
+                to="/games/truth-detector/play"
+                title="Truth Detector alohida play sahifada"
+                description="Haqiqat va fake javoblarni topish o'yini endi alohida sahifada boshlanadi."
+                icon={PiDetective}
+                colorClassName="from-indigo-500 to-purple-500"
+              />
             </div>
           </div>
         </div>

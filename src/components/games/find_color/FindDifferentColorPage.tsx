@@ -18,8 +18,8 @@ import {
   MdTimer,
 } from "react-icons/md";
 import { Link } from "react-router-dom";
-import FindDifferentColor from "./FindDifferentColor";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function FindDifferentColorPage() {
   const gameStats = [
@@ -504,8 +504,16 @@ function FindDifferentColorPage() {
 
             {/* FindDifferentColor Component */}
             <div className="relative">
-                          <GameFeedbackPanel gameKey="find-color" />
-            <FindDifferentColor />
+              <GamePageCta
+                to="/games/find-color/play"
+                title="Find Different Color alohida sahifada"
+                description="Farqli rangni topish o'yini endi maxsus play page orqali ochiladi."
+                icon={FaPalette}
+                colorClassName="from-cyan-500 to-blue-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="find-color" />
+              </div>
             </div>
           </div>
         </div>

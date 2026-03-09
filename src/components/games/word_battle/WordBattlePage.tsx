@@ -2,8 +2,8 @@ import { FaBolt, FaPuzzlePiece, FaUsers, FaRocket, FaStar } from "react-icons/fa
 import { MdTimer, MdOutlineLeaderboard} from "react-icons/md";
 import { RiSwordFill } from "react-icons/ri";
 import { GiBrain, GiLightBulb, GiSwordsEmblem } from "react-icons/gi";
-import WordBattle from "./WordBattle";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function WordBattlePage() {
   const bannerImg =
@@ -169,8 +169,16 @@ function WordBattlePage() {
         <div className="relative">
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
           <div className="relative">
-                        <GameFeedbackPanel gameKey="word-battle" />
-            <WordBattle />
+            <GamePageCta
+              to="/games/word-battle/play"
+              title="Word Battle endi alohida play sahifada"
+              description="Jamoaviy so'z bellashuvini qulayroq boshlash uchun o'yin alohida sahifaga ajratildi."
+              icon={RiSwordFill}
+              colorClassName="from-cyan-500 to-pink-500"
+            />
+            <div className="mt-6">
+              <GameFeedbackPanel gameKey="word-battle" />
+            </div>
           </div>
         </div>
 

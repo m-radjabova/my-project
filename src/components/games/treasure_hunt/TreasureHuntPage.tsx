@@ -21,8 +21,8 @@ import {
 } from "react-icons/gi";
 import { MdEmojiEvents} from "react-icons/md";
 import { RiTreasureMapFill, RiCompassDiscoverFill } from "react-icons/ri";
-import TreasureHunt from "./TreasureHunt";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 import image from "../../../assets/map.png"
 
@@ -496,8 +496,16 @@ function TreasureHuntPage() {
 
             {/* TreasureHunt Component */}
             <div className="relative">
-                          <GameFeedbackPanel gameKey="treasure-hunt" />
-            <TreasureHunt />
+              <GamePageCta
+                to="/games/treasure-hunt/play"
+                title="Treasure Hunt alohida o'yin sahifasida"
+                description="Xazina izlash sarguzashtini boshlash uchun endi play page ishlatiladi."
+                icon={GiTreasureMap}
+                colorClassName="from-amber-500 to-yellow-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="treasure-hunt" />
+              </div>
             </div>
           </div>
         </div>

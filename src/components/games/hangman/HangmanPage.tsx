@@ -16,8 +16,8 @@ import {
   GiHangGlider,
 } from "react-icons/gi";
 import { RiTeamFill, RiSwordFill } from "react-icons/ri";
-import Hangman from "./Hangman";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function HangmanPage() {
   const gameStats = [
@@ -380,8 +380,16 @@ function HangmanPage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="hangman" />
-              <Hangman />
+              <GamePageCta
+                to="/games/hangman/play"
+                title="Hangman alohida o'yin sahifasida"
+                description="Jamoali Hangman endi bitta bosishda alohida play page'da ochiladi."
+                icon={GiHangGlider}
+                colorClassName="from-amber-500 to-red-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="hangman" />
+              </div>
             </div>
           </div>
         </div>

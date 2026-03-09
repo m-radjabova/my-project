@@ -14,8 +14,8 @@ import {
 } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
-import MagicSquare from './MagicSquare';
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function MagicSquarePage() {
   const gameStats = [
@@ -319,8 +319,16 @@ function MagicSquarePage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="magic-square" />
-              <MagicSquare />
+              <GamePageCta
+                to="/games/magic-square/play"
+                title="Magic Square alohida play sahifada"
+                description="Magic Square o'yini endi qulay alohida sahifada ishga tushadi."
+                icon={FaMagic}
+                colorClassName="from-violet-500 to-indigo-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="magic-square" />
+              </div>
             </div>
           </div>
         </div>

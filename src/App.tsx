@@ -36,6 +36,8 @@ import HangmanPage from "./components/games/hangman/HangmanPage";
 import MillionairePage from "./components/games/millionaire/MillionairePage";
 import PictionaryPage from "./components/games/pictionary/PictionaryPage";
 import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPage";
+import GamePlayView from "./components/games/shared/GamePlayView";
+import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -101,10 +103,28 @@ function App() {
         <Route path="/games/mini-puzzle" element={<MiniPuzzlePage />} />
         <Route path="/games/magic-square" element={<MagicSquarePage />} />
         <Route path="/games/reverse-thinking" element={<ReverseThinkingPage />} />
-        <Route path="/games/hangman" element={<HangmanPage />} />4
+        <Route path="/games/hangman" element={<HangmanPage />} />
         <Route path="/games/millionaire" element={<MillionairePage />} />
         <Route path="/games/pictionary" element={<PictionaryPage />} />
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
+        {gamePlayRoutes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <GamePlayView
+                title={route.title}
+                subtitle={route.subtitle}
+                gameKey={route.gameKey}
+                backTo={route.backTo}
+                icon={route.icon}
+                colorClassName={route.colorClassName}
+              >
+                {route.element}
+              </GamePlayView>
+            }
+          />
+        ))}
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

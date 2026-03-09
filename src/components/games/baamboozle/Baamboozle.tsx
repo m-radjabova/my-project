@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   FaCheck,
+  FaRobot,
   FaFire,
   FaPlus,
   FaRedo,
@@ -14,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { GiSwapBag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
+import { generateBaamboozleQuestions } from "./ai";
 import { DEFAULT_QUESTION_BANK } from "./data";
 
 export type QuestionBankItem = {
@@ -43,6 +45,13 @@ type Team = {
 };
 
 const STEAL_AMOUNTS = [5, 10, 15];
+const AI_QUESTION_COUNT_OPTIONS = [4, 8, 12, 16, 24] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rta" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 
 const TEAM_AVATARS = ["🦁", "🐯", "🐘", "🦊", "🐼", "🐨"];
 const TEAM_COLORS = [
@@ -112,6 +121,10 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
   const [questionBank, setQuestionBank] = useState<QuestionBankItem[]>(initialQuestions);
   const [draft, setDraft] = useState<QuestionBankItem>({ question: "", answer: "" });
   const [questionError, setQuestionError] = useState("");
+  const [aiSubject, setAiSubject] = useState("");
+  const [aiQuestionCount, setAiQuestionCount] = useState<number>(8);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -127,6 +140,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
   const gameFinished = useMemo(() => tiles.length > 0 && tiles.every((t) => t.opened), [tiles]);
   const currentTeam = teams[currentTeamIndex] ?? { id: "0", name: "Jamoa", score: 0, color: "", avatar: "" };
   const openedCount = tiles.filter((t) => t.opened).length;
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   const leaders = useMemo(() => {
     if (!teams.length) return [];
@@ -153,6 +167,27 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
     setQuestionBank((prev) => [...prev, { question, answer }]);
     setDraft({ question: "", answer: "" });
     setQuestionError("");
+  };
+
+  const generateWithAi = async () => {
+    if (isGeneratingAi) return;
+    setQuestionError("");
+    setIsGeneratingAi(true);
+
+    try {
+      const generated = await generateBaamboozleQuestions({
+        subject: aiSubject,
+        count: aiQuestionCount,
+        difficulty: aiDifficulty,
+      });
+      setQuestionBank(generated);
+      setDraft({ question: "", answer: "" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "AI savollar yaratib bo'lmadi.";
+      setQuestionError(message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   const removeQuestion = (index: number) => {
@@ -425,6 +460,56 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions = [] }) => {
               <p className="text-sm font-bold text-yellow-400 mb-3">📝 SAVOLLAR</p>
               
               <div className="space-y-3">
+                <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+                  <div className="mb-3 flex items-center gap-2 text-cyan-300">
+                    <FaRobot />
+                    <p className="text-sm font-bold">AI SAVOL GENERATSIYASI</p>
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <input
+                      value={aiSubject}
+                      onChange={(e) => setAiSubject(e.target.value)}
+                      placeholder="Fan yoki mavzu: matematika, tarix..."
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white placeholder-cyan-300/40 focus:border-cyan-400 focus:outline-none"
+                    />
+                    <select
+                      value={aiQuestionCount}
+                      onChange={(e) => setAiQuestionCount(Number(e.target.value))}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {AI_QUESTION_COUNT_OPTIONS.map((count) => (
+                        <option key={count} value={count} className="bg-slate-950">
+                          {count} ta savol
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={aiDifficulty}
+                      onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                      className="w-full rounded-xl border border-cyan-500/30 bg-slate-950/70 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+                    >
+                      {AI_DIFFICULTY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value} className="bg-slate-950">
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => void generateWithAi()}
+                      disabled={!hasGeminiKey || isGeneratingAi}
+                      className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-3 text-white font-bold transition-all hover:from-cyan-400 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? `${aiQuestionCount} ta yaratilmoqda...` : `AI bilan ${aiQuestionCount} ta yaratish`}
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs text-cyan-200/80">
+                    AI yaratganda hozirgi Baamboozle savollari o'rniga yangi savollar yoziladi.
+                  </p>
+                  {!hasGeminiKey && (
+                    <p className="mt-2 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>
+                  )}
+                </div>
+
                 <div className="grid gap-2">
                   <input
                     value={draft.question}

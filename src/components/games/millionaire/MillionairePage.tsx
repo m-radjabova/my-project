@@ -14,9 +14,9 @@ import {
   GiMoneyStack,
 } from "react-icons/gi";
 import { RiSwordFill } from "react-icons/ri";
-import Millionaire from "./Millionaire";
 import img from "../../../assets/millionaire_photo.jpg";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function MillionairePage() {
   const gameStats = [
@@ -346,8 +346,16 @@ function MillionairePage() {
 
             {/* Game Component */}
             <div className="relative">
-              <GameFeedbackPanel gameKey="millionaire" />
-              <Millionaire />
+              <GamePageCta
+                to="/games/millionaire/play"
+                title="Millionaire alohida play sahifada"
+                description="Millionaire savollarini boshlash uchun endi alohida route bor."
+                icon={GiMoneyStack}
+                colorClassName="from-yellow-500 to-orange-500"
+              />
+              <div className="mt-6">
+                <GameFeedbackPanel gameKey="millionaire" />
+              </div>
             </div>
           </div>
         </div>

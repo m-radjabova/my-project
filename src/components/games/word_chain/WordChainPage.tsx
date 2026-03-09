@@ -16,8 +16,8 @@ import {
   GiBrain,
 } from "react-icons/gi";
 import { RiTeamFill } from "react-icons/ri";
-import WordChain from "./WordChain";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function WordChainPage() {
     const rightImg = "https://media.istockphoto.com/id/1503421139/photo/multi-colored-alphabet-letters-and-magnifying-glass-on-the-yellow-background.jpg?s=612x612&w=0&k=20&c=losfLdOo6_oPE5GQmJGdfzC1haNnVSIGiAeOs7VCGDo=";
@@ -352,7 +352,13 @@ function WordChainPage() {
             {/* Game Component */}
             <GameFeedbackPanel gameKey="word-chain" />
             <div className="relative">
-              <WordChain />
+              <GamePageCta
+                to="/games/word-chain/play"
+                title="Word Chain alohida play sahifada"
+                description="So'z zanjiri o'yiniga endi shu tugma orqali kiriladi."
+                icon={GiLetterBomb}
+                colorClassName="from-violet-500 to-fuchsia-500"
+              />
             </div>
           </div>
         </div>

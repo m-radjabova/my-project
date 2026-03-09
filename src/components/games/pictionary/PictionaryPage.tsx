@@ -16,8 +16,8 @@ import {
   GiPaintBrush
 } from "react-icons/gi";
 import { RiTeamFill, RiSwordFill } from "react-icons/ri";
-import Pictionary from "./Pictionary";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
+import GamePageCta from "../shared/GamePageCta";
 
 function PictionaryPage() {
   const gameStats = [
@@ -398,8 +398,16 @@ function PictionaryPage() {
 
             {/* Game Component */}
             <div className="relative">
+              <GamePageCta
+                to="/games/pictionary/play"
+                title="Pictionary alohida play sahifada"
+                description="Rasm asosida topish o'yini endi alohida sahifada boshlanadi."
+                icon={GiPaintBrush}
+                colorClassName="from-pink-500 to-orange-500"
+              />
+              <div className="mt-6">
                 <GameFeedbackPanel gameKey="pictionary" />
-              <Pictionary />
+              </div>
             </div>
           </div>
         </div>
