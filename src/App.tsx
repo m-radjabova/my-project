@@ -38,6 +38,7 @@ import PictionaryPage from "./components/games/pictionary/PictionaryPage";
 import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPage";
 import GamePlayView from "./components/games/shared/GamePlayView";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
+import MathChickGamePage from "./components/games/math_chick_game/MathChickGamePage";
 
 function App() {
   const { state: { isLoading } } = useContextPro();
@@ -107,17 +108,13 @@ function App() {
         <Route path="/games/millionaire" element={<MillionairePage />} />
         <Route path="/games/pictionary" element={<PictionaryPage />} />
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
+        <Route path="/games/math-chick" element={<MathChickGamePage />} />
         {gamePlayRoutes.map((route) => (
           <Route
             key={route.path}
             path={route.path}
             element={
               <GamePlayView
-                title={route.title}
-                subtitle={route.subtitle}
-                gameKey={route.gameKey}
-                backTo={route.backTo}
-                icon={route.icon}
                 colorClassName={route.colorClassName}
               >
                 {route.element}

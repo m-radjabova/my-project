@@ -23,10 +23,12 @@ import {
 import { IoMdTimer } from "react-icons/io";
 import { gameCards } from "./data";
 
+type Game = typeof gameCards[number];
+
 function Games() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("Barchasi");
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
@@ -35,7 +37,7 @@ function Games() {
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e : MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
         y: (e.clientY / window.innerHeight) * 100,
@@ -60,7 +62,7 @@ function Games() {
   const totalGames = gameCards.length;
 
   // Har bir karta uchun gradient va iconBg ni saqlab qolamiz
-  const getCardGradient = (game) => {
+  const getCardGradient = (game: Game) => {
     return game.gradient || 'from-purple-500 to-pink-500';
   };
 
@@ -129,17 +131,17 @@ function Games() {
         <div className="relative mb-16 text-center">
           {/* 3D effektli sarlavha */}
           <div className="relative inline-block perspective-1000">
-            <div className="relative animate-float-3d">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter">
+            <div className="relative">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black">
                 <span className="relative inline-block">
-                  <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 opacity-50 animate-pulse-slow" />
-                  <span className="relative bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent animate-gradient-x me-3">
+                  <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 opacity-50 " />
+                  <span className="relative bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent me-3">
                     O'YINLAR 
                   </span>
                 </span>
                 <span className="relative inline-block mt-[-0.3em]">
-                  <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 opacity-50 animate-pulse-slow" />
-                  <span className="relative bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent animate-gradient-x-reverse">
+                  <span className="absolute inset-0 blur-2xl bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 opacity-50 " />
+                  <span className="relative bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent ">
                     MASKANI
                   </span>
                 </span>
@@ -149,16 +151,15 @@ function Games() {
             {/* Animatsion yulduzlar */}
             <div className="absolute -top-12 -right-12">
               <div className="relative">
-                <FaStar className="absolute text-4xl text-yellow-400 animate-ping-slow opacity-50" />
-                <FaStar className="relative text-4xl text-yellow-400 animate-spin-slow" />
-                <FaStar className="absolute top-0 left-0 text-2xl text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <FaStar className="absolute text-4xl text-yellow-400 opacity-50" />
+                <FaStar className="relative text-4xl text-yellow-400 " />
               </div>
             </div>
             
             <div className="absolute -bottom-8 -left-12">
               <div className="relative">
-                <FaCrown className="absolute text-5xl text-pink-400 animate-ping-slow opacity-50" />
-                <FaCrown className="relative text-5xl text-pink-400 animate-bounce-slow" />
+                <FaCrown className="absolute text-5xl text-pink-400 opacity-50" />
+                <FaCrown className="relative text-5xl text-pink-400 " />
               </div>
             </div>
           </div>
@@ -171,7 +172,7 @@ function Games() {
           {/* Dekorativ chiziq */}
           <div className="mt-8 flex justify-center gap-2">
             <div className="h-1 w-16 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-            <div className="h-1 w-32 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 animate-pulse"></div>
+            <div className="h-1 w-32 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 "></div>
             <div className="h-1 w-16 rounded-full bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
           </div>
         </div>
@@ -193,7 +194,7 @@ function Games() {
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`group relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-bold transition-all duration-500 transform hover:scale-110 ${
+                className={`group cursor-pointer relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-bold transition-all duration-500 transform hover:scale-110 ${
                   isActive
                     ? `bg-gradient-to-r ${colors[colorIndex]} text-white shadow-[0_0_30px_rgba(168,85,247,0.5)]`
                     : 'bg-white/5 text-white/70 hover:bg-white/10'
@@ -222,7 +223,7 @@ function Games() {
               <div className="flex flex-wrap items-center justify-center gap-8">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md animate-ping-slow" />
+                    <div className="absolute inset-0 bg-yellow-400 rounded-full blur-md " />
                     <FaGamepad className="relative text-xl text-yellow-400" />
                   </div>
                   <span className="text-white font-bold">
@@ -234,7 +235,7 @@ function Games() {
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-green-400 rounded-full blur-md animate-ping-slow" />
+                    <div className="absolute inset-0 bg-green-400 rounded-full blur-md" />
                     <FaUsers className="relative text-xl text-green-400" />
                   </div>
                   <span className="text-white font-bold">
@@ -246,7 +247,7 @@ function Games() {
                 
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-blue-400 rounded-full blur-md animate-ping-slow" />
+                    <div className="absolute inset-0 bg-blue-400 rounded-full blur-md " />
                     <FaFire className="relative text-xl text-blue-400" />
                   </div>
                   <span className="text-white font-bold">
@@ -291,7 +292,7 @@ function Games() {
                   }}
                 >
                   {/* Rasm qismi */}
-                  <div className="relative h-56 w-full overflow-hidden sm:h-64">
+                  <div className="relative z-10 h-56 w-full overflow-hidden sm:h-64">
                     <img
                       src={game.image}
                       alt={game.title}
@@ -302,13 +303,13 @@ function Games() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     
                     {/* Neon chiziqlar */}
-                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-scan" />
-                    <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent animate-scan-reverse" />
+                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent " />
+                    <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent " />
 
                     {/* Badge */}
                     <div className="absolute left-4 top-4">
                       <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full blur-md animate-pulse" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full blur-md " />
                         <div className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xl">
                           <game.badgeIcon className="text-sm" />
                           <span>{game.badge}</span>
@@ -328,7 +329,7 @@ function Games() {
                     </div>
 
                     {/* O'yin iconkasi - endi bu gradient ustida va ko'rinadi */}
-                    <div className="absolute -bottom-7 left-6 z-20">
+                    <div className="absolute bottom-4 left-6 z-50">
                       <div className="relative">
                         <div className={`absolute inset-0 bg-gradient-to-r ${cardGradient} rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity`} />
                         <div
@@ -341,11 +342,11 @@ function Games() {
                   </div>
 
                   {/* Kontent qismi */}
-                  <div className="p-6 pt-10">
+                  <div className="relative z-0 p-6 pt-6">
                     <h3 className="mb-2 text-2xl font-black text-white flex items-center gap-2">
                       {game.title}
                       {game.available && (
-                        <FaBolt className="text-yellow-400 animate-pulse" />
+                        <FaBolt className="text-yellow-400" />
                       )}
                     </h3>
 
@@ -405,7 +406,7 @@ function Games() {
                           <span className="relative z-10 flex items-center justify-center gap-3 text-sm font-black text-white">
                             {game.available ? (
                               <>
-                                <game.mainIcon className="text-base animate-bounce-slow" />
+                                <game.mainIcon className="text-base" />
                                 <span>O'YNASH</span>
                                 <FaArrowRight className="text-sm transition-transform group-hover/btn:translate-x-2" />
                               </>
@@ -429,8 +430,8 @@ function Games() {
                   {/* Hover effektlari */}
                   {isHovered && game.available && (
                     <>
-                      <div className={`absolute top-0 left-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl animate-pulse opacity-30`} />
-                      <div className={`absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl animate-pulse opacity-30`} />
+                      <div className={`absolute top-0 left-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl opacity-30`} />
+                      <div className={`absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-r ${cardGradient} rounded-full blur-3xl opacity-30`} />
                     </>
                   )}
                 </div>

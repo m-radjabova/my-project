@@ -44,6 +44,7 @@ import {
   GiMoneyStack,
   GiPaintBrush,
   GiPerspectiveDiceSixFacesRandom,
+  GiChicken
 } from "react-icons/gi";
 import { MdQuiz, MdMemory, MdGames, MdNumbers } from "react-icons/md";
 import { RiBubbleChartFill } from "react-icons/ri";
@@ -56,9 +57,10 @@ import baamboozle from "../../assets/Baamboozle_img.png";
 import truthImg from "../../assets/truth_detector_img.png";
 import jumanjiImg from "../../assets/jumanji_img.png";
 import treasureHuntimg from "../../assets/treasure_hunt_img.png";
+import mathChickImg from "../../assets/math_chick_img.png"
 import { PiDetective } from "react-icons/pi";
 
-export const gameCards = [
+const rawGameCards = [
   {
     id: "quiz-battle",
     title: "Tezkor Savollar",
@@ -648,5 +650,67 @@ export const gameCards = [
   gradient: "from-indigo-400 to-purple-400",
   borderGlow: "hover:border-indigo-400/50",
 },
+{
+  id: "math-chick",
+  title: "Math Chick Game",
+  description: "Jo'jacha bilan matematik sarguzasht! Tangalarni yig'ing, misollarni yeching va eng yuqori ballga erishing.",
+  mainIcon: GiChicken,
+  icon: FaBrain,
+  iconBg: "from-blue-500 to-violet-600",
+  iconColor: "text-yellow-300",
+  shadowColor: "blue",
+  available: true,
+  path: "/games/math-chick",
+  bgPattern: "bg-gradient-to-br from-[#243a86] via-[#402a93] to-[#1a245f]",
+  image: mathChickImg,
+  players: "2 o'yinchi",
+  level: "Osson - O'rtacha - Qiyin",
+  levelIcon: FaStar,
+  badge: "YANGI",
+  badgeIcon: FaCrown,
+  time: "5-10 min",
+  points: "1000+",
+  category: "Matematika",
+  categoryIcon: FaBrain,
+  gradient: "from-yellow-300 to-amber-400",
+  borderGlow: "hover:border-violet-400/50",
+}
  ];
+
+const curatedGameOrder = [
+  "millionaire",
+  "jumanji",
+  "classic-arcade",
+  "math-race",
+  "math-chick",
+  "treasure-hunt",
+  "quiz-battle",
+  "baamboozle",
+  "pictionary",
+  "truth-detector",
+  "word-battle",
+  "word-search",
+  "bingo",
+  "flag-battle",
+  "memory-rush",
+  "memory-chain",
+  "wheel-of-fortune",
+  "ocean-word-fishing",
+  "magic-square",
+  "reverse-thinking",
+  "mini-puzzle",
+  "word-chain",
+  "hangman",
+  "find-color",
+] as const;
+
+const curatedGameOrderMap = new Map(
+  curatedGameOrder.map((id, index) => [id, index]),
+);
+
+export const gameCards = [...rawGameCards].sort((a, b) => {
+  const aIndex = curatedGameOrderMap.get(a.id as typeof curatedGameOrder[number]) ?? Number.MAX_SAFE_INTEGER;
+  const bIndex = curatedGameOrderMap.get(b.id as typeof curatedGameOrder[number]) ?? Number.MAX_SAFE_INTEGER;
+  return aIndex - bIndex;
+});
 

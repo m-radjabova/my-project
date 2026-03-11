@@ -1,0 +1,1377 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+type Difficulty = "easy" | "medium" | "hard" | "mixed";
+type PlayerId = "A" | "B";
+type FeedbackState = "idle" | "correct" | "wrong";
+
+type Problem = {
+  question: string;
+  answer: number;
+  options: number[];
+};
+
+type ExplosionParticle = {
+  angle: number;
+  speed: number;
+  size: number;
+  life: number;
+  color: string;
+};
+
+type ExplosionBurst = {
+  player: PlayerId;
+  startTime: number;
+  duration: number;
+  flashDuration: number;
+  text: string;
+  particles: ExplosionParticle[];
+};
+
+type TeacherDraft = {
+  question: string;
+  answer: string;
+  wrongAnswers: string;
+};
+
+type PlayerMap<T> = Record<PlayerId, T>;
+
+const CANVAS_W = 1280;
+const CANVAS_H = 420;
+const CHICK_START_X = 96;
+const CHICK_STEP = 124;
+const TOTAL_STEPS = 8;
+const FINISH_X = CHICK_START_X + TOTAL_STEPS * CHICK_STEP + 30;
+const LANE_Y: PlayerMap<number> = { A: 152, B: 292 };
+const QUESTION_PANEL_X = 370;
+const QUESTION_PANEL_Y = 20;
+const QUESTION_PANEL_W = 540;
+const QUESTION_PANEL_H = 72;
+const CHICK_SCALE = 1.18;
+const ROUND_DELAY = 850;
+const EXPLOSION_COLORS = ["#fef3c7", "#fde68a", "#fbbf24", "#f97316", "#ffffff"];
+
+function rand(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle<T>(arr: T[]) {
+  const clone = [...arr];
+  for (let i = clone.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [clone[i], clone[j]] = [clone[j], clone[i]];
+  }
+  return clone;
+}
+
+function uniqueOptions(correct: number, spread: number) {
+  const set = new Set<number>([correct]);
+  while (set.size < 4) {
+    const delta = rand(1, spread);
+    const sign = Math.random() > 0.5 ? 1 : -1;
+    set.add(Math.max(0, correct + delta * sign));
+  }
+  return shuffle([...set]);
+}
+
+function generateProblem(difficulty: Difficulty): Problem {
+  const mode =
+    difficulty === "mixed"
+      ? (["easy", "medium", "hard"] as const)[rand(0, 2)]
+      : difficulty;
+
+  if (mode === "easy") {
+    const a = rand(1, 10);
+    const b = rand(1, 10);
+    const isAdd = Math.random() > 0.5;
+    const answer = isAdd ? a + b : Math.max(a, b) - Math.min(a, b);
+    const question = isAdd
+      ? `${a} + ${b} = ?`
+      : `${Math.max(a, b)} - ${Math.min(a, b)} = ?`;
+    return { question, answer, options: uniqueOptions(answer, 5) };
+  }
+
+  if (mode === "medium") {
+    const type = rand(0, 2);
+    if (type === 0) {
+      const a = rand(10, 30);
+      const b = rand(5, 20);
+      const answer = a + b;
+      return { question: `${a} + ${b} = ?`, answer, options: uniqueOptions(answer, 8) };
+    }
+    if (type === 1) {
+      const a = rand(12, 40);
+      const b = rand(4, 18);
+      const answer = a - b;
+      return { question: `${a} - ${b} = ?`, answer, options: uniqueOptions(answer, 8) };
+    }
+    const a = rand(2, 9);
+    const b = rand(2, 9);
+    const answer = a * b;
+    return { question: `${a} x ${b} = ?`, answer, options: uniqueOptions(answer, 10) };
+  }
+
+  const type = rand(0, 3);
+  if (type === 0) {
+    const a = rand(20, 80);
+    const b = rand(10, 45);
+    const answer = a + b;
+    return { question: `${a} + ${b} = ?`, answer, options: uniqueOptions(answer, 12) };
+  }
+  if (type === 1) {
+    const a = rand(30, 90);
+    const b = rand(10, 35);
+    const answer = a - b;
+    return { question: `${a} - ${b} = ?`, answer, options: uniqueOptions(answer, 12) };
+  }
+  if (type === 2) {
+    const a = rand(4, 12);
+    const b = rand(3, 12);
+    const answer = a * b;
+    return { question: `${a} x ${b} = ?`, answer, options: uniqueOptions(answer, 14) };
+  }
+  const divisor = rand(2, 12);
+  const answer = rand(2, 12);
+  const dividend = divisor * answer;
+  return { question: `${dividend} / ${divisor} = ?`, answer, options: uniqueOptions(answer, 10) };
+}
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  fill: string,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function createExplosionBurst(player: PlayerId): ExplosionBurst {
+  return {
+    player,
+    startTime: 0,
+    duration: 720,
+    flashDuration: 280,
+    text: Math.random() > 0.45 ? "+10" : "\uD83D\uDCA5 BUM",
+    particles: Array.from({ length: 18 }, (_, index) => ({
+      angle: (Math.PI * 2 * index) / 18 + Math.random() * 0.18,
+      speed: 48 + Math.random() * 88,
+      size: 3 + Math.random() * 5,
+      life: 0.6 + Math.random() * 0.4,
+      color: EXPLOSION_COLORS[rand(0, EXPLOSION_COLORS.length - 1)],
+    })),
+  };
+}
+
+function drawExplosion(
+  ctx: CanvasRenderingContext2D,
+  burst: ExplosionBurst,
+  x: number,
+  y: number,
+  timestamp: number,
+) {
+  const elapsed = timestamp - burst.startTime;
+  const progress = Math.min(1, elapsed / burst.duration);
+  const flashProgress = Math.min(1, elapsed / burst.flashDuration);
+  const flashAlpha = 1 - flashProgress;
+
+  if (flashAlpha > 0) {
+    const flashRadius = 24 + flashProgress * 34;
+    const flash = ctx.createRadialGradient(x, y - 10, 0, x, y - 10, flashRadius);
+    flash.addColorStop(0, `rgba(255,255,255,${flashAlpha * 0.95})`);
+    flash.addColorStop(0.3, `rgba(253,224,71,${flashAlpha * 0.65})`);
+    flash.addColorStop(1, "rgba(249,115,22,0)");
+    ctx.fillStyle = flash;
+    ctx.beginPath();
+    ctx.arc(x, y - 10, flashRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  burst.particles.forEach((particle) => {
+    const particleProgress = Math.min(1, progress / particle.life);
+    const distance = particle.speed * particleProgress;
+    const px = x + Math.cos(particle.angle) * distance;
+    const py = y - 10 + Math.sin(particle.angle) * distance - particleProgress * 14;
+    const alpha = 1 - particleProgress;
+    const size = particle.size * (1 - particleProgress * 0.35);
+
+    ctx.fillStyle = particle.color;
+    ctx.globalAlpha = Math.max(0, alpha);
+    ctx.beginPath();
+    ctx.arc(px, py, Math.max(1.1, size), 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1;
+}
+
+function drawFloatingScore(
+  ctx: CanvasRenderingContext2D,
+  burst: ExplosionBurst,
+  x: number,
+  y: number,
+  timestamp: number,
+) {
+  const elapsed = timestamp - burst.startTime;
+  const progress = Math.min(1, elapsed / burst.duration);
+  const riseY = y - 56 - progress * 34;
+  const alpha = 1 - progress;
+  const scale = 0.92 + (1 - progress) * 0.18;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x + 16, riseY);
+  ctx.scale(scale, scale);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(249,115,22,0.45)";
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = "#fff7ed";
+  ctx.font = "bold 24px Arial";
+  ctx.fillText(burst.text, 0, 0);
+  ctx.restore();
+}
+
+function drawChick(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  scale: number,
+  t: number,
+  active: boolean,
+  palette: {
+    bodyOuter: string;
+    bodyInner: string;
+    wing: string;
+    wingStroke: string;
+    outline: string;
+    tail: string;
+    comb: string;
+    beak: string;
+    cheek: string;
+    leg: string;
+    eye: string;
+    shadow: string;
+    jersey: string;
+  },
+  label: string,
+) {
+  const walkPhase = Math.sin(t * 9 + (label === "B" ? 0.9 : 0));
+  const bounce = active ? Math.abs(walkPhase) * 2.2 : 0.6;
+  const eyeLook = Math.sin(t * 2.2 + (label === "B" ? 0.4 : 0)) * 1.2;
+  const blink = Math.abs(Math.sin(t * 1.4 + (label === "B" ? 0.3 : 0))) > 0.975 ? 0.12 : 1;
+  const wing = Math.sin(t * 8.2 + (label === "B" ? 0.6 : 0)) * 0.15;
+  const bodyLean = active ? walkPhase * 0.05 : 0;
+  const leftStep = active ? walkPhase * 4.2 : 0.25;
+  const rightStep = active ? -walkPhase * 4.2 : -0.25;
+
+  ctx.fillStyle = palette.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x + 8, y + 36, 28 * scale, 9 * scale, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, y + bounce);
+  ctx.scale(scale, scale);
+  ctx.rotate(bodyLean);
+
+  ctx.strokeStyle = palette.leg;
+  ctx.lineCap = "round";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-1, 16);
+  ctx.lineTo(-1 + rightStep * 0.25, 24);
+  ctx.lineTo(-1 + rightStep * 0.65, 32);
+  ctx.stroke();
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(-7 + rightStep * 0.65, 32);
+  ctx.lineTo(-1 + rightStep * 0.65, 32);
+  ctx.stroke();
+
+  const bodyGrad = ctx.createRadialGradient(6, -8, 3, 0, 2, 30);
+  bodyGrad.addColorStop(0, palette.bodyInner);
+  bodyGrad.addColorStop(1, palette.bodyOuter);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 3, 20, 17, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = palette.outline;
+  ctx.lineWidth = 1.3;
+  ctx.stroke();
+
+  ctx.fillStyle = palette.tail;
+  ctx.beginPath();
+  ctx.ellipse(-14, -2, 7.2, 9.8, -0.45, 0, Math.PI * 2);
+  ctx.ellipse(-18, 5, 5.7, 8.1, -0.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(0, 5);
+  ctx.rotate(wing);
+  ctx.fillStyle = palette.wing;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 9, 7.2, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = palette.wingStroke;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = palette.jersey;
+  ctx.beginPath();
+  ctx.roundRect(-5, 0, 14, 12, 4);
+  ctx.fill();
+
+  const headGrad = ctx.createRadialGradient(12, -14, 2, 12, -10, 14);
+  headGrad.addColorStop(0, palette.bodyInner);
+  headGrad.addColorStop(1, palette.tail);
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(13, -10, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = palette.outline;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.fillStyle = palette.comb;
+  ctx.beginPath();
+  ctx.arc(6, -20, 3.6, 0, Math.PI * 2);
+  ctx.arc(12, -23, 4.6, 0, Math.PI * 2);
+  ctx.arc(18, -20, 3.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = palette.beak;
+  ctx.beginPath();
+  ctx.moveTo(22, -10);
+  ctx.lineTo(31, -7);
+  ctx.lineTo(22, -3.5);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = palette.cheek;
+  ctx.beginPath();
+  ctx.ellipse(8.4, -7.8, 3.2, 2.4, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(18.6, -6.4, 3.2, 2.4, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = palette.eye;
+  ctx.beginPath();
+  ctx.ellipse(9, -11, 5.3, 5.3 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(18.6, -9.2, 5.1, 5.1 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.ellipse(9, -11, 3.2, 3.2 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(18.6, -9.2, 3, 3 * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  ctx.arc(9 + eyeLook, -11, 1.35, 0, Math.PI * 2);
+  ctx.arc(18.6 + eyeLook, -9.2, 1.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(9.7 + eyeLook, -11.7, 0.55, 0, Math.PI * 2);
+  ctx.arc(19.3 + eyeLook, -9.9, 0.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#cf6f12";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(18.6, -4.6, 2.4, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  ctx.strokeStyle = palette.leg;
+  ctx.lineCap = "round";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(7, 16);
+  ctx.lineTo(7 + leftStep * 0.25, 24);
+  ctx.lineTo(7 + leftStep * 0.65, 32);
+  ctx.stroke();
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(1 + leftStep * 0.65, 32);
+  ctx.lineTo(8 + leftStep * 0.65, 32);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.font = "bold 12px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, 2, 6);
+
+  ctx.restore();
+}
+
+function createRound(mode: Difficulty) {
+  const problem = generateProblem(mode);
+  return {
+    problem,
+    options: {
+      A: shuffle(problem.options),
+      B: shuffle(problem.options),
+    } satisfies PlayerMap<number[]>,
+  };
+}
+
+function buildTeacherProblem(draft: TeacherDraft): Problem | null {
+  const question = draft.question.trim();
+  const answer = Number(draft.answer.trim());
+
+  if (!question || Number.isNaN(answer)) {
+    return null;
+  }
+
+  const wrongValues = draft.wrongAnswers
+    .split(",")
+    .map((item) => Number(item.trim()))
+    .filter((value) => !Number.isNaN(value) && value !== answer);
+
+  const optionSet = new Set<number>([answer, ...wrongValues]);
+  if (optionSet.size < 4) {
+    uniqueOptions(answer, Math.max(6, Math.abs(answer) + 4)).forEach((value) => optionSet.add(value));
+  }
+
+  return {
+    question,
+    answer,
+    options: shuffle([...optionSet]).slice(0, 4),
+  };
+}
+
+function takeNextRound(mode: Difficulty, customProblems: Problem[]) {
+  if (customProblems.length > 0) {
+    const [problem, ...remaining] = customProblems;
+    return {
+      remaining,
+      round: {
+        problem,
+        options: {
+          A: shuffle(problem.options),
+          B: shuffle(problem.options),
+        } satisfies PlayerMap<number[]>,
+      },
+    };
+  }
+
+  return {
+    remaining: customProblems,
+    round: createRound(mode),
+  };
+}
+
+function clampProgress(value: number) {
+  return Math.max(0, Math.min(TOTAL_STEPS, value));
+}
+
+function getShortLabel(name: string, fallback: string) {
+  const trimmed = name.trim();
+  if (!trimmed) return fallback;
+  return trimmed.slice(0, 1).toUpperCase();
+}
+
+export default function MathChickGame() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const problemRevealStartRef = useRef<number>(0);
+  const roundTimerRef = useRef<number | null>(null);
+  const playerProgressRef = useRef<PlayerMap<number>>({ A: 0, B: 0 });
+  const winnerRef = useRef<PlayerId | null>(null);
+  const lockedByRef = useRef<PlayerId | null>(null);
+  const burstsRef = useRef<ExplosionBurst[]>([]);
+  const customProblemsRef = useRef<Problem[]>([]);
+
+  const initialRound = useMemo(() => createRound("easy"), []);
+
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [started, setStarted] = useState(false);
+  const [winner, setWinner] = useState<PlayerId | null>(null);
+  const [currentProblem, setCurrentProblem] = useState<Problem>(initialRound.problem);
+  const [playerOptions, setPlayerOptions] = useState<PlayerMap<number[]>>(initialRound.options);
+  const [playerScores, setPlayerScores] = useState<PlayerMap<number>>({ A: 0, B: 0 });
+  const [playerProgress, setPlayerProgress] = useState<PlayerMap<number>>({ A: 0, B: 0 });
+  const [selectedAnswers, setSelectedAnswers] = useState<PlayerMap<number | null>>({ A: null, B: null });
+  const [feedback, setFeedback] = useState<PlayerMap<FeedbackState>>({ A: "idle", B: "idle" });
+  const [roundLocked, setRoundLocked] = useState(false);
+  const [lockedBy, setLockedBy] = useState<PlayerId | null>(null);
+  const [teamNames, setTeamNames] = useState<PlayerMap<string>>({ A: "Team A", B: "Team B" });
+  const [teacherDraft, setTeacherDraft] = useState<TeacherDraft>({
+    question: "",
+    answer: "",
+    wrongAnswers: "",
+  });
+  const [customProblems, setCustomProblems] = useState<Problem[]>([]);
+  const [teacherMessage, setTeacherMessage] = useState<string>("");
+
+  useEffect(() => {
+    playerProgressRef.current = playerProgress;
+  }, [playerProgress]);
+
+  useEffect(() => {
+    customProblemsRef.current = customProblems;
+  }, [customProblems]);
+
+  useEffect(() => {
+    winnerRef.current = winner;
+  }, [winner]);
+
+  useEffect(() => {
+    lockedByRef.current = lockedBy;
+  }, [lockedBy]);
+
+  useEffect(() => {
+    return () => {
+      if (roundTimerRef.current) {
+        window.clearTimeout(roundTimerRef.current);
+      }
+    };
+  }, []);
+
+  const scheduleNextRound = useCallback((mode: Difficulty) => {
+    if (roundTimerRef.current) {
+      window.clearTimeout(roundTimerRef.current);
+    }
+
+    roundTimerRef.current = window.setTimeout(() => {
+      if (winnerRef.current) {
+        return;
+      }
+      const next = takeNextRound(mode, customProblemsRef.current);
+      customProblemsRef.current = next.remaining;
+      setCustomProblems(next.remaining);
+      setCurrentProblem(next.round.problem);
+      setPlayerOptions(next.round.options);
+      setSelectedAnswers({ A: null, B: null });
+      setFeedback({ A: "idle", B: "idle" });
+      setRoundLocked(false);
+      setLockedBy(null);
+      problemRevealStartRef.current = 0;
+    }, ROUND_DELAY);
+  }, []);
+
+  const restartGame = useCallback((mode: Difficulty) => {
+    if (roundTimerRef.current) {
+      window.clearTimeout(roundTimerRef.current);
+    }
+    const next = takeNextRound(mode, customProblemsRef.current);
+    customProblemsRef.current = next.remaining;
+    setDifficulty(mode);
+    setStarted(true);
+    setWinner(null);
+    setCustomProblems(next.remaining);
+    setCurrentProblem(next.round.problem);
+    setPlayerOptions(next.round.options);
+    setPlayerScores({ A: 0, B: 0 });
+    setPlayerProgress({ A: 0, B: 0 });
+    setSelectedAnswers({ A: null, B: null });
+    setFeedback({ A: "idle", B: "idle" });
+    setRoundLocked(false);
+    setLockedBy(null);
+    playerProgressRef.current = { A: 0, B: 0 };
+    winnerRef.current = null;
+    lockedByRef.current = null;
+    burstsRef.current = [];
+    startTimeRef.current = 0;
+    problemRevealStartRef.current = 0;
+  }, []);
+
+  const triggerCorrectEffect = useCallback((player: PlayerId) => {
+    burstsRef.current = [...burstsRef.current, createExplosionBurst(player)];
+  }, []);
+
+  const handleStartGame = useCallback(() => {
+    restartGame(difficulty);
+  }, [difficulty, restartGame]);
+
+  const handleBackToSetup = useCallback(() => {
+    if (roundTimerRef.current) {
+      window.clearTimeout(roundTimerRef.current);
+    }
+    setStarted(false);
+    setWinner(null);
+    setRoundLocked(false);
+    setLockedBy(null);
+    setSelectedAnswers({ A: null, B: null });
+    setFeedback({ A: "idle", B: "idle" });
+    burstsRef.current = [];
+  }, []);
+
+  const updateTeamName = useCallback((player: PlayerId, value: string) => {
+    setTeamNames((prev) => ({
+      ...prev,
+      [player]: value || (player === "A" ? "Team A" : "Team B"),
+    }));
+  }, []);
+
+  const addTeacherProblem = useCallback(() => {
+    const nextProblem = buildTeacherProblem(teacherDraft);
+    if (!nextProblem) {
+      setTeacherMessage("Savol va to'g'ri javobni to'ldiring.");
+      return;
+    }
+
+    setCustomProblems((prev) => [...prev, nextProblem]);
+    setTeacherDraft({ question: "", answer: "", wrongAnswers: "" });
+    setTeacherMessage("Custom savol navbatga qo'shildi.");
+  }, [teacherDraft]);
+
+  const handleAnswer = useCallback(
+    (player: PlayerId, value: number) => {
+      if (!started || winner || roundLocked) return;
+
+      setRoundLocked(true);
+      setLockedBy(player);
+      setSelectedAnswers((prev) => ({ ...prev, [player]: value }));
+
+      const isCorrect = value === currentProblem.answer;
+      setFeedback({
+        A: player === "A" ? (isCorrect ? "correct" : "wrong") : "idle",
+        B: player === "B" ? (isCorrect ? "correct" : "wrong") : "idle",
+      });
+
+      if (isCorrect) {
+        triggerCorrectEffect(player);
+        const nextScores = {
+          ...playerScores,
+          [player]: playerScores[player] + 10,
+        };
+        const nextProgress = {
+          ...playerProgressRef.current,
+          [player]: clampProgress(playerProgressRef.current[player] + 1),
+        };
+
+        setPlayerScores(nextScores);
+        setPlayerProgress(nextProgress);
+        playerProgressRef.current = nextProgress;
+
+        if (nextProgress[player] >= TOTAL_STEPS) {
+          setWinner(player);
+          return;
+        }
+
+        scheduleNextRound(difficulty);
+        return;
+      }
+
+      const nextProgress = {
+        ...playerProgressRef.current,
+        [player]: clampProgress(playerProgressRef.current[player] - 1),
+      };
+      setPlayerProgress(nextProgress);
+      playerProgressRef.current = nextProgress;
+      scheduleNextRound(difficulty);
+    },
+    [currentProblem.answer, difficulty, playerScores, roundLocked, scheduleNextRound, started, triggerCorrectEffect, winner],
+  );
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let renderProgress: PlayerMap<number> = { ...playerProgressRef.current };
+
+    const palettes = {
+      A: {
+        bodyOuter: "#f4dd78",
+        bodyInner: "#fffdf5",
+        wing: "#fff1b8",
+        wingStroke: "#e4c962",
+        outline: "#e6d378",
+        tail: "#fff7da",
+        comb: "#ef4444",
+        beak: "#f59e0b",
+        cheek: "rgba(251, 191, 36, 0.45)",
+        leg: "#f59e0b",
+        eye: "#7c4a11",
+        shadow: "rgba(14,16,29,0.26)",
+        jersey: "#f59e0b",
+      },
+      B: {
+        bodyOuter: "#d8f2ff",
+        bodyInner: "#ffffff",
+        wing: "#c4e9ff",
+        wingStroke: "#7cc7f0",
+        outline: "#92d2f6",
+        tail: "#eefaff",
+        comb: "#fb7185",
+        beak: "#38bdf8",
+        cheek: "rgba(56, 189, 248, 0.28)",
+        leg: "#38bdf8",
+        eye: "#0f3d56",
+        shadow: "rgba(14,16,29,0.22)",
+        jersey: "#0ea5e9",
+      },
+    } satisfies Record<PlayerId, Parameters<typeof drawChick>[6]>;
+
+    const drawScene = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const t = (timestamp - startTimeRef.current) / 1000;
+
+      burstsRef.current = burstsRef.current
+        .map((burst) => (burst.startTime === 0 ? { ...burst, startTime: timestamp } : burst))
+        .filter((burst) => timestamp - burst.startTime < burst.duration);
+
+      renderProgress = {
+        A: renderProgress.A + (playerProgressRef.current.A - renderProgress.A) * 0.1,
+        B: renderProgress.B + (playerProgressRef.current.B - renderProgress.B) * 0.1,
+      };
+
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      bgGrad.addColorStop(0, "#09111f");
+      bgGrad.addColorStop(0.45, "#152642");
+      bgGrad.addColorStop(1, "#0b1324");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      for (let i = 0; i < 10; i += 1) {
+        const starX = (i * CANVAS_W) / 10 + Math.sin(t * 0.4 + i) * 18;
+        const starY = 26 + Math.cos(t * 0.3 + i) * 18;
+        const starOpacity = 0.25 + Math.sin(t * 1.2 + i) * 0.18;
+        ctx.fillStyle = `rgba(255,255,255,${starOpacity})`;
+        ctx.beginPath();
+        ctx.arc(starX, starY, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const neonSweep = 920 + Math.sin(t * 1.05) * 90;
+      const lightGrad = ctx.createLinearGradient(neonSweep - 220, 0, neonSweep + 220, 0);
+      lightGrad.addColorStop(0, "rgba(34,211,238,0)");
+      lightGrad.addColorStop(0.5, "rgba(34,211,238,0.9)");
+      lightGrad.addColorStop(1, "rgba(34,211,238,0)");
+      ctx.fillStyle = lightGrad;
+      ctx.fillRect(770, 0, 320, 10);
+
+      const laneConfigs = [
+        { player: "A" as const, y: LANE_Y.A, accent: "#f59e0b", glow: "rgba(245,158,11,0.25)" },
+        { player: "B" as const, y: LANE_Y.B, accent: "#38bdf8", glow: "rgba(56,189,248,0.22)" },
+      ];
+
+      laneConfigs.forEach(({ player, y, accent, glow }) => {
+        const laneTop = y - 48;
+        const laneBottom = y + 42;
+
+        drawRoundedRect(ctx, 58, laneTop - 8, CANVAS_W - 136, 92, 28, "rgba(255,255,255,0.04)");
+
+        const laneGrad = ctx.createLinearGradient(0, laneTop, 0, laneBottom + 30);
+        laneGrad.addColorStop(0, "rgba(38,47,79,0.95)");
+        laneGrad.addColorStop(1, "rgba(22,28,51,0.98)");
+        ctx.fillStyle = laneGrad;
+        ctx.beginPath();
+        ctx.roundRect(72, laneTop + 14, CANVAS_W - 160, 52, 24);
+        ctx.fill();
+
+        ctx.fillStyle = glow;
+        ctx.fillRect(72, laneTop + 14, CANVAS_W - 160, 52);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([14, 16]);
+        ctx.beginPath();
+        ctx.moveTo(86, y + 40);
+        ctx.lineTo(FINISH_X - 22, y + 40);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        for (let step = 1; step <= TOTAL_STEPS; step += 1) {
+          const markerX = CHICK_START_X + step * CHICK_STEP;
+          ctx.strokeStyle = `rgba(255,255,255,${step <= playerProgressRef.current[player] ? 0.2 : 0.08})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(markerX, laneTop + 6);
+          ctx.lineTo(markerX, laneBottom + 24);
+          ctx.stroke();
+
+          ctx.fillStyle = step <= playerProgressRef.current[player] ? accent : "rgba(255,255,255,0.18)";
+          ctx.beginPath();
+          ctx.arc(markerX, laneTop - 8, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        drawRoundedRect(ctx, 84, laneTop - 22, 118, 30, 14, "rgba(7,12,24,0.62)");
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(teamNames[player].toUpperCase().slice(0, 12), 143, laneTop - 7);
+
+        drawRoundedRect(ctx, FINISH_X - 4, laneTop - 12, 28, 94, 10, "rgba(255,255,255,0.08)");
+        const flagColors = ["#ffffff", accent];
+        const tileSize = 12;
+        for (let row = 0; row < 6; row += 1) {
+          for (let col = 0; col < 2; col += 1) {
+            ctx.fillStyle = flagColors[(row + col) % 2];
+            ctx.fillRect(FINISH_X + col * tileSize, laneTop - 2 + row * tileSize, tileSize, tileSize);
+          }
+        }
+      });
+
+      drawRoundedRect(ctx, QUESTION_PANEL_X, QUESTION_PANEL_Y, QUESTION_PANEL_W, QUESTION_PANEL_H, 24, "rgba(19,27,48,0.82)");
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(QUESTION_PANEL_X, QUESTION_PANEL_Y, QUESTION_PANEL_W, QUESTION_PANEL_H, 24);
+      ctx.stroke();
+
+      if (problemRevealStartRef.current === 0) {
+        problemRevealStartRef.current = timestamp;
+      }
+      const revealProgress = Math.min(1, (timestamp - problemRevealStartRef.current) / 360);
+      const questionScale = 0.88 + revealProgress * 0.12;
+      ctx.save();
+      ctx.translate(QUESTION_PANEL_X + QUESTION_PANEL_W / 2, QUESTION_PANEL_Y + QUESTION_PANEL_H / 2);
+      ctx.scale(questionScale, questionScale);
+      ctx.fillStyle = "#dbeafe";
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("SHARED QUESTION", 0, -12);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 30px Arial";
+      ctx.fillText(currentProblem.question, 0, 22);
+      ctx.restore();
+
+      const difficultyColors = {
+        easy: "rgba(34,197,94,0.9)",
+        medium: "rgba(59,130,246,0.9)",
+        hard: "rgba(244,63,94,0.9)",
+        mixed: "rgba(168,85,247,0.9)",
+      } satisfies Record<Difficulty, string>;
+      drawRoundedRect(ctx, 1030, 24, 176, 44, 16, difficultyColors[difficulty]);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(difficulty.toUpperCase(), 1118, 47);
+
+      drawRoundedRect(ctx, 72, 20, 220, 62, 20, "rgba(19,27,48,0.78)");
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "left";
+      ctx.fillText(roundLocked ? "FIRST CLICK LOCKED" : "FIRST CLICK WINS", 96, 46);
+      ctx.fillStyle = roundLocked
+        ? lockedByRef.current === "A"
+          ? "#fbbf24"
+          : "#7dd3fc"
+        : "#94a3b8";
+      ctx.font = "bold 16px Arial";
+      ctx.fillText(
+        roundLocked && lockedByRef.current
+          ? `Round taken by Player ${lockedByRef.current}`
+          : "Both players race this same problem",
+        96,
+        68,
+      );
+
+      const chickAX = CHICK_START_X + renderProgress.A * CHICK_STEP;
+      const chickBX = CHICK_START_X + renderProgress.B * CHICK_STEP;
+      const jumpOffsets: PlayerMap<number> = { A: 0, B: 0 };
+
+      burstsRef.current.forEach((burst) => {
+        const progress = Math.min(1, (timestamp - burst.startTime) / burst.duration);
+        const jump = Math.sin(Math.min(1, progress * 1.2) * Math.PI) * 18 * (1 - progress * 0.2);
+        jumpOffsets[burst.player] = Math.max(jumpOffsets[burst.player], jump);
+      });
+
+      const burstPositions: PlayerMap<{ x: number; y: number }> = {
+        A: { x: chickAX + 14, y: LANE_Y.A - jumpOffsets.A - 18 },
+        B: { x: chickBX + 14, y: LANE_Y.B - jumpOffsets.B - 18 },
+      };
+
+      burstsRef.current.forEach((burst) => {
+        const pos = burstPositions[burst.player];
+        drawExplosion(ctx, burst, pos.x, pos.y, timestamp);
+        drawFloatingScore(ctx, burst, pos.x + 4, pos.y - 6, timestamp);
+      });
+
+      drawChick(
+        ctx,
+        chickAX,
+        LANE_Y.A - jumpOffsets.A,
+        CHICK_SCALE,
+        t,
+        started && !winnerRef.current,
+        palettes.A,
+        getShortLabel(teamNames.A, "A"),
+      );
+      drawChick(
+        ctx,
+        chickBX,
+        LANE_Y.B - jumpOffsets.B,
+        CHICK_SCALE,
+        t,
+        started && !winnerRef.current,
+        palettes.B,
+        getShortLabel(teamNames.B, "B"),
+      );
+
+      if (winnerRef.current) {
+        const champion = winnerRef.current;
+        const championX = champion === "A" ? chickAX : chickBX;
+        const championY = champion === "A" ? LANE_Y.A : LANE_Y.B;
+        const flare = 16 + Math.sin(t * 6) * 4;
+        const crownGrad = ctx.createRadialGradient(championX, championY - 70, 6, championX, championY - 70, 34);
+        crownGrad.addColorStop(0, "rgba(250,204,21,0.85)");
+        crownGrad.addColorStop(1, "rgba(250,204,21,0)");
+        ctx.fillStyle = crownGrad;
+        ctx.beginPath();
+        ctx.arc(championX, championY - 70, flare, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      animationRef.current = requestAnimationFrame(drawScene);
+    };
+
+    animationRef.current = requestAnimationFrame(drawScene);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [currentProblem.question, difficulty, roundLocked, started, teamNames]);
+
+  const categoryButton = (mode: Difficulty, label: string, accent: string) => {
+    const active = difficulty === mode;
+    const styles = {
+      easy: active
+        ? "from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30"
+        : "from-slate-700 to-slate-800 text-slate-100 hover:from-emerald-500/80 hover:to-emerald-600/80",
+      medium: active
+        ? "from-blue-500 to-blue-600 text-white shadow-blue-500/30"
+        : "from-slate-700 to-slate-800 text-slate-100 hover:from-blue-500/80 hover:to-blue-600/80",
+      hard: active
+        ? "from-rose-500 to-rose-600 text-white shadow-rose-500/30"
+        : "from-slate-700 to-slate-800 text-slate-100 hover:from-rose-500/80 hover:to-rose-600/80",
+      mixed: active
+        ? "from-violet-500 to-violet-600 text-white shadow-violet-500/30"
+        : "from-slate-700 to-slate-800 text-slate-100 hover:from-violet-500/80 hover:to-violet-600/80",
+    } satisfies Record<Difficulty, string>;
+
+    return (
+      <button
+        key={mode}
+        onClick={() => setDifficulty(mode)}
+        className={`rounded-2xl border border-white/10 bg-gradient-to-br px-5 py-3 text-sm font-black uppercase tracking-[0.2em] transition duration-200 hover:scale-[1.03] active:scale-[0.98] shadow-lg ${styles[mode]}`}
+      >
+        <span className="mr-2">{accent}</span>
+        {label}
+      </button>
+    );
+  };
+
+  const playerCard = (player: PlayerId) => {
+    const isWarm = player === "A";
+    const progress = playerProgress[player];
+    const score = playerScores[player];
+    const isWinner = winner === player;
+    const isLocked = lockedBy === player;
+    const cardBorder = isWarm ? "border-amber-400/25" : "border-cyan-400/25";
+    const title = isWarm ? "text-amber-200" : "text-cyan-200";
+    const value = isWarm
+      ? "from-amber-300 via-yellow-300 to-orange-400"
+      : "from-sky-300 via-cyan-300 to-blue-400";
+    const chip = isWarm
+      ? "bg-amber-500/15 text-amber-200 border-amber-300/20"
+      : "bg-cyan-500/15 text-cyan-200 border-cyan-300/20";
+
+    const displayName = teamNames[player];
+
+    return (
+      <div
+        className={`rounded-3xl border ${cardBorder} bg-slate-900/70 p-5 shadow-xl shadow-black/30 backdrop-blur-sm`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className={`text-xs font-black uppercase tracking-[0.35em] ${title}`}>
+              {displayName}
+            </div>
+            <div className="mt-2 text-sm text-slate-400">
+              {isWinner
+                ? "Champion"
+                : isLocked
+                  ? "First click secured"
+                  : roundLocked
+                    ? "Waiting next round"
+                    : "Ready to strike"}
+            </div>
+          </div>
+          <div className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] ${chip}`}>
+            {progress}/{TOTAL_STEPS} steps
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="rounded-2xl bg-white/[0.04] p-4">
+            <div className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Score</div>
+            <div className={`mt-2 text-3xl font-black text-transparent bg-gradient-to-r ${value} bg-clip-text`}>
+              {score}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/[0.04] p-4">
+            <div className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">Progress</div>
+            <div className="mt-2 text-3xl font-black text-white">{progress}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-800">
+          <div
+            className={`h-full rounded-full bg-gradient-to-r ${isWarm ? "from-amber-400 to-orange-500" : "from-cyan-400 to-blue-500"} transition-all duration-500`}
+            style={{ width: `${(progress / TOTAL_STEPS) * 100}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const answerPanel = (player: PlayerId) => {
+    const isWarm = player === "A";
+    const accentPanel = isWarm
+      ? "border-amber-400/20 from-amber-500/10 via-slate-900/70 to-orange-500/10"
+      : "border-cyan-400/20 from-cyan-500/10 via-slate-900/70 to-blue-500/10";
+    const accentButton = isWarm
+      ? "from-amber-400/90 to-orange-500/90 hover:shadow-amber-500/30"
+      : "from-sky-400/90 to-cyan-500/90 hover:shadow-cyan-500/30";
+    const options = playerOptions[player];
+    const displayName = teamNames[player];
+
+    return (
+      <div className={`rounded-3xl border bg-gradient-to-br p-5 ${accentPanel}`}>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <div className={`text-xs font-black uppercase tracking-[0.35em] ${isWarm ? "text-amber-200" : "text-cyan-200"}`}>
+              {displayName}
+            </div>
+            <div className="mt-2 text-sm text-slate-400">
+              {winner
+                ? "Match finished"
+                : roundLocked
+                  ? lockedBy === player
+                    ? "Your click decided this round"
+                    : "Round locked by opponent"
+                  : "Choose fast"}
+            </div>
+          </div>
+          <div className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] ${isWarm ? "bg-amber-400/10 text-amber-100" : "bg-cyan-400/10 text-cyan-100"}`}>
+            {feedback[player] === "correct"
+              ? "Correct"
+              : feedback[player] === "wrong"
+                ? "Wrong"
+                : "Live"}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {options.map((option, index) => {
+            const isSelected = selectedAnswers[player] === option;
+            const isCorrect = option === currentProblem.answer;
+            const showCorrect = roundLocked && lockedBy === player && isSelected && isCorrect;
+            const showWrong = roundLocked && lockedBy === player && isSelected && !isCorrect;
+            const showReveal = roundLocked && lockedBy === player && !isSelected && isCorrect;
+
+            let classes =
+              "bg-slate-800/80 text-white border-white/10 hover:bg-slate-700/90 hover:scale-[1.02]";
+            if (showCorrect) {
+              classes =
+                "bg-gradient-to-br from-emerald-500 to-green-600 text-white border-emerald-300/40 shadow-lg shadow-emerald-500/30 scale-[1.02]";
+            } else if (showWrong) {
+              classes =
+                "bg-gradient-to-br from-rose-500 to-red-600 text-white border-rose-300/40 shadow-lg shadow-rose-500/30";
+            } else if (showReveal) {
+              classes =
+                "bg-emerald-500/20 text-emerald-100 border-emerald-300/30";
+            } else if (!roundLocked) {
+              classes = `bg-gradient-to-br ${accentButton} text-white border-white/15 shadow-lg`;
+            }
+
+            return (
+              <button
+                key={`${player}-${option}-${index}`}
+                type="button"
+                disabled={!started || !!winner || roundLocked}
+                onClick={() => handleAnswer(player, option)}
+                className={`rounded-2xl border px-4 py-5 text-2xl font-black transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${classes}`}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(245,158,11,0.12),_transparent_28%),linear-gradient(135deg,_#020617,_#0f172a_48%,_#020617)] p-6 text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-[-80px] top-24 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute bottom-0 right-[-40px] h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
+        <div className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-500/8 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1360px]">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="bg-gradient-to-r from-amber-300 via-white to-cyan-300 bg-clip-text text-4xl font-black tracking-[0.08em] text-transparent md:text-5xl">
+              Math Chick Game
+            </h1>
+            <p className="mt-3 text-sm text-slate-400 md:text-base">
+              Shared question. Two answer panels. First click decides the round.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-slate-900/70 px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-sm">
+            <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Race Rule</div>
+            <div className="mt-2 text-lg font-bold text-slate-100">First Click Wins</div>
+            <div className="mt-1 text-sm text-slate-400">
+              Same answers, different button order, one lock per round.
+            </div>
+          </div>
+        </div>
+
+        {!started && (
+          <>
+            <div className="mb-6 rounded-[32px] border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
+              <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                    Teacher Panel
+                  </div>
+                  <div className="mt-2 text-xl font-black text-white">
+                    Jamoa nomlari va custom savollar
+                  </div>
+                </div>
+                <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
+                  Navbatdagi custom savollar: {customProblems.length}
+                </div>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-[1.1fr_1.4fr]">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="rounded-3xl border border-amber-400/15 bg-amber-500/5 p-4">
+                    <div className="text-xs font-black uppercase tracking-[0.3em] text-amber-200">Team A</div>
+                    <input
+                      type="text"
+                      value={teamNames.A}
+                      onChange={(event) => updateTeamName("A", event.target.value)}
+                      className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
+                      placeholder="Masalan: Burgutlar"
+                    />
+                  </label>
+
+                  <label className="rounded-3xl border border-cyan-400/15 bg-cyan-500/5 p-4">
+                    <div className="text-xs font-black uppercase tracking-[0.3em] text-cyan-200">Team B</div>
+                    <input
+                      type="text"
+                      value={teamNames.B}
+                      onChange={(event) => updateTeamName("B", event.target.value)}
+                      className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300/40"
+                      placeholder="Masalan: Yulduzlar"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-4">
+                  <label className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Savol / Misol</div>
+                    <input
+                      type="text"
+                      value={teacherDraft.question}
+                      onChange={(event) =>
+                        setTeacherDraft((prev) => ({
+                          ...prev,
+                          question: event.target.value,
+                        }))
+                      }
+                      className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-white/30"
+                      placeholder="Masalan: 12 + 8 = ?"
+                    />
+                  </label>
+
+                  <div className="grid gap-4 md:grid-cols-[0.7fr_1.3fr]">
+                    <label className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">To'g'ri javob</div>
+                      <input
+                        type="number"
+                        value={teacherDraft.answer}
+                        onChange={(event) =>
+                          setTeacherDraft((prev) => ({
+                            ...prev,
+                            answer: event.target.value,
+                          }))
+                        }
+                        className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-white/30"
+                        placeholder="20"
+                      />
+                    </label>
+
+                    <label className="rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Noto'g'ri variantlar</div>
+                      <input
+                        type="text"
+                        value={teacherDraft.wrongAnswers}
+                        onChange={(event) =>
+                          setTeacherDraft((prev) => ({
+                            ...prev,
+                            wrongAnswers: event.target.value,
+                          }))
+                        }
+                        className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-white/30"
+                        placeholder="18, 22, 24"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="text-sm text-slate-400">
+                      3 ta noto'g'ri variant kiritmasangiz, o'yin qolgan variantlarni o'zi to'ldiradi.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addTeacherProblem}
+                      className="rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-orange-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                    >
+                      Savol Qo'shish
+                    </button>
+                  </div>
+
+                  <div className={`text-sm font-semibold ${teacherMessage.includes("qo'shildi") ? "text-emerald-300" : "text-amber-200"}`}>
+                    {teacherMessage || "O'qituvchi shu joydan savol qo'shishi va jamoa nomini almashtirishi mumkin."}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-[32px] border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
+              <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                    O'yinni Boshlash
+                  </div>
+                  <div className="mt-2 text-xl font-black text-white">
+                    Darajani tanlang va musobaqani boshlang
+                  </div>
+                </div>
+                <div className="rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-100">
+                  Start kutilmoqda
+                </div>
+              </div>
+
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <span className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                  Difficulty
+                </span>
+                {categoryButton("easy", "Easy", "Easy")}
+                {categoryButton("medium", "Medium", "Med")}
+                {categoryButton("hard", "Hard", "Hard")}
+                {categoryButton("mixed", "Mixed", "Mix")}
+              </div>
+
+              <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.04] p-5 text-center">
+                <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                  Keyingi Savol
+                </div>
+                <div className="mt-3 bg-gradient-to-r from-amber-200 via-white to-cyan-200 bg-clip-text text-4xl font-black text-transparent">
+                  {customProblems.length > 0 ? customProblems[0].question : currentProblem.question}
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleStartGame}
+                  className="rounded-2xl bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 px-12 py-4 text-xl font-black text-white shadow-2xl shadow-orange-500/40 transition-all hover:scale-[1.03] hover:shadow-orange-500/60"
+                >
+                  O'YINNI BOSHLASH
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {started && (
+          <>
+            <div className="mb-6 grid gap-4 md:grid-cols-2">
+              {playerCard("A")}
+              {playerCard("B")}
+            </div>
+
+            <div className="mb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={handleBackToSetup}
+                className="rounded-2xl border border-white/10 bg-slate-900/70 px-5 py-3 text-sm font-black uppercase tracking-[0.25em] text-slate-100 transition hover:scale-[1.02] hover:bg-slate-800"
+              >
+                Teacher Panelga Qaytish
+              </button>
+            </div>
+
+            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-4 shadow-2xl shadow-black/30 backdrop-blur-md">
+              <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+                    Game Arena
+                  </div>
+                  <div className="mt-2 text-xl font-black text-white">
+                    Canvas poyga va javob panellari
+                  </div>
+                </div>
+                <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
+                  {roundLocked ? "Round locked" : "Round live"}
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0f172acc] shadow-2xl shadow-black/40">
+                <canvas
+                  ref={canvasRef}
+                  width={CANVAS_W}
+                  height={CANVAS_H}
+                  className="h-auto w-full bg-transparent"
+                />
+              </div>
+
+              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                {answerPanel("A")}
+                {answerPanel("B")}
+              </div>
+
+              {winner && (
+                <div className="mt-6 rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-emerald-500/15 via-slate-900/60 to-cyan-500/15 p-6 text-center shadow-xl shadow-emerald-500/10">
+                  <div className="text-xs font-black uppercase tracking-[0.35em] text-emerald-200">
+                    Match Complete
+                  </div>
+                  <div className="mt-3 text-4xl font-black text-white">
+                    {winner ? `\uD83C\uDFC6 ${teamNames[winner]} Wins!` : ""}
+                  </div>
+                  <div className="mt-2 text-slate-300">
+                    Restart to run another head-to-head race.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleStartGame}
+                    className="mt-5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-cyan-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                  >
+                    Restart Match
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -66,7 +66,6 @@ const formatTime = (seconds: number) => {
 
 // ── Realistic SVG Treasure Map ──────────────────────────────────────────────
 function TreasureMapSVG({ progress }: { progress: number }) {
-  // const shipX = 9 + (84) * (progress / 100);
   // Path waypoints
   const pathD = "M 9,72 C 18,58 26,78 35,65 C 44,52 52,70 62,55 C 70,43 80,48 93,30";
   const pathGlowD = "M 8,73 C 18,57 27,79 36,66 C 45,53 53,69 63,55 C 72,42 82,47 94,29";
@@ -81,7 +80,6 @@ function TreasureMapSVG({ progress }: { progress: number }) {
   const frac = t * (pts.length - 1) - idx;
   const sx = pts[idx][0] + (pts[idx+1][0] - pts[idx][0]) * frac;
   const sy = pts[idx][1] + (pts[idx+1][1] - pts[idx][1]) * frac;
-
   return (
     <svg
       viewBox="0 0 102 90"
@@ -311,29 +309,48 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       <rect x="0" y="0" width="102" height="90" fill="url(#vignette)"/>
 
       {/* ── Ship (player marker) ── */}
-      <g transform={`translate(${sx}, ${sy})`} filter="url(#shipGlow)">
-        {/* Wake effect */}
-        <ellipse cx="-3.6" cy="0.7" rx="4.2" ry="1.2" fill="url(#shipWake)" opacity="0.65"/>
-        <ellipse cx="-2" cy="0.5" rx="2.5" ry="0.8" fill="white" opacity="0.2"/>
-        {/* Ship body */}
-        <path d="M-2.5,0.5 Q0,-1.5 2.5,0.5 L2,2 Q0,2.5 -2,2 Z" fill="#c8a060" stroke="#8b6914" strokeWidth="0.3"/>
-        {/* Hull */}
-        <path d="M-2,1.8 Q0,2.5 2,1.8 L1.5,2.5 Q0,3 -1.5,2.5 Z" fill="#8B4513"/>
-        {/* Mast */}
-        <line x1="0" y1="0.5" x2="0" y2="-3.5" stroke="#6b4226" strokeWidth="0.4"/>
-        {/* Sail */}
-        <path d="M0,-3.5 Q2.5,-2 2,-0.5 L0,0 Z" fill="white" opacity="0.95" stroke="#d4aa70" strokeWidth="0.15"/>
-        <path d="M0,-3.5 Q-1.2,-2 -1.2,-0.8 L0,0 Z" fill="#e8d5a0" opacity="0.8"/>
-        {/* Pirate flag */}
-        <rect x="0" y="-4.2" width="2" height="1.3" fill="#1a1a1a" rx="0.1"/>
-        <circle cx="0.6" cy="-3.6" r="0.35" fill="white"/>
-        <line x1="0.3" y1="-3.2" x2="0.9" y2="-3.2" stroke="white" strokeWidth="0.2"/>
-        {/* Glow ring */}
-        <circle cx="0" cy="0.5" r="3.5" fill="none" stroke="#fbbf24" strokeWidth="0.4" opacity="0.6">
-          <animate attributeName="r" values="3;4.5;3" dur="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.5s" repeatCount="indefinite"/>
-        </circle>
-        <animateTransform attributeName="transform" type="rotate" values="-3 0 0.5;3 0 0.5;-3 0 0.5" dur="3.8s" repeatCount="indefinite"/>
+      <g transform={`translate(${sx}, ${sy - 3.4})`} filter="url(#shipGlow)">
+        <ellipse cx="-4.8" cy="2.5" rx="5.8" ry="1.6" fill="url(#shipWake)" opacity="0.55"/>
+        <ellipse cx="-7.2" cy="2.6" rx="2.4" ry="0.75" fill="#e0f2fe" opacity="0.4"/>
+        <ellipse cx="-10" cy="2.7" rx="1.25" ry="0.45" fill="#e0f2fe" opacity="0.3"/>
+
+        <g transform="translate(0,0.4)">
+          <path
+            d="M-4.6,1.2 Q0,-3.4 4.8,1.2 L3.4,4 Q0,5 -3.4,4 Z"
+            fill="#6b3f1d"
+            stroke="#3b2412"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M-3.6,1.2 Q0,-1.5 3.8,1.2 L2.8,2.9 Q0,3.6 -2.8,2.9 Z"
+            fill="#9a5b2b"
+            opacity="0.95"
+          />
+          <line x1="0" y1="0.2" x2="0" y2="-7.2" stroke="#4a2f19" strokeWidth="0.55"/>
+          <path
+            d="M0,-6.9 Q4,-4.9 3.2,-0.4 L0,0 Z"
+            fill="#fff9eb"
+            stroke="#d6bc84"
+            strokeWidth="0.22"
+          />
+          <path
+            d="M0,-5.8 Q-1.9,-4.2 -1.7,-0.7 L0,0 Z"
+            fill="#efe0b1"
+            stroke="#ccb06e"
+            strokeWidth="0.18"
+          />
+          <line x1="-2.1" y1="1.45" x2="2.1" y2="1.45" stroke="#f8e7bf" strokeWidth="0.16" opacity="0.85"/>
+          <circle cx="0" cy="-7.55" r="0.32" fill="#fbbf24"/>
+        </g>
+
+        <animateTransform
+          attributeName="transform"
+          additive="sum"
+          type="translate"
+          values="0 0; 0.18 -0.45; 0 0; -0.18 0.35; 0 0"
+          dur="2.8s"
+          repeatCount="indefinite"
+        />
       </g>
 
       {/* ── START marker ── */}

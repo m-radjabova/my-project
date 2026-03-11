@@ -120,7 +120,11 @@ export default function GameLayout() {
     }
   };
 
-  const goToGames = () => {
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
     navigate("/games");
   };
 
@@ -135,7 +139,7 @@ export default function GameLayout() {
             }`}
           >
             <button
-              onClick={goToGames}
+              onClick={goBack}
               className={`group relative h-14 w-14 overflow-hidden rounded-2xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95 ${controlTheme.backShadow}`}
               aria-label="O'yinlar ro'yxatiga qaytish"
             >
@@ -178,7 +182,7 @@ export default function GameLayout() {
           >
             {/* Back to Games */}
             <button
-              onClick={goToGames}
+              onClick={goBack}
               className={`group relative h-12 w-12 overflow-hidden rounded-xl ${controlTheme.button} text-white shadow-2xl transition-all hover:scale-110 active:scale-95`}
               aria-label="O'yinlar"
             >
