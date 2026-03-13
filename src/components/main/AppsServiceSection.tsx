@@ -1,223 +1,344 @@
-import { FaPlus, FaArrowRight, FaStar  } from "react-icons/fa";
-import { GiCube, GiBookCover, GiPresent, GiOrbit, GiSparkles, GiPlanetCore } from "react-icons/gi";
+import { useMemo, useState } from "react";
+import {
+  FaArrowRight,
+  FaClock,
+  FaLayerGroup,
+  FaRocket,
+  FaStar,
+  FaUsers,
+} from "react-icons/fa";
+import { GiCherry, GiFlowerTwirl, GiTwirlyFlower } from "react-icons/gi";
+import { HiSparkles } from "react-icons/hi";
+import { MdAutoAwesome } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
-type ServiceItem = {
-  title: string;
-  description?: string;
-  kind: "cube" | "book" | "gift";
-  color: string;
-  icon: React.ReactNode;
-};
+import { gameCards } from "../../pages/games/data";
 
-// const items: ServiceItem[] = [
-//   { 
-//     title: "PLAY BECAUSE\nYOU WANT TO", 
-//     kind: "cube", 
-//     color: "from-[#ffcc42] to-[#d77c00]",
-//     icon: <GiCube className="text-6xl text-white/90" />
-//   },
-//   { 
-//     title: "COOL UNDER\nPRESSURE.", 
-//     kind: "book", 
-//     color: "from-[#e7a25d] to-[#9a4c13]",
-//     icon: <GiBookCover className="text-6xl text-white/90" />
-//   },
-//   {
-//     title: "COOL UNDER\nPRESSURE.",
-//     description: "GAMES IS TO PLAY THEM\nTHE FUTURE IS NOW\nTHE BEST WAY",
-//     kind: "gift",
-//     color: "from-[#ff3db4] to-[#7f0d57]",
-//     icon: <GiPresent className="text-6xl text-white/90" />
-//   },
-// ];
+function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
+  const navigate = useNavigate();
+  const [likedGames, setLikedGames] = useState<string[]>([]);
 
+  const games = useMemo(
+    () => gameCards.filter((game) => game.available),
+    []
+  );
 
-const items: ServiceItem[] = [
-  { 
-    title: "O‘YIN ORQALI\nO‘RGANING", 
-    kind: "cube", 
-    color: "from-[#ffcc42] to-[#d77c00]",
-    icon: <GiCube className="text-6xl text-white/90" />
-  },
-  { 
-    title: "OSON VA\nTUSHUNARLI.", 
-    kind: "book", 
-    color: "from-[#e7a25d] to-[#9a4c13]",
-    icon: <GiBookCover className="text-6xl text-white/90" />
-  },
-  {
-    title: "MUKOFOTLARNI\nYUTING.",
-    description: "TOPSHIRIQLARNI BAJARING\nBALL YIG‘ING VA O‘SING\nYUTUQLARNI OCHING.",
-    kind: "gift",
-    color: "from-[#ff3db4] to-[#7f0d57]",
-    icon: <GiPresent className="text-6xl text-white/90" />
-  },
-];
+  const handleLikeToggle = (gameId: string) => {
+    setLikedGames((prev) =>
+      prev.includes(gameId)
+        ? prev.filter((item) => item !== gameId)
+        : [...prev, gameId]
+    );
+  };
 
-
-
-function AppsServiceSection() {
-  
   return (
     <section
-      className={`section-reveal relative min-h-screen overflow-hidden bg-gradient-to-br from-[#f8f8f8] via-[#f0f0f0] to-[#e8e8e8] py-20 lg:py-22 `}
+      className={`relative overflow-hidden py-20 transition-colors duration-500 lg:py-28 ${
+        isDark
+          ? "bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#131a2d]"
+          : "bg-gradient-to-br from-[#fff9f8] via-[#fff3f1] to-[#faeae5]"
+      }`}
     >
-      
-      {/* Background Decorations */}
-      <div className="absolute inset-0">
-        {/* Floating Orbs */}
-        <div className="absolute top-20 left-20 animate-float-slow">
-          <GiOrbit className="text-8xl text-[#ffd966]/20" />
-        </div>
-        <div className="absolute bottom-40 right-20 animate-float">
-          <GiPlanetCore className="text-9xl text-[#ffb347]/15" />
-        </div>
-        <div className="absolute top-40 right-40 animate-pulse">
-          <GiSparkles className="text-7xl text-[#ff3db4]/10" />
-        </div>
+      <BackgroundDecorations isDark={isDark} />
 
-        {/* Grid Pattern */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #00000010 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
-
-      <div className="relative z-20 mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="relative text-center lg:text-left">
-          {/* Small Tag */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-14 max-w-3xl text-center" data-aos="fade-up" data-aos-delay="80">
           <div
-            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-5 py-2 rounded-full shadow-lg mb-6"
-            data-aos="fade-up"
+            className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 shadow-lg backdrop-blur-sm ${
+              isDark ? "border-[#ff6b8a]/20 bg-[#1e1e2f]/80" : "border-[#f0d9d6] bg-white/90"
+            }`}
           >
-            <FaStar className="text-[#ffd966] text-sm" />
-            <span className="text-xs font-black tracking-[0.3em] text-[#1f1f1f]">
-              LET THE GAMES BEGIN
+            <div className="relative">
+              <HiSparkles className="animate-pulse-soft text-sm text-[#ff6b8a]" />
+              <span className="absolute -right-1 -top-1 h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff6b8a] opacity-75" />
+              </span>
+            </div>
+            <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+              Interaktiv o'yinlar
             </span>
           </div>
 
-          {/* Main Title */}
-          <h2 className="font-bebas text-5xl sm:text-5xl lg:text-7xl text-[#141414] leading-none">
-            <span className="block transform" data-aos="fade-right" data-aos-delay="100">
-             ILOVALARIMIZ BILAN TANISHING
-            </span>
-            <span
-              className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f]"
-              data-aos="fade-left"
-              data-aos-delay="180"
-            >
-              XIZMATLAR
+          <h2 className="text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
+            <span className={isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}>Mavjud barcha</span>
+            <span className="block bg-gradient-to-r from-[#ff6b8a] via-[#ff4f74] to-[#ff8ca6] bg-clip-text text-transparent">
+              o'yinlarni sinab ko'ring
             </span>
           </h2>
 
-          {/* Decorative Line */}
-          <div className="absolute -bottom-8 left-0 w-32 h-1 bg-gradient-to-r from-[#ffd966] to-transparent rounded-full hidden lg:block" />
+          <p className={`mt-4 text-base leading-relaxed sm:text-lg ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+            Faqat faol o'yinlar chiqarildi. Har bir karta darsga mos format,
+            vaqt va yo'nalish bilan carousel ichida ko'rsatiladi.
+          </p>
         </div>
 
-        {/* Cards Grid */}
-        <div className=" grid gap-12 lg:gap-8 lg:grid-cols-3 mt-16">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="group relative"
-              data-aos={index % 2 === 0 ? "fade-right" : "fade-left"}
-              data-aos-delay={index * 140 + 220}
-            >
-              {/* Card Container */}
-              <div className="relative transform group-hover:-translate-y-4 transition-all duration-500">
-                
-                {/* Shadow */}
-                <div className="absolute -inset-4 bg-black/10 rounded-[32px] blur-2xl group-hover:blur-3xl transition-all" />
-                
-                {/* Main Card */}
-                <div className="relative bg-white rounded-[28px] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.1)] overflow-visible">
-                  
-                  {/* Background Gradient */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-                  
-                  {/* Icon Container - Floating above card */}
-                  <div className="absolute -top-12 right-6 z-20 transform group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                    <div className={`relative w-32 h-32 rounded-3xl bg-gradient-to-br ${item.color} shadow-[0_20px_0_rgba(0,0,0,0.15),inset_0_-5px_10px_rgba(0,0,0,0.2),inset_0_5px_10px_rgba(255,255,255,0.5)] flex items-center justify-center transform rotate-12`}>
-                      {/* Inner Glow */}
-                      <div className="absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.8),transparent_70%)]" />
-                      
-                      {/* Icon */}
-                      <div className="relative z-1">
-                        {item.icon}
-                      </div>
+        <div className="relative px-4 md:px-10" data-aos="fade-up" data-aos-delay="140">
+          <Swiper
+            modules={[Autoplay, Pagination, Navigation]}
+            spaceBetween={24}
+            slidesPerView={1}
+            loop={games.length > 3}
+            autoplay={{
+              delay: 3500,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            pagination={{
+              clickable: true,
+              dynamicBullets: true,
+            }}
+            navigation={{
+              prevEl: ".games-swiper-prev",
+              nextEl: ".games-swiper-next",
+            }}
+            breakpoints={{
+              640: { slidesPerView: 2, spaceBetween: 20 },
+              1024: { slidesPerView: 3, spaceBetween: 24 },
+            }}
+            className="!overflow-visible !pb-14"
+          >
+            {games.map((game, index) => {
+              const isLiked = likedGames.includes(game.id);
+              const Icon = game.mainIcon;
+              const CategoryIcon = game.categoryIcon;
+              const LevelIcon = game.levelIcon;
 
-                      {/* Highlight */}
-                      <div className="absolute -top-2 -left-2 w-8 h-8 bg-white/40 rounded-full blur-sm" />
-                    </div>
-                  </div>
+              return (
+                <SwiperSlide key={game.id} className="!h-auto">
+                  {({ isActive }) => (
+                    <article
+                      data-aos="fade-up"
+                      data-aos-delay={120 + (index % 3) * 80}
+                      className={`group relative h-full transition-all duration-700 ${
+                        isActive ? "scale-100 opacity-100" : "scale-[0.97] opacity-80"
+                      }`}
+                    >
+                      <div
+                        className={`absolute -inset-0.5 rounded-[30px] bg-gradient-to-r ${game.gradient} opacity-0 blur-lg transition-opacity duration-700 ${
+                          isActive ? "opacity-20" : ""
+                        }`}
+                      />
 
-                  {/* Content */}
-                  <div className="mt-16 max-w-[65%]">
-                    <h3 className="font-bebas text-3xl leading-tight text-[#1b1b1b]">
-                      {item.title.split('\n').map((line, i) => (
-                        <span key={i} className="block">{line}</span>
-                      ))}
-                    </h3>
-
-                    {item.description && (
-                      <div className="mt-4 space-y-1">
-                        {item.description.split('\n').map((line, i) => (
-                          <p key={i} className="font-['Inter'] text-xs font-semibold text-gray-500 leading-relaxed">
-                            {line}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Decorative Elements */}
-                    <div className="flex items-center gap-2 mt-6">
-                      {[...Array(3)].map((_, i) => (
+                      <div
+                        className={`relative h-full overflow-hidden rounded-[30px] border p-5 backdrop-blur-md transition-all duration-500 hover:-translate-y-1 ${
+                          isDark
+                            ? "border-[#2b3146] bg-[#1a1a28]/88 shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_18px_44px_rgba(255,107,138,0.12)]"
+                            : "border-white/70 bg-white/45 shadow-[0_12px_36px_rgba(166,100,102,0.08)] hover:shadow-[0_18px_44px_rgba(224,124,142,0.12)]"
+                        }`}
+                      >
                         <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full bg-gradient-to-r ${item.color} opacity-60`}
-                          style={{ animationDelay: `${i * 150}ms` }}
+                          className="absolute inset-0 opacity-50"
+                          style={{
+                            backgroundImage: `radial-gradient(circle at 20px 20px, ${
+                              isDark
+                                ? "#ff6b8a18"
+                                : game.gradient.includes("yellow")
+                                  ? "#f7c66d20"
+                                  : "#e07c8e14"
+                            } 2px, transparent 2px)`,
+                            backgroundSize: "38px 38px",
+                          }}
                         />
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Action Button */}
-                  <button className="absolute -bottom-6 left-8 z-20 group/btn">
-                    <div className="relative">
-                      {/* Button Shadow */}
-                      <div className="absolute inset-0 bg-black/20 rounded-full blur-md group-hover/btn:blur-lg transition-all" />
-                      
-                      {/* Button */}
-                      <div className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${item.color} shadow-[0_10px_0_rgba(0,0,0,0.15)] flex items-center justify-center transform group-hover/btn:scale-110 group-hover/btn:-translate-y-1 transition-all duration-300`}>
-                        {/* Inner Border */}
-                        <div className="absolute inset-1 rounded-full border-4 border-white/30" />
-                        
-                        {/* Icon */}
-                        <span className="relative z-10 text-3xl font-black text-white transform group-hover/btn:rotate-90 transition-transform duration-300">
-                          {index === 2 ? <FaArrowRight /> : <FaPlus />}
-                        </span>
+                        <div className={`relative mb-4 overflow-hidden rounded-[24px] border ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/80 bg-white/60"}`}>
+                          <img
+                            src={game.image}
+                            alt={game.title}
+                            className="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
 
-                        {/* Glow Effect */}
-                        <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                          <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 backdrop-blur-sm">
+                            <game.badgeIcon className="text-[11px] text-white" />
+                            <span className="text-[10px] font-bold tracking-[0.18em] text-white">
+                              {game.badge}
+                            </span>
+                          </div>
+
+                          <div className={`absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${game.iconBg} shadow-lg`}>
+                            <Icon className="text-lg text-white" />
+                          </div>
+
+                          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+                            <div className="rounded-2xl bg-white/18 px-3 py-2 backdrop-blur-sm">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                                Kategoriya
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-white">
+                                {game.category}
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => handleLikeToggle(game.id)}
+                              className={`rounded-full border border-white/35 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-sm transition-all ${
+                                isLiked
+                                  ? "bg-white text-[#ff6b8a]"
+                                  : "bg-white/20 text-white hover:bg-white/30"
+                              }`}
+                            >
+                              {isLiked ? "Saqlandi" : "Like"}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="relative space-y-4">
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { icon: FaLayerGroup, value: game.players },
+                              { icon: FaClock, value: game.time },
+                              { icon: FaUsers, value: game.points },
+                            ].map((item) => (
+                              <span
+                                key={`${game.id}-${item.value}`}
+                                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-bold ${
+                                  isDark
+                                    ? "border-[#2b3146] bg-[#1e1e2f] text-[#a1a1aa]"
+                                    : "border-white/70 bg-white/70 text-[#8f6d70]"
+                                }`}
+                              >
+                                <item.icon className="text-[9px]" />
+                                {item.value}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div>
+                            <h3 className={`text-2xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                              {game.title}
+                            </h3>
+                            <p className={`mt-2 line-clamp-3 text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                              {game.description}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}>
+                              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+                                <CategoryIcon className="text-[11px]" />
+                                Yo'nalish
+                              </p>
+                              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                                {game.category}
+                              </p>
+                            </div>
+                            <div className={`rounded-2xl border px-4 py-3 ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/70 bg-white/65"}`}>
+                              <p className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+                                <LevelIcon className="text-[11px]" />
+                                Daraja
+                              </p>
+                              <p className={`mt-2 text-sm font-semibold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                                {game.level}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => navigate(game.path)}
+                            className={`group/btn relative w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1`}
+                          >
+                            <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover/btn:translate-y-0" />
+                            <span className="relative flex items-center justify-center gap-2">
+                              <FaRocket className="text-sm" />
+                              O'yinni boshlash
+                              <FaArrowRight className="text-xs transition-transform group-hover/btn:translate-x-1" />
+                            </span>
+                          </button>
+                        </div>
+
+                        <div className="absolute bottom-3 right-3 opacity-10">
+                          <GiFlowerTwirl className={`text-xl bg-gradient-to-r ${game.gradient} bg-clip-text text-transparent`} />
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+                    </article>
+                  )}
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
 
-              {/* Bottom Label */}
-              <div className="absolute -bottom-8 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <span className="text-xs font-black text-gray-400 tracking-wider">
-                  {index === 0 ? "O'YIN" : index === 1 ? "O'QISH" : "MUKOFOTLAR"}
-                </span>
-              </div>
-            </div>
-          ))}
+          <button className={`games-swiper-prev absolute left-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:-translate-x-1 md:flex ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/70 bg-white/85 hover:bg-white"}`}>
+            <FaArrowRight className={`rotate-180 text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          </button>
+
+          <button className={`games-swiper-next absolute right-0 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition-all hover:translate-x-1 md:flex ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/70 bg-white/85 hover:bg-white"}`}>
+            <FaArrowRight className={`text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          </button>
+        </div>
+
+        <div className="mt-16 text-center" data-aos="zoom-in-up" data-aos-delay="200">
+          <div className="relative inline-block">
+            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] opacity-50 blur-xl" />
+            <button
+              onClick={() => navigate("/games")}
+              className="relative inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(255,107,138,0.4)]"
+            >
+              <MdAutoAwesome className="text-xl" />
+              Barcha o'yinlarni ko'rish
+              <FaArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+
+          <p className={`mt-4 text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+            <FaStar className="mr-1 inline text-[#ff6b8a]" />
+            {games.length}+ faol o'yinlar carousel ichida
+          </p>
         </div>
       </div>
+
+      <style>{`
+        .swiper-pagination {
+          bottom: 0 !important;
+        }
+
+        .swiper-pagination-bullet {
+          width: 6px;
+          height: 6px;
+          background: ${isDark ? "#2b3146" : "#f0d9d6"};
+          opacity: 0.5;
+          transition: all 0.3s ease;
+        }
+
+        .swiper-pagination-bullet-active {
+          width: 20px;
+          border-radius: 4px;
+          background: linear-gradient(to right, #ff6b8a, #ff4f74);
+          opacity: 0.8;
+        }
+
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </section>
+  );
+}
+
+function BackgroundDecorations({ isDark = false }: { isDark?: boolean }) {
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      <div className={`absolute left-[5%] top-[10%] h-72 w-72 rounded-full blur-3xl animate-float-soft ${isDark ? "bg-[#ff6b8a]/12" : "bg-[#f6d4da]/20"}`} />
+      <div className={`absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full blur-3xl animate-float-slow ${isDark ? "bg-[#1e1e2f]" : "bg-[#fbe5dd]/20"}`} />
+
+      <GiCherry className={`absolute left-[12%] top-[20%] text-4xl animate-petal-float ${isDark ? "text-[#ff6b8a]/10" : "text-[#e07c8e]/10"}`} />
+      <GiTwirlyFlower className={`absolute right-[15%] top-[40%] text-5xl animate-float-soft ${isDark ? "text-[#a1a1aa]/10" : "text-[#a66466]/10"}`} />
+
+      <div
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, ${isDark ? "#ff6b8a" : "#e07c8e"} 1px, transparent 1px)`,
+          backgroundSize: "40px 40px",
+        }}
+      />
+    </div>
   );
 }
 

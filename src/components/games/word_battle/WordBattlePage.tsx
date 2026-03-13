@@ -6,9 +6,8 @@ import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
 
 function WordBattlePage() {
-  const bannerImg =
-    "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1200&q=80";
-
+  const bannerImg = 
+  "https://media.istockphoto.com/id/1983032364/vector/word-cloud-for-adventure.jpg?s=612x612&w=0&k=20&c=RReFvKQXqSlPGKrR1Dnx2_6F4WeT2dfxKuRkuTOJGNw=";
   const stats = [
     { icon: FaUsers, label: "2 JAMOA", color: "from-blue-500 to-cyan-500" },
     { icon: MdTimer, label: "35s RAUND", color: "from-yellow-500 to-orange-500" },
@@ -81,7 +80,7 @@ function WordBattlePage() {
               {/* Title */}
               <h1 className="text-4xl font-black leading-tight md:text-5xl lg:text-6xl">
                 <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent">
-                  Puzzle your mind
+                  So'z jangi
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">

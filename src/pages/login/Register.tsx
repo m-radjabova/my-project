@@ -12,20 +12,15 @@ import {
   FaRocket,
   FaShieldAlt,
   FaGraduationCap,
-  FaChalkboardTeacher,
-  FaBrain,
-  FaGamepad,
   FaStar,
 } from "react-icons/fa";
-import { GiPlanetCore, GiBrain, GiTrophy, GiBookshelf } from "react-icons/gi";
-import { HiOutlineAcademicCap } from "react-icons/hi";
+import { GiPlanetCore} from "react-icons/gi";
 import { toast } from "react-toastify";
 import apiClient from "../../apiClient/apiClient";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../utils/error";
-
-import registerIllustration from "../../assets/hero.png";
+import loginImg from "../../assets/login_ill.jpg"
 
 type RegisterFormInputs = {
   username: string;
@@ -55,12 +50,7 @@ function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [isFocused, setIsFocused] = useState({
-    username: false,
-    email: false,
-    password: false,
-    confirmPassword: false,
-  });
+  const [rememberMe, setRememberMe] = useState(false);
   const password = watch("password");
 
   // Password strength checker
@@ -75,18 +65,10 @@ function Register() {
 
     const levels = [
       { label: "Zaif", color: "bg-red-500", textColor: "text-red-500" },
-      {
-        label: "O'rtacha",
-        color: "bg-orange-500",
-        textColor: "text-orange-500",
-      },
+      { label: "O'rtacha", color: "bg-orange-500", textColor: "text-orange-500" },
       { label: "Yaxshi", color: "bg-yellow-500", textColor: "text-yellow-500" },
       { label: "Kuchli", color: "bg-teal-500", textColor: "text-teal-500" },
-      {
-        label: "Juda kuchli",
-        color: "bg-emerald-500",
-        textColor: "text-emerald-500",
-      },
+      { label: "Juda kuchli", color: "bg-emerald-500", textColor: "text-emerald-500" },
     ];
 
     const idx = Math.min(strength, 4);
@@ -102,14 +84,7 @@ function Register() {
 
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     if (data.password !== data.confirmPassword) {
-      toast.error("Parollar mos kelmadi", {
-        style: {
-          borderRadius: "20px",
-          background: "#fee2e2",
-          color: "#991b1b",
-          border: "1px solid #fecaca",
-        },
-      });
+      toast.error("Parollar mos kelmadi");
       return;
     }
 
@@ -121,12 +96,12 @@ function Register() {
       });
 
       toast.success("Hisob muvaffaqiyatli yaratildi!", {
-        icon: <FaStar className="text-[#ffd966]" />,
+        icon: <FaStar className="text-[#e07c8e]" />,
         style: {
           borderRadius: "20px",
-          background: "linear-gradient(135deg, #d42d73, #b0134d)",
+          background: "linear-gradient(135deg, #e07c8e, #a66466)",
           color: "#fff",
-          boxShadow: "0 10px 30px rgba(210, 45, 115, 0.3)",
+          boxShadow: "0 10px 30px rgba(224,124,142,0.3)",
         },
       });
 
@@ -136,461 +111,279 @@ function Register() {
       const status = isAxiosError(error) ? error.response?.status : undefined;
 
       if (status === 409) {
-        toast.error("Bu email allaqachon ro'yxatdan o'tgan", {
-          style: {
-            borderRadius: "20px",
-            background: "#fff3cd",
-            color: "#856404",
-            border: "1px solid #ffeeba",
-          },
-        });
+        toast.error("Bu email allaqachon ro'yxatdan o'tgan");
       } else {
-        toast.error(
-          getErrorMessage(error) || "Ro'yxatdan o'tish amalga oshmadi",
-        );
+        toast.error(getErrorMessage(error) || "Ro'yxatdan o'tish amalga oshmadi");
       }
     }
   };
+
   return (
-    <div className="h-screen p-20 w-screen bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d] fixed top-0 left-0">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 ">
-        {/* Floating educational icons */}
-        <div className="absolute top-[5%] left-[2%]">
-          <GiBookshelf className="text-7xl lg:text-8xl text-white/10" />
-        </div>
-        <div className="absolute top-[10%] right-[2%]">
-          <HiOutlineAcademicCap className="text-8xl lg:text-9xl text-white/10" />
-        </div>
-        <div className="absolute bottom-[15%] left-[3%]">
-          <GiBrain className="text-7xl lg:text-8xl text-white/10" />
-        </div>
-        <div className="absolute bottom-[10%] right-[2%]">
-          <GiTrophy className="text-8xl lg:text-9xl text-[#ffd700]/20" />
-        </div>
-
-        {/* Orbital rings */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20">
-          <div className="relative w-[600px] lg:w-[1000px] h-[600px] lg:h-[1000px]">
-            <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
-            <div className="absolute inset-24 lg:inset-32 border-2 border-white/15 rounded-full" />
-            <div className="absolute inset-48 lg:inset-64 border border-white/20 rounded-full" />
-          </div>
-        </div>
-
-        {/* Floating particles */}
-        <div className="absolute top-[15%] left-[10%] w-1.5 h-1.5 bg-white/30 rounded-full " />
-        <div className="absolute top-[70%] right-[15%] w-2 h-2 bg-[#ffd966]/30 rounded-full" />
-        <div className="absolute bottom-[20%] left-[20%] w-1.5 h-1.5 bg-white/20 rounded-full" />
-      </div>
-      {/* Main Container - Full screen centered */}
-      <div className="relative z-20 h-full w-full flex items-center justify-center px-4 lg:px-8">
-        <div className="flex w-full max-w-9xl flex-col lg:flex-row items-center justify-center gap-4 lg:gap-12">
-          {/* Left Side - Illustration & Content */}
-          <div className="flex-1 max-w-lg lg:max-w-xl text-center lg:text-left mt-10">
-            <div className="relative">
-              {/* Floating badges */}
-              <div className="absolute -top-8 -left-8 bg-white/10 backdrop-blur-lg rounded-2xl p-3 hidden lg:block">
-                <div className="flex items-center gap-2">
-                  <FaGraduationCap className="text-2xl text-[#ffd966]" />
-                  <div>
-                    <p className="text-white text-xs font-bold">50K+</p>
-                    <p className="text-white/60 text-xs">O'quvchilar</p>
-                  </div>
+    <div className="fixed inset-0 h-screen w-full overflow-hidden bg-white">
+      
+      {/* Split Layout */}
+      <div className="flex h-full w-full">
+        {/* Right Side - Image */}
+        <div className="hidden lg:block lg:w-1/2 h-full relative overflow-hidden bg-gradient-to-br from-[#e07c8e] to-[#a66466]">
+          {/* Decorative overlay */}
+          <div className="absolute inset-0 bg-black/10" />
+          
+          {/* Image Container */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-700">
+              <img
+                src={loginImg}
+                alt="Students learning"
+                className="w-full h-full object-cover"
+              />
+              
+              {/* Image overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              
+              {/* Image text */}
+              <div className="absolute bottom-8 left-8 text-white">
+                <p className="text-sm font-light opacity-90">Ro'yxatdan o'ting</p>
+                <h3 className="text-3xl font-bold"></h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <FaGraduationCap className="text-[#ffd966]" />
+                  <span className="text-xs opacity-80">O'yin uchun o'zingiz
+                    xoxlagandek savollar, topshiriqlar qo'shib biling</span>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Main Illustration */}
-              <div className="relative mb-4 lg:mb-0">
-                <img
-                  src={registerIllustration}
-                  alt="Register illustration"
-                  className="relative z-10 w-full max-w-[250px] lg:max-w-[300px] mx-auto lg:mx-0 object-contain drop-shadow-2xl"
-                />
+          {/* Floating elements */}
+          <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-2xl animate-float-soft" />
+          <div className="absolute bottom-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-float-slow" />
+        </div>
+        
+        {/* Left Side - Form */}
+        <div className="w-full lg:w-1/2 h-full overflow-y-auto bg-gradient-to-br from-[#fff9f8] to-[#fff1f0]">
+          <div className="min-h-full flex items-center justify-center p-6 lg:p-8">
+            <div className="w-full max-w-md">
+              
+              {/* Logo & Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center gap-2 mb-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-md animate-pulse-soft" />
+                    <GiPlanetCore className="relative text-5xl text-[#e07c8e]" />
+                  </div>
+                  <FaRocket className="text-4xl text-[#a66466] animate-float-soft" />
+                </div>
+                <h1 className="text-3xl font-light text-[#7b4f53] mb-2">
+                  Hisob yarating
+                </h1>
+                <p className="text-sm text-[#8f6d70]">
+                  Platformaga qo'shiling va o'rganishni boshlang
+                </p>
               </div>
 
-              {/* Text Content */}
-              <div className="mt-2 lg:mt-4 space-y-2">
-                <h1 className="font-bebas text-4xl lg:text-6xl text-white leading-tight">
-                  HOZIR RO'YXATDAN
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347]">
-                    O'TING
-                  </span>
-                </h1>
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                
+                {/* Username Field */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-[#7b4f53]">
+                    Foydalanuvchi nomi
+                  </label>
+                  <div className="relative">
+                    <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <input
+                      type="text"
+                      {...register("username", {
+                        required: "Username talab qilinadi",
+                        minLength: {
+                          value: 3,
+                          message: "Kamida 3 belgi",
+                        },
+                      })}
+                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-3 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      placeholder="johndoe"
+                    />
+                  </div>
+                  {errors.username && (
+                    <p className="text-xs text-rose-500">
+                      {errors.username.message as string}
+                    </p>
+                  )}
+                </div>
 
-                <p className="text-white/85 text-sm lg:text-base max-w-md mx-auto lg:mx-0 line-clamp-2-reg">
-                  1000+ interaktiv mashg'ulotlar va o'yinlar sizni kutmoqda
+                {/* Email Field */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-[#7b4f53]">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <input
+                      type="email"
+                      {...register("email", {
+                        required: "Email talab qilinadi",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Noto'g'ri email format",
+                        },
+                      })}
+                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-3 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      placeholder="siz@email.com"
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-xs text-rose-500">
+                      {errors.email.message as string}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-[#7b4f53]">
+                    Parol
+                  </label>
+                  <div className="relative">
+                    <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      {...register("password", {
+                        required: "Parol talab qilinadi",
+                        minLength: {
+                          value: 6,
+                          message: "Kamida 6 belgi",
+                        },
+                      })}
+                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-10 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                    >
+                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+
+                  {/* Password Strength Indicator */}
+                  {password && passwordStrength.label && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex gap-1 h-1">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`flex-1 rounded-full transition-all duration-300 ${
+                              i < passwordStrength.strength
+                                ? passwordStrength.color
+                                : "bg-[#f0d9d6]"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className={`text-[10px] ${passwordStrength.textColor}`}>
+                        {passwordStrength.label} parol
+                      </p>
+                    </div>
+                  )}
+
+                  {errors.password && (
+                    <p className="text-xs text-rose-500">
+                      {errors.password.message as string}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password Field */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-[#7b4f53]">
+                    Parolni tasdiqlang
+                  </label>
+                  <div className="relative">
+                    <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b38b8d] text-base" />
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      {...register("confirmPassword", {
+                        required: "Parolni tasdiqlang",
+                        validate: (value) =>
+                          value === password || "Parollar mos kelmadi",
+                      })}
+                      className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 pl-10 pr-10 py-3.5 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)] transition-all"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b38b8d] hover:text-[#e07c8e] transition-colors"
+                    >
+                      {showConfirm ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-rose-500">
+                      {errors.confirmPassword.message as string}
+                    </p>
+                  )}
+                </div>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !rememberMe}
+                  className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#e07c8e] to-[#a66466] py-3.5 text-sm font-medium text-white shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  <span className="relative flex items-center justify-center gap-2">
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Ro'yxatdan o'tish...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Ro'yxatdan o'tish</span>
+                        <FiArrowRight className="text-sm group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </span>
+                </button>
+
+                {/* Login Link */}
+                <p className="text-center text-xs text-[#b38b8d]">
+                  Hisobingiz bormi?{" "}
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="text-[#e07c8e] hover:text-[#a66466] font-medium hover:underline transition-all"
+                  >
+                    Kirish
+                  </button>
                 </p>
 
-                {/* Features */}
-                <div className="flex flex-wrap gap-2 justify-center lg:justify-start mt-3">
-                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    <FaGamepad className="text-[#ffd966] text-xs" />
-                    <span className="text-white text-xs">O'yinlar</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    <FaBrain className="text-[#ffd966] text-xs" />
-                    <span className="text-white text-xs">Interaktiv</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    <FaChalkboardTeacher className="text-[#ffd966] text-xs" />
-                    <span className="text-white text-xs">Moslashuvchan</span>
-                  </div>
+                {/* Security Badge */}
+                <div className="flex items-center justify-center gap-1 text-[#b38b8d] text-[10px] mt-4">
+                  <FaShieldAlt className="text-[#e07c8e]" />
+                  <span>256-bit encryption • Secure registration</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - Register Form */}
-          <div className="flex-1 w-full max-w-lg lg:max-w-xl">
-            <div className="group perspective-1000">
-              
-              {/* Main Card */}
-              <div className="relative rounded-[30px] lg:rounded-[40px] bg-white/10 backdrop-blur-xl p-7 lg:p-10 shadow-2xl border border-white/20">
-                {/* Inner glow */}
-                <div className="absolute inset-0 rounded-[30px] lg:rounded-[40px] bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2),transparent_70%)]" />
-
-                {/* Content */}
-                <div className="relative">
-                  {/* Logo and Title */}
-                  <div className="text-center mb-4 lg:mb-6">
-                    <div className="inline-flex items-center justify-center gap-1 mb-2">
-                      <div className="relative">
-                        <GiPlanetCore className="text-4xl lg:text-5xl text-[#ffd966]" />
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#ffd966] rounded-full " />
-                      </div>
-                      <FaRocket className="text-3xl lg:text-4xl text-[#ffb347]" />
-                    </div>
-                    <h2 className="font-bebas text-3xl lg:text-4xl text-white mb-1 tracking-wider">
-                      RO'YXATDAN O'TISH
-                    </h2>
-                    <p className="text-white/70 text-sm">
-                      Hisob yarating va boshlang
-                    </p>
-                  </div>
-
-                  {/* Register Form */}
-                  <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-3 lg:space-y-4"
-                  >
-                    {/* Username Field */}
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-semibold text-white/90">
-                        Foydalanuvchi nomi
-                      </label>
-                      <div
-                        className={`relative group/input transition-all duration-300 ${
-                          isFocused.username ? "translate-y-[-1px]" : ""
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
-                            isFocused.username ? "opacity-100" : "opacity-0"
-                          }`}
-                        />
-                        <div className="relative flex items-center">
-                          <FiUser
-                            className={`absolute left-3 text-sm transition-colors ${
-                              isFocused.username
-                                ? "text-[#b0134d]"
-                                : "text-[#7b8794]"
-                            }`}
-                          />
-                          <input
-                            type="text"
-                            {...register("username", {
-                              required: "Username talab qilinadi",
-                              minLength: {
-                                value: 3,
-                                message: "Kamida 3 belgi",
-                              },
-                            })}
-                            onFocus={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                username: true,
-                              }))
-                            }
-                            onBlur={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                username: false,
-                              }))
-                            }
-                            autoComplete="username"
-                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-3 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
-                            placeholder="johndoe"
-                          />
-                        </div>
-                      </div>
-                      {errors.username && (
-                        <p className="text-xs text-red-400">
-                          {errors.username.message as string}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email Field */}
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-semibold text-white/90">
-                        Email
-                      </label>
-                      <div
-                        className={`relative group/input transition-all duration-300 ${
-                          isFocused.email ? "translate-y-[-1px]" : ""
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
-                            isFocused.email ? "opacity-100" : "opacity-0"
-                          }`}
-                        />
-                        <div className="relative flex items-center">
-                          <FiMail
-                            className={`absolute left-3 text-sm transition-colors ${
-                              isFocused.email
-                                ? "text-[#b0134d]"
-                                : "text-[#7b8794]"
-                            }`}
-                          />
-                          <input
-                            type="email"
-                            {...register("email", {
-                              required: "Email talab qilinadi",
-                              pattern: {
-                                value:
-                                  /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                message: "Noto'g'ri email format",
-                              },
-                            })}
-                            onFocus={() =>
-                              setIsFocused((prev) => ({ ...prev, email: true }))
-                            }
-                            onBlur={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                email: false,
-                              }))
-                            }
-                            autoComplete="email"
-                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-3 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
-                            placeholder="siz@email.com"
-                          />
-                        </div>
-                      </div>
-                      {errors.email && (
-                        <p className="text-xs text-red-400">
-                          {errors.email.message as string}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password Field */}
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-semibold text-white/90">
-                        Parol
-                      </label>
-                      <div
-                        className={`relative group/input transition-all duration-300 ${
-                          isFocused.password ? "translate-y-[-1px]" : ""
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
-                            isFocused.password ? "opacity-100" : "opacity-0"
-                          }`}
-                        />
-                        <div className="relative flex items-center">
-                          <FiLock
-                            className={`absolute left-3 text-sm transition-colors ${
-                              isFocused.password
-                                ? "text-[#b0134d]"
-                                : "text-[#7b8794]"
-                            }`}
-                          />
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            {...register("password", {
-                              required: "Parol talab qilinadi",
-                              minLength: {
-                                value: 6,
-                                message: "Kamida 6 belgi",
-                              },
-                            })}
-                            onFocus={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                password: true,
-                              }))
-                            }
-                            onBlur={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                password: false,
-                              }))
-                            }
-                            autoComplete="new-password"
-                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-10 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
-                            placeholder="••••••••"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 text-[#7b8794] hover:text-[#b0134d] transition-colors"
-                          >
-                            {showPassword ? (
-                              <FiEyeOff size={14} />
-                            ) : (
-                              <FiEye size={14} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Password Strength Indicator */}
-                      {password && passwordStrength.label && (
-                        <div className="mt-1 space-y-1">
-                          <div className="flex gap-1 h-1">
-                            {[...Array(5)].map((_, i) => (
-                              <div
-                                key={i}
-                                className={`flex-1 rounded-full transition-all duration-300 ${
-                                  i < passwordStrength.strength
-                                    ? passwordStrength.color
-                                    : "bg-white/10"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <p
-                            className={`text-xs ${passwordStrength.textColor}`}
-                          >
-                            {passwordStrength.label}
-                          </p>
-                        </div>
-                      )}
-
-                      {errors.password && (
-                        <p className="text-xs text-red-400">
-                          {errors.password.message as string}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Confirm Password Field */}
-                    <div className="space-y-1.5">
-                      <label className="block text-sm font-semibold text-white/90">
-                        Parolni tasdiqlang
-                      </label>
-                      <div
-                        className={`relative group/input transition-all duration-300 ${
-                          isFocused.confirmPassword ? "translate-y-[-1px]" : ""
-                        }`}
-                      >
-                        <div
-                          className={`pointer-events-none absolute -inset-[2px] rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] transition-opacity duration-300 ${
-                            isFocused.confirmPassword ? "opacity-100" : "opacity-0"
-                          }`}
-                        />
-                        <div className="relative flex items-center">
-                          <FiLock
-                            className={`absolute left-3 text-sm transition-colors ${
-                              isFocused.confirmPassword
-                                ? "text-[#b0134d]"
-                                : "text-[#7b8794]"
-                            }`}
-                          />
-                          <input
-                            type={showConfirm ? "text" : "password"}
-                            {...register("confirmPassword", {
-                              required: "Parolni tasdiqlang",
-                              validate: (value) =>
-                                value === password || "Parollar mos kelmadi",
-                            })}
-                            onFocus={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                confirmPassword: true,
-                              }))
-                            }
-                            onBlur={() =>
-                              setIsFocused((prev) => ({
-                                ...prev,
-                                confirmPassword: false,
-                              }))
-                            }
-                            autoComplete="new-password"
-                            className="w-full rounded-xl border border-white/35 bg-white/85 pl-10 pr-10 py-3.5 text-base font-medium text-[#1f2937] placeholder:text-[#7b8794] focus:outline-none focus:border-transparent focus:ring-0 transition-all"
-                            placeholder="••••••••"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowConfirm(!showConfirm)}
-                            className="absolute right-3 text-[#7b8794] hover:text-[#b0134d] transition-colors"
-                          >
-                            {showConfirm ? (
-                              <FiEyeOff size={14} />
-                            ) : (
-                              <FiEye size={14} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      {errors.confirmPassword && (
-                        <p className="text-xs text-red-400">
-                          {errors.confirmPassword.message as string}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="group relative w-full rounded-xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] py-3.5 text-base font-bold text-[#b0134d] shadow-[0_5px_0_#8a0f3b] hover:translate-y-0.5 hover:shadow-[0_4px_0_#8a0f3b] active:translate-y-1 active:shadow-[0_3px_0_#8a0f3b] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-1">
-                        {isSubmitting ? (
-                          <>
-                            <div className="w-3.5 h-3.5 border-2 border-[#b0134d] border-t-transparent rounded-full animate-spin" />
-                            <span className="text-xs">
-                              Ro'yxatdan o'tish...
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-xs">RO'YXATDAN O'TISH</span>
-                            <FiArrowRight className="  text-xs" />
-                          </>
-                        )}
-                      </span>
-                       </button>
-                  </form>
-
-                  {/* Login Link */}
-                  <p className="mt-3 text-center text-white/60 text-xs">
-                    Hisobingiz bormi?{" "}
-                    <button
-                      onClick={() => navigate("/login")}
-                      className="text-[#ffd966] hover:text-[#ffb347] font-semibold hover:underline transition-all  inline-flex items-center gap-0.5"
-                    >
-                      Kirish
-                      <FiArrowRight className="text-xs" />
-                    </button>
-                  </p>
-
-                  {/* Security Badge */}
-                  <div className="mt-2 flex items-center justify-center gap-1 text-white/40 text-xs">
-                    <FaShieldAlt className="text-[#ffd966] text-xs" />
-                    <span>256-bit encryption</span>
-                  </div>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Custom Animations */}
+      <style>{`
+        @keyframes float-soft {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-soft {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 0.8; }
+        }
+        .animate-float-soft {
+          animation: float-soft 3s ease-in-out infinite;
+        }
+        .animate-pulse-soft {
+          animation: pulse-soft 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

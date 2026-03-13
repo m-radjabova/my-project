@@ -118,7 +118,7 @@ function Games() {
       <div className={`relative z-10 mx-auto min-h-screen w-full max-w-[2000px] px-4 py-6 md:px-6 md:py-8 lg:px-8 xl:px-10 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
         {/* Orqaga qaytish tugmasi */}
         <button
-          onClick={() => navigate("/home")}
+          onClick={() => navigate("/")}
           className="group relative mb-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/10 px-6 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-white/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]"
         >
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />

@@ -1,293 +1,295 @@
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaYoutube,
-  FaArrowRight,
-  FaGamepad,
-  FaUsers,
-  FaTv,
-  FaCalendarAlt,
-} from "react-icons/fa";
-import { GiEarthAmerica, GiPlanetCore, GiSparkles } from "react-icons/gi";
-import footerCharacter from "../../assets/footer.png";
 import { useState } from "react";
+import {
+  FaArrowRight,
+  FaBookOpen,
+  FaCalendarAlt,
+  FaEnvelope,
+  FaFacebookF,
+  FaGamepad,
+  FaGraduationCap,
+  FaHeart,
+  FaInstagram,
+  FaRocket,
+  FaTwitter,
+  FaUsers,
+  FaYoutube,
+} from "react-icons/fa";
+import { GiCherry, GiFlowerTwirl, GiTwirlyFlower } from "react-icons/gi";
+import { HiSparkles } from "react-icons/hi";
 
-function Footer() {
+function Footer({ isDark = false }: { isDark?: boolean }) {
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [hoveredSocial, setHoveredSocial] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setIsSubmitted(true);
+      setEmail("");
+      setTimeout(() => setIsSubmitted(false), 3000);
+    }
+  };
+
+  const quickLinks = [
+    { label: "Bosh sahifa", href: "/", icon: FaBookOpen },
+    { label: "O'yinlar", href: "/games", icon: FaGamepad },
+    { label: "Darslar", href: "/lessons", icon: FaGraduationCap },
+    { label: "Tadbirlar", href: "/events", icon: FaCalendarAlt },
+    { label: "Blog", href: "/blog", icon: FaRocket },
+    { label: "Aloqa", href: "/contact", icon: FaEnvelope },
+  ];
+
+  const socialLinks = [
+    { icon: FaFacebookF, label: "facebook", color: "#1877F2" },
+    { icon: FaTwitter, label: "twitter", color: "#1DA1F2" },
+    { icon: FaYoutube, label: "youtube", color: "#FF0000" },
+    { icon: FaInstagram, label: "instagram", color: "#E4405F" },
+  ];
+
+  const categories = [
+    { label: "Baamboozle", count: 12, color: "from-[#f7c66d] to-[#e48b52]" },
+    { label: "Treasure Hunt", count: 8, color: "from-[#e7b16d] to-[#c67a59]" },
+    { label: "Jumanji", count: 15, color: "from-[#e58ca0] to-[#bc5c74]" },
+    { label: "Quiz Games", count: 10, color: "from-[#ff6b8a] to-[#ff4f74]" },
+  ];
+
   return (
     <footer
-      className={`relative min-h-[500px] overflow-hidden bg-gradient-to-br from-[#f5f5f5] via-[#efefef] to-[#e8e8e8] pt-20 pb-8`}
+      className={`relative overflow-hidden pb-8 pt-16 ${
+        isDark
+          ? "bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#131a2d]"
+          : "bg-gradient-to-br from-[#fff9f8] via-[#fff3f1] to-[#faeae5]"
+      }`}
     >
-      {/* Background Decorations */}
-      <div className="absolute inset-0">
-        {/* Grid Pattern */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className={`absolute left-[5%] top-[20%] h-72 w-72 rounded-full blur-3xl animate-float-soft ${isDark ? "bg-[#ff6b8a]/10" : "bg-[#f6d4da]/20"}`} />
+        <div className={`absolute right-[8%] bottom-[30%] h-80 w-80 rounded-full blur-3xl animate-float-slow ${isDark ? "bg-[#1e1e2f]" : "bg-[#fbe5dd]/20"}`} />
+
+        <GiCherry className={`absolute left-[10%] top-[15%] text-5xl animate-petal-float ${isDark ? "text-[#ff6b8a]/10" : "text-[#e07c8e]/10"}`} />
+        <GiFlowerTwirl className={`absolute right-[12%] bottom-[20%] text-6xl animate-float-soft ${isDark ? "text-[#a1a1aa]/10" : "text-[#a66466]/10"}`} />
+        <GiTwirlyFlower className={`absolute left-[20%] bottom-[10%] text-4xl animate-spin-slow ${isDark ? "text-[#ff6b8a]/10" : "text-[#e07c8e]/10"}`} />
+
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
-            backgroundImage: `radial-gradient(circle at 20px 20px, #d42d73 1px, transparent 0)`,
-            backgroundSize: "60px 60px",
-            opacity: 0.03,
+            backgroundImage: `radial-gradient(circle at 2px 2px, ${isDark ? "#ff6b8a" : "#e07c8e"} 1px, transparent 1px)`,
+            backgroundSize: "50px 50px",
           }}
         />
-
-        {/* Floating Orbs */}
-        <div className="absolute top-20 right-40 animate-float-slow">
-          <GiPlanetCore className="text-8xl text-[#ffd966]/10" />
-        </div>
-        <div className="absolute bottom-40 left-20 animate-float">
-          <GiSparkles className="text-7xl text-[#d42d73]/10" />
-        </div>
       </div>
 
-      <div className="relative z-20 mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
-        {/* Main Content Grid */}
-        <div className="grid items-end gap-8 lg:grid-cols-[400px_1fr] lg:gap-12">
-          {/* Character Section */}
-          <div className="relative h-[320px] lg:h-[400px]">
-            {/* Glow Effect */}
-            <div className="absolute -bottom-10 left-0 w-64 h-64 bg-gradient-to-r from-[#ffd966] to-[#ffb347] rounded-full blur-3xl opacity-30" />
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="space-y-6 lg:col-span-5" data-aos="fade-right" data-aos-delay="80">
+            <div className="space-y-3">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 shadow-sm backdrop-blur-sm ${
+                  isDark ? "border-[#ff6b8a]/18 bg-[#1e1e2f]/80" : "border-[#f0d9d6] bg-white/80"
+                }`}
+              >
+                <HiSparkles className="animate-pulse-soft text-sm text-[#ff6b8a]" />
+                <span className={`text-[10px] font-medium uppercase tracking-[0.2em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+                  Bilim maskani
+                </span>
+              </div>
 
-            {/* Character Image */}
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#ffd966] to-[#ffb347] rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
-              <img
-                src={footerCharacter}
-                alt="Footer character"
-                className="relative z-10 w-[300px] lg:w-[380px] select-none object-contain 
-                         drop-shadow-[0_30px_25px_rgba(0,0,0,0.2)] transform group-hover:scale-105 
-                         group-hover:-translate-y-4 transition-all duration-500"
-                draggable={false}
-              />
+              <h2 className="text-4xl font-light leading-tight sm:text-5xl">
+                <span className={isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}>Kelajak</span>
+                <span className="block bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] bg-clip-text font-medium text-transparent">
+                  ta'limi bilan
+                </span>
+              </h2>
+
+              <p className={`max-w-md text-sm leading-relaxed ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                Interaktiv o'yinlar, qiziqarli darslar va zamonaviy yondashuv.
+                O'qituvchilar va o'quvchilar uchun mukammal platforma.
+              </p>
             </div>
 
-            {/* Decorative Badge */}
-            <div className="absolute top-10 -right-10 lg:right-0 bg-gradient-to-r from-[#ffd966] to-[#ffb347] px-4 py-2 rounded-full shadow-lg transform rotate-12 animate-pulse-slow">
-              <span className="text-xs font-black text-[#1a1a1a]">
-                BILIM USTASI
-              </span>
+            <form onSubmit={handleSubmit} className="relative max-w-md">
+              <div className="relative flex items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Elektron pochtangiz"
+                  className={`h-12 w-full rounded-full border pl-5 pr-24 text-sm backdrop-blur-sm transition-all focus:outline-none ${
+                    isDark
+                      ? "border-[#2b3146] bg-[#1e1e2f] text-[#f1f1f1] placeholder:text-[#a1a1aa]/50 focus:border-[#ff6b8a]"
+                      : "border-[#f0d9d6] bg-white/80 text-[#7b4f53] placeholder:text-[#b38b8d]/50 focus:border-[#e07c8e]"
+                  }`}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 flex h-9 items-center gap-1 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-4 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <span>Obuna</span>
+                  <FaArrowRight className="text-xs" />
+                </button>
+              </div>
+
+              {isSubmitted && (
+                <div className="absolute -bottom-8 left-0 rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-600">
+                  Muvaffaqiyatli obuna bo'ldingiz
+                </div>
+              )}
+
+              <p className={`mt-3 text-[10px] ${isDark ? "text-[#a1a1aa]" : "text-[#b38b8d]"}`}>
+                Yangiliklar va maxsus takliflar haqida xabardor bo'ling
+              </p>
+            </form>
+
+            <div className="flex items-center gap-4 pt-3">
+              {[
+                { value: "50+", label: "O'yinlar", icon: FaGamepad },
+                { value: "10K", label: "O'quvchilar", icon: FaUsers },
+                { value: "24/7", label: "Qo'llab-quvvatlash", icon: FaHeart },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full border ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-[#f0d9d6] bg-white/80"}`}>
+                    <stat.icon className="text-xs text-[#ff6b8a]" />
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{stat.value}</p>
+                    <p className={`text-[8px] font-medium ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>{stat.label}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Content Section */}
-          <div className="relative pb-4">
-            {/* Title and Newsletter Row */}
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-              {/* Title */}
-              <div className="relative">
-                <h2 className="font-bebas text-5xl sm:text-6xl lg:text-7xl text-[#161616] leading-none">
-                  <span className="block transform hover:scale-105 transition-transform duration-300">
-                    BILIMDA
-                  </span>
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f]">
-                    QOLING
-                  </span>
-                </h2>
-
-                {/* Decorative Line */}
-                <div className="absolute -bottom-4 left-0 w-20 h-1 bg-gradient-to-r from-[#ffd966] to-transparent rounded-full" />
-              </div>
-
-              {/* Newsletter Form */}
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="group relative w-full lg:max-w-[500px]"
-              >
-                {/* Shadow */}
-                <div className="absolute -inset-2 bg-black/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-
-                {/* Input Container */}
-                <div className="relative flex items-center bg-white rounded-2xl shadow-[0_15px_25px_rgba(0,0,0,0.1)] overflow-hidden">
-                  {/* Icon */}
-                  <div className="pl-5">
-                    <GiEarthAmerica className="text-2xl text-[#ffd966]" />
-                  </div>
-
-                  {/* Input */}
-                  <input
-                    type="email"
-                    placeholder="Yangiliklarga obuna bo‘ling"
-                    className="w-full h-14 bg-transparent px-4 text-sm font-semibold text-gray-700 outline-none placeholder:text-gray-400"
-                  />
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="group/btn relative h-14 w-14 bg-gradient-to-r from-[#ffd966] to-[#ffb347] 
-                               shadow-[0_8px_0_rgba(200,100,0,0.5)] hover:translate-y-1 
-                               hover:shadow-[0_6px_0_rgba(200,100,0,0.5)] active:translate-y-2 
-                               active:shadow-[0_4px_0_rgba(200,100,0,0.5)] transition-all mr-1 rounded-xl"
-                    aria-label="Obuna bo‘lish"
-                  >
-                    <FaArrowRight className="mx-auto text-xl text-[#1a1a1a] transform group-hover/btn:translate-x-1 transition-transform" />
-                    <span className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                  </button>
-                </div>
-
-                {/* Success Message */}
-                <div className="absolute -bottom-8 left-5 text-xs font-bold text-green-600 opacity-0 group-focus-within:opacity-100 transition-opacity">
-                  ✓ Yangiliklar sizga tez yetib boradi!
-                </div>
-              </form>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:col-span-7" data-aos="fade-left" data-aos-delay="140">
+            <div className="space-y-4">
+              <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                <span className="h-px w-6 bg-gradient-to-r from-[#ff6b8a] to-transparent" />
+                Tezkor havolalar
+              </h3>
+              <ul className="space-y-2">
+                {quickLinks.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className={`group flex items-center gap-2 text-xs transition-colors ${isDark ? "text-[#a1a1aa] hover:text-[#ff6b8a]" : "text-[#8f6d70] hover:text-[#e07c8e]"}`}
+                    >
+                      <link.icon className="text-[10px] opacity-60 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Navigation Links */}
-            <nav className=" mt-16 grid grid-cols-2 gap-6 sm:grid-cols-4">
-              {[
-                {
-                  icon: <FaGamepad />,
-                  label: "O‘yin o‘ynash",
-                  color: "from-[#ffd966] to-[#ffb347]",
-                },
-                {
-                  icon: <FaUsers />,
-                  label: "Yaratish & ulashish",
-                  color: "from-[#ff9acb] to-[#d42d73]",
-                },
-                {
-                  icon: <FaTv />,
-                  label: "Ommabop darslar",
-                  color: "from-[#63d3da] to-[#2a9d8f]",
-                },
-                {
-                  icon: <FaCalendarAlt />,
-                  label: "Tadbirlar",
-                  color: "from-[#f4a261] to-[#e76f51]",
-                },
-              ].map((item, index) => (
+            <div className="space-y-4">
+              <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                <span className="h-px w-6 bg-gradient-to-r from-[#ff6b8a] to-transparent" />
+                Kategoriyalar
+              </h3>
+              <ul className="space-y-2">
+                {categories.map((cat) => (
+                  <li key={cat.label}>
+                    <a
+                      href="#"
+                      className={`group flex items-center justify-between text-xs transition-colors ${isDark ? "text-[#a1a1aa] hover:text-[#ff6b8a]" : "text-[#8f6d70] hover:text-[#e07c8e]"}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${cat.color}`} />
+                        {cat.label}
+                      </span>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${isDark ? "bg-[#1e1e2f]" : "bg-white/60"}`}>
+                        {cat.count}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                <span className="h-px w-6 bg-gradient-to-r from-[#ff6b8a] to-transparent" />
+                Bog'lanish
+              </h3>
+              <div className="space-y-3">
+                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Toshkent, O'zbekiston</p>
+                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>+998 90 123 45 67</p>
+                <p className={`text-xs ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>info@bilim.uz</p>
+
+                <div className="pt-2">
+                  <p className={`text-[10px] font-medium ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>Ish vaqti:</p>
+                  <p className={`text-[9px] ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Dushanba - Juma: 9:00 - 18:00</p>
+                  <p className={`text-[9px] ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>Shanba: 10:00 - 15:00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-delay="200" className={`mt-12 border-t pt-6 ${isDark ? "border-[#2b3146]" : "border-[#f0d9d6]/50"}`}>
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className={`order-2 text-[10px] sm:order-1 ${isDark ? "text-[#a1a1aa]" : "text-[#b38b8d]"}`}>
+              © {new Date().getFullYear()} Bilim. Barcha huquqlar himoyalangan.
+              <span className="mx-2 opacity-30">|</span>
+              <a href="#" className="transition-colors hover:text-[#ff6b8a]">Maxfiylik siyosati</a>
+              <span className="mx-2 opacity-30">|</span>
+              <a href="#" className="transition-colors hover:text-[#ff6b8a]">Foydalanish shartlari</a>
+            </p>
+
+            <div className="order-1 flex items-center gap-2 sm:order-2">
+              {socialLinks.map((social) => (
                 <a
-                  key={index}
+                  key={social.label}
                   href="#"
-                  className="group relative block"
-                  
+                  className="group relative"
+                  onMouseEnter={() => setHoveredSocial(social.label)}
+                  onMouseLeave={() => setHoveredSocial(null)}
+                  aria-label={social.label}
                 >
-                  <div
-                    className="relative bg-white rounded-2xl p-5 shadow-[0_10px_15px_rgba(0,0,0,0.05)] 
-                                  transform group-hover:-translate-y-2 group-hover:shadow-xl transition-all duration-300
-                                  border border-gray-100"
-                  >
-                    <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-r ${item.color} 
-                                    flex items-center justify-center mb-3 shadow-lg
-                                    transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
-                    >
-                      <span className="text-2xl text-white">{item.icon}</span>
-                    </div>
-
-                    <span
-                      className="font-bebas text-xl text-gray-800 group-hover:text-transparent 
-                                   group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#ffd966] 
-                                   group-hover:to-[#ffb347] transition-all duration-300"
-                    >
-                      {item.label}
-                    </span>
-
-                    <div
-                      className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                                  opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  <div className={`relative flex h-8 w-8 items-center justify-center rounded-full border transition-all hover:-translate-y-1 ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-[#f0d9d6] bg-white/80 hover:bg-white"}`}>
+                    <social.icon
+                      className="text-xs transition-colors"
+                      style={{
+                        color:
+                          hoveredSocial === social.label ? social.color : isDark ? "#a1a1aa" : "#b38b8d",
+                      }}
                     />
                   </div>
+                  <span className={`absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-medium opacity-0 transition-opacity group-hover:opacity-100 ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                    {social.label}
+                  </span>
                 </a>
               ))}
-            </nav>
-
-            {/* Bottom Bar */}
-            <div
-              className=" mt-16 pt-6 border-t-2 border-gray-200/60"
-             
-            >
-              <div className="flex flex-col gap-6">
-                {/* Social Icons */}
-                <div className="flex items-center gap-4">
-                  {[
-                    { icon: <FaFacebookF />, label: "facebook", color: "#4267B2" },
-                    { icon: <FaTwitter />, label: "twitter", color: "#1DA1F2" },
-                    { icon: <FaYoutube />, label: "youtube", color: "#FF0000" },
-                  ].map((social, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      aria-label={social.label}
-                      className="group relative"
-                      onMouseEnter={() => setHoveredSocial(social.label)}
-                      onMouseLeave={() => setHoveredSocial(null)}
-                    >
-                      <div className="absolute -inset-1 bg-black/10 rounded-full blur-md group-hover:blur-lg transition-all" />
-
-                      <div
-                        className="relative w-12 h-12 rounded-full bg-white shadow-[0_8px_0_rgba(0,0,0,0.1)] 
-                                    flex items-center justify-center transform group-hover:-translate-y-1 
-                                    group-hover:shadow-[0_6px_0_rgba(0,0,0,0.1)] transition-all"
-                      >
-                        <span
-                          className="transition-colors duration-300"
-                          style={{
-                            color:
-                              hoveredSocial === social.label ? social.color : "#4b5563",
-                          }}
-                        >
-                          {social.icon}
-                        </span>
-
-                        <span
-                          className="absolute inset-0 rounded-full bg-gradient-to-br from-white/80 to-transparent opacity-0 
-                                       group-hover:opacity-100 transition-opacity"
-                        />
-                      </div>
-
-                      <span
-                        className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-bold text-gray-500 
-                                     opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {social.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
-        </div>
 
-        {/* Decorative Wave Lines */}
-        <svg
-          className="pointer-events-none absolute right-0 bottom-0 w-[600px] opacity-20"
-          viewBox="0 0 600 300"
-          fill="none"
-        >
-          <path
-            d="M40 200C150 120 270 80 500 60"
-            stroke="#d42d73"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray="8 8"
-          />
-          <path
-            d="M60 240C170 160 290 120 520 100"
-            stroke="#ffd966"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray="8 8"
-          />
-          <path
-            d="M80 280C190 200 310 160 540 140"
-            stroke="#ffb347"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray="8 8"
-          />
-        </svg>
-
-        {/* Floating Dots */}
-        <div className="absolute left-20 bottom-20 flex gap-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full bg-gradient-to-r from-[#ffd966] to-[#ffb347] opacity-20"
-              style={{ animationDelay: `${i * 200}ms` }}
-            />
-          ))}
+          <div className="mt-4 flex items-center justify-center gap-1">
+            <span className={`text-[8px] ${isDark ? "text-[#a1a1aa]" : "text-[#b38b8d]"}`}>Made with</span>
+            <FaHeart className="animate-pulse-soft text-[10px] text-[#ff6b8a]" />
+            <span className={`text-[8px] ${isDark ? "text-[#a1a1aa]" : "text-[#b38b8d]"}`}>for teachers</span>
+          </div>
         </div>
       </div>
+
+      <svg
+        className="pointer-events-none absolute bottom-0 right-0 w-[400px] opacity-20 lg:w-[600px]"
+        viewBox="0 0 600 200"
+        fill="none"
+      >
+        <path
+          d="M0 150C100 120 200 100 300 90C400 80 500 70 600 60"
+          stroke={isDark ? "#ff6b8a" : "#e07c8e"}
+          strokeWidth="2"
+          strokeDasharray="4 4"
+        />
+        <path
+          d="M0 170C120 140 240 120 360 110C480 100 600 90 600 90"
+          stroke={isDark ? "#a1a1aa" : "#a66466"}
+          strokeWidth="2"
+          strokeDasharray="4 4"
+          opacity="0.6"
+        />
+      </svg>
     </footer>
   );
 }

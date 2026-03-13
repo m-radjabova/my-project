@@ -6,6 +6,7 @@ import { MdRefresh} from "react-icons/md";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 import {
   DIFFICULTY_GAME_TIME_SECONDS,
@@ -39,6 +40,7 @@ function DiffButton({ active, onClick, label, color }: { active: boolean; onClic
 export default function MemoryRush() {
   const finishViewRef = useRef<HTMLDivElement | null>(null);
   const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
 
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [playerNames, setPlayerNames] = useState<[string, string]>(["⚔️ YULDUZ", "🛡️ SHAMS"]);

@@ -1,4 +1,5 @@
-﻿import { Route, Routes, Navigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/home/Home";
 import AuthLayout from "./layout/AuthLayout";
@@ -39,15 +40,45 @@ import TruthDetectorPage from "./components/games/truth_detector/TruthDetectorPa
 import GamePlayView from "./components/games/shared/GamePlayView";
 import { gamePlayRoutes } from "./components/games/shared/gamePlayRoutes";
 import MathChickGamePage from "./components/games/math_chick_game/MathChickGamePage";
+import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
+import TeacherLayout from "./layout/TeacherLayout";
+import KnowledgeAdventurePage from "./components/games/knowledge_adventure/KnowledgeAdventurePage";
 
 function App() {
-  const { state: { isLoading } } = useContextPro();
+  const {
+    state: { isLoading },
+  } = useContextPro();
+  const location = useLocation();
+  const previousPathRef = useRef(location.pathname);
+  const [isGamesRouteLoading, setIsGamesRouteLoading] = useState(false);
 
-  if (isLoading) return <SiteLoader />;
+  useEffect(() => {
+    const isEnteringGamesPage =
+      location.pathname === "/games" && previousPathRef.current !== "/games";
+
+    previousPathRef.current = location.pathname;
+
+    if (!isEnteringGamesPage) {
+      setIsGamesRouteLoading(false);
+      return;
+    }
+
+    setIsGamesRouteLoading(true);
+
+    const timer = window.setTimeout(() => {
+      setIsGamesRouteLoading(false);
+    }, 900);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [location.pathname]);
+
+  if (isLoading || isGamesRouteLoading) return <SiteLoader />;
 
   return (
     <Routes>
-      <Route path="/home" element={<Home />} />
+      <Route path="/" element={<Home />} />
 
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginForm />} />
@@ -72,9 +103,18 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Home />} />
+        <Route index path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
+      </Route>
+
+      <Route
+        element={
+          <ProtectedRoute roles={["teacher", "admin"]}>
+            <TeacherLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/teacher-panel" element={<TeacherQuestionPanel />} />
       </Route>
 
       <Route
@@ -93,7 +133,10 @@ function App() {
         <Route path="/games/flag-battle" element={<FlagBattlePage />} />
         <Route path="/games/wheel-of-fortune" element={<WheelOfFortunePage />} />
         <Route path="/games/word-search" element={<WordSearchPuzzlePage />} />
-        <Route path="/games/ocean-word-fishing" element={<OceanWordFishingPage />} />
+        <Route
+          path="/games/ocean-word-fishing"
+          element={<OceanWordFishingPage />}
+        />
         <Route path="/games/math-race" element={<MathRacePage />} />
         <Route path="/games/baamboozle" element={<BaamboozlePage />} />
         <Route path="/games/find-color" element={<FindDifferentColorPage />} />
@@ -109,14 +152,16 @@ function App() {
         <Route path="/games/pictionary" element={<PictionaryPage />} />
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
+        <Route
+          path="/games/knowledge-adventure"
+          element={<KnowledgeAdventurePage />}
+        />
         {gamePlayRoutes.map((route) => (
           <Route
             key={route.path}
             path={route.path}
             element={
-              <GamePlayView
-                colorClassName={route.colorClassName}
-              >
+              <GamePlayView colorClassName={route.colorClassName}>
                 {route.element}
               </GamePlayView>
             }

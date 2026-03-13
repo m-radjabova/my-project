@@ -7,6 +7,7 @@ import { RiTeamFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 import { generateWordSearchWords } from "./ai";
 import wordSearchGameSound from "../../../assets/sounds/word_search_game_sound.m4a";
 
@@ -103,6 +104,7 @@ const isStraightSelection = (selected: CellPos[], row: number, col: number) => {
 
 export default function WordSearchPuzzle() {
   const [phase, setPhase] = useState<Phase>("teacher");
+  useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>(["🔵 1-GURUH", "🟢 2-GURUH"]);
   const [nameError, setNameError] = useState("");
 

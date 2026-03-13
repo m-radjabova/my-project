@@ -6,18 +6,27 @@ import {
   FaRandom,
   FaHome,
   FaUserPlus,
-  FaUserMinus
+  FaUserMinus,
+  FaCheck,
+  FaTimes,
+  FaTrophy,
+  FaCrown,
+  FaStar,
+  FaShieldAlt,
+  FaCoins,
+  FaQuestion
 } from "react-icons/fa";
-import { GiMoneyStack } from "react-icons/gi";
+import { GiMoneyStack, GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import millionaireSound from "../../../assets/sounds/millionaire_sound.m4a";
-import tadaSound from "../../../assets/sounds/tada.mp3";
+import tadaSound from "../../../assets/sounds/applause.mp3";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { QUESTION_BANK } from "./data";
 
 type OptionKey = "A" | "B" | "C" | "D";
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 
-type Question = {
+export type Question = {
   id: string;
   text: string;
   options: Record<OptionKey, string>;
@@ -76,7 +85,7 @@ const MONEY_LADDER: number[] = [
   15_000_000,
 ];
 
-const SAFE_LEVELS = new Set<number>([4, 9, 14]); // 5, 10, 15-pog'onalar
+const SAFE_LEVELS = new Set<number>([4, 9, 14]);
 
 function difficultyForStepIndex(stepIndex: number): Difficulty {
   if (stepIndex <= 3) return "easy";
@@ -84,169 +93,6 @@ function difficultyForStepIndex(stepIndex: number): Difficulty {
   if (stepIndex <= 11) return "hard";
   return "expert";
 }
-
-const QUESTION_BANK: Question[] = [
-  {
-    id: "e1",
-    difficulty: "easy",
-    category: "Vocabulary",
-    text: "'Apple' so'zi nimani anglatadi?",
-    options: { A: "Olma", B: "Banan", C: "Uzum", D: "Shaftoli" },
-    correct: "A",
-  },
-  {
-    id: "e2",
-    difficulty: "easy",
-    category: "Daily",
-    text: "'Morning' qaysi vaqt?",
-    options: { A: "Kechasi", B: "Tushdan keyin", C: "Ertalab", D: "Kechqurun" },
-    correct: "C",
-  },
-  {
-    id: "e3",
-    difficulty: "easy",
-    category: "Grammar",
-    text: "I ___ a student.",
-    options: { A: "am", B: "is", C: "are", D: "be" },
-    correct: "A",
-  },
-  {
-    id: "e4",
-    difficulty: "easy",
-    category: "Colors",
-    text: "Qora rangni ingliz tilida qanday aytiladi?",
-    options: { A: "Red", B: "Blue", C: "Black", D: "White" },
-    correct: "C",
-  },
-  {
-    id: "e5",
-    difficulty: "easy",
-    category: "Numbers",
-    text: "5 + 3 = ?",
-    options: { A: "7", B: "8", C: "9", D: "10" },
-    correct: "B",
-  },
-  {
-    id: "m1",
-    difficulty: "medium",
-    category: "Grammar",
-    text: "He ___ to school every day.",
-    options: { A: "go", B: "goes", C: "going", D: "gone" },
-    correct: "B",
-  },
-  {
-    id: "m2",
-    difficulty: "medium",
-    category: "Vocabulary",
-    text: "'Big' so'zining sinonimi qaysi?",
-    options: { A: "Small", B: "Large", C: "Cold", D: "Slow" },
-    correct: "B",
-  },
-  {
-    id: "m3",
-    difficulty: "medium",
-    category: "Grammar",
-    text: "Choose the correct: 'I ___ finished my homework.'",
-    options: { A: "has", B: "have", C: "having", D: "had been" },
-    correct: "B",
-  },
-  {
-    id: "m4",
-    difficulty: "medium",
-    category: "History",
-    text: "O'zbekiston poytaxti qaysi shahar?",
-    options: { A: "Samarqand", B: "Buxoro", C: "Toshkent", D: "Xiva" },
-    correct: "C",
-  },
-  {
-    id: "m5",
-    difficulty: "medium",
-    category: "Science",
-    text: "Quyoshga eng yaqin sayyora qaysi?",
-    options: { A: "Venera", B: "Merkuriy", C: "Mars", D: "Yer" },
-    correct: "B",
-  },
-  {
-    id: "h1",
-    difficulty: "hard",
-    category: "Grammar",
-    text: "If I ___ time, I would help you.",
-    options: { A: "have", B: "had", C: "will have", D: "has" },
-    correct: "B",
-  },
-  {
-    id: "h2",
-    difficulty: "hard",
-    category: "Vocabulary",
-    text: "'Reliable' so'zi eng yaqin ma'nosi?",
-    options: { A: "Ishonchli", B: "Zararli", C: "Kuchsiz", D: "Arzon" },
-    correct: "A",
-  },
-  {
-    id: "h3",
-    difficulty: "hard",
-    category: "Reading",
-    text: "Which is closest to 'However'?",
-    options: { A: "Because", B: "Therefore", C: "But", D: "And" },
-    correct: "C",
-  },
-  {
-    id: "h4",
-    difficulty: "hard",
-    category: "Literature",
-    text: "Amir Temur qaysi yillar oralig'ida hukm qilgan?",
-    options: { A: "1326-1405", B: "1336-1405", C: "1346-1405", D: "1356-1405" },
-    correct: "B",
-  },
-  {
-    id: "h5",
-    difficulty: "hard",
-    category: "Science",
-    text: "Kislorodning kimyoviy formulasi?",
-    options: { A: "O2", B: "O3", C: "O", D: "O4" },
-    correct: "A",
-  },
-  {
-    id: "x1",
-    difficulty: "expert",
-    category: "Grammar",
-    text: "Hard: 'By the time he arrived, we ___.'",
-    options: { A: "left", B: "have left", C: "had left", D: "leave" },
-    correct: "C",
-  },
-  {
-    id: "x2",
-    difficulty: "expert",
-    category: "Vocabulary",
-    text: "'Scarce' so'zining ma'nosi?",
-    options: { A: "Ko'p", B: "Kam / tanqis", C: "Tez", D: "Yangi" },
-    correct: "B",
-  },
-  {
-    id: "x3",
-    difficulty: "expert",
-    category: "Philosophy",
-    text: "'Cogito ergo sum' degan faylasuf kim?",
-    options: { A: "Aristotel", B: "Platon", C: "Dekart", D: "Kant" },
-    correct: "C",
-  },
-  {
-    id: "x4",
-    difficulty: "expert",
-    category: "Mathematics",
-    text: "Integral hisobini ixtiro qilgan olim?",
-    options: { A: "Newton", B: "Leybnits", C: "Eyler", D: "Gauss" },
-    correct: "B",
-  },
-  {
-    id: "x5",
-    difficulty: "expert",
-    category: "History",
-    text: "Birinchi jahon urushi qachon tugagan?",
-    options: { A: "1917", B: "1918", C: "1919", D: "1920" },
-    correct: "B",
-  },
-];
 
 function pickQuestion(
   bank: Question[],
@@ -275,6 +121,8 @@ function pickQuestion(
 function Millionaire() {
   const bgAudioRef = useRef<HTMLAudioElement | null>(null);
   const winAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ladderContainerRef = useRef<HTMLDivElement | null>(null);
+  const ladderItemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<"setup" | "play" | "end">("setup");
   const [names, setNames] = useState<string[]>(["", "", ""]);
@@ -294,7 +142,6 @@ function Millionaire() {
   const [modalType, setModalType] = useState<ModalType>(null);
   const [resultModal, setResultModal] = useState<{ correct: boolean; message: string } | null>(null);
 
-  // Lifelines
   const [lifelines, setLifelines] = useState({
     fiftyFifty: true,
     phoneFriend: true,
@@ -384,6 +231,22 @@ function Millionaire() {
     return 0;
   }, [currentPlayer]);
 
+  useEffect(() => {
+    if (phase !== "play" || !currentPlayer) return;
+
+    const container = ladderContainerRef.current;
+    const currentItem = ladderItemRefs.current[currentPlayer.currentQuestionIndex];
+    if (!container || !currentItem) return;
+
+    const targetTop =
+      currentItem.offsetTop - container.clientHeight + currentItem.clientHeight + 24;
+
+    container.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: "smooth",
+    });
+  }, [currentPlayer, phase]);
+
   function clamp3to5(arr: string[]) {
     let a = arr.slice(0, 5);
     while (a.length < 3) a.push("");
@@ -429,18 +292,18 @@ function Millionaire() {
       category: "",
     });
     setDraftError("");
-    setMessage("Savol qo'shildi va backendga saqlanadi.");
+    setMessage("✅ Savol qo'shildi va backendga saqlanadi.");
   }
 
   function removeTeacherQuestion(id: string) {
     setQuestionBank((prev) => prev.filter((q) => q.id !== id));
-    setMessage("Savol o'chirildi va backendga saqlanadi.");
+    setMessage("🗑️ Savol o'chirildi va backendga saqlanadi.");
   }
 
   function start() {
     const cleaned = clamp3to5(names).map((x) => x.trim()).filter(Boolean);
     if (cleaned.length < 3) {
-      setMessage("Kamida 3 ta o'yinchi ismi kiriting.");
+      setMessage("❌ Kamida 3 ta o'yinchi ismi kiriting.");
       return;
     }
     
@@ -462,7 +325,7 @@ function Millionaire() {
     setAttemptedPlayerIds(new Set());
     setSelectedAnswer(null);
     setReveal(false);
-    setMessage("Savol uchun birinchi bo'lib o'yinchi tanlang.");
+    setMessage("👆 Savol uchun birinchi bo'lib o'yinchi tanlang.");
     setShowConfetti(false);
     setWinners([]);
     setDisabledOptions([]);
@@ -474,13 +337,13 @@ function Millionaire() {
     });
 
     if (questionBank.length === 0) {
-      setMessage("Savollar topilmadi. Avval o'qituvchi savol qo'shsin.");
+      setMessage("📚 Savollar topilmadi. Avval o'qituvchi savol qo'shsin.");
       return;
     }
 
     const firstQuestion = pickQuestion(questionBank, difficultyForStepIndex(0), new Set());
     if (!firstQuestion) {
-      setMessage("Savol tanlab bo'lmadi. Savollarni tekshiring.");
+      setMessage("❌ Savol tanlab bo'lmadi. Savollarni tekshiring.");
       return;
     }
     setQuestion(firstQuestion);
@@ -577,11 +440,11 @@ function Millionaire() {
         askAudience: true,
         switchQuestion: true,
       });
-      setMessage("Noto'g'ri javob. Shu savol ochiq, boshqa o'yinchi javob berishi mumkin.");
+      setMessage("🔄 Noto'g'ri javob. Shu savol ochiq, boshqa o'yinchi javob berishi mumkin.");
       return;
     }
 
-    setMessage("Barcha o'yinchilar urinib bo'ldi. Keyingi savolga o'tiladi.");
+    setMessage("⏭️ Barcha o'yinchilar urinib bo'ldi. Keyingi savolga o'tiladi.");
     prepareNextRound();
   }
 
@@ -590,7 +453,7 @@ function Millionaire() {
     const q = pickQuestion(questionBank, diff, usedQuestions);
     if (!q) {
       setQuestion(null);
-      setMessage("Savollar yo'q. O'qituvchi savol qo'shishi kerak.");
+      setMessage("📚 Savollar yo'q. O'qituvchi savol qo'shishi kerak.");
       return;
     }
     setQuestion(q);
@@ -613,9 +476,8 @@ function Millionaire() {
     setAnsweringPlayerIndex(null);
     setSelectedAnswer(null);
     setReveal(false);
-    setMessage("Savol uchun birinchi bo'lib o'yinchi tanlang.");
+    setMessage("👆 Savol uchun birinchi bo'lib o'yinchi tanlang.");
 
-    // Lifelenslarni reset qilish
     setLifelines({
       fiftyFifty: true,
       phoneFriend: true,
@@ -640,7 +502,7 @@ function Millionaire() {
     setAnsweringPlayerIndex(playerIndex);
     setSelectedAnswer(null);
     setReveal(false);
-    setMessage(`${player.name} birinchi tanladi. Javob bering.`);
+    setMessage(`🎤 ${player.name} birinchi tanladi. Javob bering.`);
   }
 
   function useFiftyFifty() {
@@ -672,8 +534,7 @@ function Millionaire() {
   function useAskAudience() {
     if (!lifelines.askAudience || !question || answeringPlayerIndex === null) return;
     
-    // Zal natijalari
-    const correctVote = Math.floor(Math.random() * 30) + 50; // 50-80%
+    const correctVote = Math.floor(Math.random() * 30) + 50;
     const remainingVotes = 100 - correctVote;
     
     const results = {
@@ -683,10 +544,8 @@ function Millionaire() {
       D: 0,
     };
     
-    // To'g'ri variantga ko'proq foiz berish
     results[question.correct] = correctVote;
     
-    // Qolgan variantlarga taqsimlash
     const otherOptions = OPTION_KEYS.filter(k => k !== question.correct);
     otherOptions.forEach((opt, idx) => {
       if (idx === otherOptions.length - 1) {
@@ -708,7 +567,7 @@ function Millionaire() {
     const diff = difficultyForStepIndex(currentPlayer.currentQuestionIndex);
     const q = pickQuestion(questionBank, diff, usedQuestions);
     if (!q) {
-      setMessage("Yangi savol topilmadi.");
+      setMessage("❌ Yangi savol topilmadi.");
       return;
     }
     setQuestion(q);
@@ -769,7 +628,6 @@ function Millionaire() {
   function walkAway() {
     if (!currentPlayer || !currentPlayer.isActive) return;
 
-    // O'yinchining hozirgi yutug'ini saqlab, o'yindan chiqish
     const updatedPlayers = players.map(p => {
       if (p.id === currentPlayer.id) {
         return {
@@ -786,25 +644,57 @@ function Millionaire() {
 
   const getDifficultyClass = (difficulty: Difficulty) => {
     switch(difficulty) {
-      case "easy": return "bg-gradient-to-r from-green-600 to-green-500";
-      case "medium": return "bg-gradient-to-r from-yellow-600 to-amber-500";
-      case "hard": return "bg-gradient-to-r from-orange-600 to-red-500";
-      case "expert": return "bg-gradient-to-r from-red-600 to-rose-500";
+      case "easy": return "bg-gradient-to-r from-green-500 to-emerald-500 border-green-400";
+      case "medium": return "bg-gradient-to-r from-yellow-500 to-amber-500 border-yellow-400";
+      case "hard": return "bg-gradient-to-r from-orange-500 to-red-500 border-orange-400";
+      case "expert": return "bg-gradient-to-r from-red-500 to-rose-500 border-red-400";
+    }
+  };
+
+  const getDifficultyIcon = (difficulty: Difficulty) => {
+    switch(difficulty) {
+      case "easy": return "🌟";
+      case "medium": return "⭐⭐";
+      case "hard": return "⭐⭐⭐";
+      case "expert": return "🔥";
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#020617] via-[#0b1a33] to-[#020617] text-white overflow-x-hidden">
-      {showConfetti && <Confetti mode="boom" particleCount={300} effectCount={1} x={0.5} y={0.3} colors={['#fbbf24', '#f59e0b', '#d97706', '#b45309', '#059669']} />}
+    <div className="min-h-screen w-full bg-gradient-to-br from-[#0a0f1e] via-[#0e1a2b] to-[#0a0f1e] text-white overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMjAgMjAgMjAgMjAgMCAwIDEtNDAgMCAyMCAyMCAwIDAgMSAyMC0yMHoiIGZpbGw9InJnYmEoMjUxLCAxOTEsIDM2LCAwLjA1KSIgLz48L3N2Zz4=')] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 via-transparent to-transparent" />
+      </div>
+
+      {showConfetti && (
+        <Confetti 
+          mode="boom" 
+          particleCount={500} 
+          effectCount={2} 
+          x={0.5} 
+          y={0.3} 
+          colors={['#fbbf24', '#f59e0b', '#d97706', '#b45309', '#10b981', '#3b82f6']} 
+        />
+      )}
       
       {/* Confirm Modal */}
       {modalType === "confirm" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg">
-          <div className="max-w-md w-full bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-2xl p-8 shadow-2xl border-2 border-yellow-500">
-            <h3 className="text-3xl font-black text-yellow-400 mb-6 text-center">JAVOBNI TASDIQLASH</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xl">
+          <div className="max-w-md w-full bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 border-yellow-500 animate-in zoom-in-50 duration-300">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full p-4 shadow-xl">
+                <FaQuestion className="text-3xl text-white" />
+              </div>
+            </div>
+            
+            <h3 className="text-2xl font-black text-yellow-400 mt-8 mb-6 text-center">
+              JAVOBNI TASDIQLASH
+            </h3>
             
             <div className="mb-8 text-center">
-              <div className="text-7xl mb-4 text-yellow-400">?</div>
+              <div className="text-8xl mb-4 text-yellow-400 animate-pulse">{selectedAnswer}</div>
               <p className="text-xl text-blue-200 mb-2">
                 Siz <span className="text-3xl font-bold text-yellow-400 mx-2">{selectedAnswer}</span> variantini tanladingiz.
               </p>
@@ -814,15 +704,21 @@ function Millionaire() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={confirmAnswer}
-                className="py-4 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-xl hover:from-green-500 hover:to-emerald-500 transition-all border-2 border-green-400"
+                className="group relative py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-xl hover:from-green-400 hover:to-emerald-400 transition-all border-2 border-green-400 overflow-hidden"
               >
-                ✓ HA
+                <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                <span className="relative flex items-center justify-center gap-2">
+                  <FaCheck /> HA
+                </span>
               </button>
               <button
                 onClick={cancelAnswer}
-                className="py-4 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xl hover:from-red-500 hover:to-rose-500 transition-all border-2 border-red-400"
+                className="group relative py-4 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold text-xl hover:from-red-400 hover:to-rose-400 transition-all border-2 border-red-400 overflow-hidden"
               >
-                ✕ YO'Q
+                <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                <span className="relative flex items-center justify-center gap-2">
+                  <FaTimes /> YO'Q
+                </span>
               </button>
             </div>
           </div>
@@ -831,9 +727,17 @@ function Millionaire() {
 
       {/* Result Modal */}
       {resultModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg">
-          <div className="max-w-md w-full bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-2xl p-8 shadow-2xl border-2 border-yellow-500">
-            <div className="text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xl">
+          <div className={`max-w-md w-full bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 ${resultModal.correct ? 'border-green-500' : 'border-red-500'} animate-in zoom-in-50 duration-300`}>
+            <div className={`absolute -top-4 left-1/2 transform -translate-x-1/2 ${resultModal.correct ? 'bg-green-500' : 'bg-red-500'} rounded-full p-4 shadow-xl`}>
+              {resultModal.correct ? (
+                <FaTrophy className="text-3xl text-white" />
+              ) : (
+                <FaTimes className="text-3xl text-white" />
+              )}
+            </div>
+            
+            <div className="text-center mt-8">
               <div className="text-7xl mb-4">
                 {resultModal.correct ? "🎉" : "😢"}
               </div>
@@ -843,15 +747,18 @@ function Millionaire() {
               <p className="text-lg text-blue-200 mb-6">{resultModal.message}</p>
               
               {!resultModal.correct && currentPlayer && (
-                <div className="mb-6 p-4 bg-blue-900/50 rounded-lg border border-blue-500">
-                  <p className="text-sm text-blue-300 mb-2">XAVFSIZ YUTUQ</p>
-                  <p className="text-2xl font-bold text-yellow-400">{formatUZS(safeMoney)} so'm</p>
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl border-2 border-blue-500">
+                  <div className="flex items-center justify-center gap-2 text-sm text-blue-300 mb-2">
+                    <FaShieldAlt className="text-yellow-400" />
+                    <span>XAVFSIZ YUTUQ</span>
+                  </div>
+                  <p className="text-3xl font-bold text-yellow-400">{formatUZS(safeMoney)} so'm</p>
                 </div>
               )}
               
               <button
                 onClick={closeResultModal}
-                className="w-full py-4 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold text-xl hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400"
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold text-xl hover:from-yellow-400 hover:to-amber-400 transition-all border-2 border-yellow-400"
               >
                 DAVOM ETISH
               </button>
@@ -860,184 +767,224 @@ function Millionaire() {
         </div>
       )}
 
-      <div className="mx-auto max-w-7xl px-4 py-6">
+      <div className="relative mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 py-6 min-h-screen">
         {/* Setup Phase */}
         {phase === "setup" && (
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-block p-4 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full mb-4">
-                <GiMoneyStack className="text-5xl text-white" />
+              <div className="inline-block p-6 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-full mb-4 shadow-2xl animate-bounce">
+                <GiMoneyStack className="text-6xl text-white" />
               </div>
-              <h1 className="text-5xl md:text-6xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text mb-2">
+              <h1 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text mb-2">
                 KIM MILLIONER
               </h1>
-              <p className="text-xl text-blue-300">bo'lishni xohlaydi?</p>
+              <p className="text-2xl text-blue-300">bo'lishni xohlaydi?</p>
             </div>
 
-            <div className="mb-10 grid grid-cols-2 gap-6">
-              <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-2xl p-8 shadow-2xl border-2 border-yellow-500">
-              <h2 className="text-2xl font-bold text-yellow-400 mb-8 text-center">O'YINCHILAR (3-5 TA)</h2>
-
-              <div className="grid grid-cols-1 gap-4 mb-8">
-                {clamp3to5(names).map((val, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <label className="text-sm font-semibold text-blue-300 ml-2">
-                      O'yinchi {idx + 1}
-                    </label>
-                    <input
-                      value={val}
-                      onChange={(e) => {
-                        const copy = [...names];
-                        copy[idx] = e.target.value;
-                        setNames(clamp3to5(copy));
-                      }}
-                      placeholder={`O'yinchi ${idx + 1} ismi...`}
-                      className="w-full px-6 py-4 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-all text-lg"
-                    />
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Left Column - Player Setup */}
+              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 border-yellow-500/50 hover:border-yellow-500 transition-colors">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-xl">
+                    <FaUsers className="text-2xl text-white" />
                   </div>
-                ))}
-              </div>
+                  <h2 className="text-2xl font-bold text-yellow-400">O'YINCHILAR (3-5 TA)</h2>
+                </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <button
-                  onClick={addPlayer}
-                  disabled={names.length >= 5}
-                  className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border-2 border-blue-400"
-                >
-                  <FaUserPlus /> QO'SHISH
-                </button>
-                <button
-                  onClick={removePlayer}
-                  disabled={names.length <= 3}
-                  className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border-2 border-blue-400"
-                >
-                  <FaUserMinus /> O'CHIRISH
-                </button>
+                <div className="space-y-4 mb-8">
+                  {clamp3to5(names).map((val, idx) => (
+                    <div key={idx} className="group relative">
+                      <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-yellow-500 to-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <label className="text-sm font-semibold text-blue-300 ml-2 mb-1 block">
+                        <FaCrown className={`inline mr-1 ${idx === 0 ? 'text-yellow-400' : 'text-gray-400'}`} />
+                        O'yinchi {idx + 1}
+                      </label>
+                      <input
+                        value={val}
+                        onChange={(e) => {
+                          const copy = [...names];
+                          copy[idx] = e.target.value;
+                          setNames(clamp3to5(copy));
+                        }}
+                        placeholder={`O'yinchi ${idx + 1} ismi...`}
+                        className="w-full px-6 py-4 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-all text-lg backdrop-blur-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <button
+                    onClick={addPlayer}
+                    disabled={names.length >= 5}
+                    className="group relative py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold hover:from-blue-500 hover:to-blue-400 transition-all disabled:opacity-50 border-2 border-blue-400 overflow-hidden"
+                  >
+                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      <FaUserPlus /> QO'SHISH
+                    </span>
+                  </button>
+                  <button
+                    onClick={removePlayer}
+                    disabled={names.length <= 3}
+                    className="group relative py-3 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold hover:from-orange-500 hover:to-orange-400 transition-all disabled:opacity-50 border-2 border-orange-400 overflow-hidden"
+                  >
+                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      <FaUserMinus /> O'CHIRISH
+                    </span>
+                  </button>
+                </div>
+
                 <button
                   onClick={start}
-                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400 flex items-center justify-center gap-2"
+                  className="group relative w-full py-5 rounded-xl bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-white font-bold text-xl hover:scale-105 transition-all border-2 border-yellow-400 overflow-hidden"
                 >
-                  <GiMoneyStack /> BOSHLASH
+                  <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                  <span className="relative flex items-center justify-center gap-3">
+                    <GiMoneyStack className="text-2xl" />
+                    O'YINNI BOSHLASH
+                  </span>
                 </button>
-              </div>
 
-              {message && (
-                <div className="p-4 rounded-lg bg-red-500/20 border-2 border-red-500 text-red-300 font-bold text-center">
-                  {message}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-2xl p-6 shadow-2xl border-2 border-yellow-500">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-yellow-400">O'QITUVCHI SAVOLLARI</h3>
-                <span className="text-sm text-blue-300">Jami: {questionBank.length} ta</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <input
-                  value={draftQuestion.text}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, text: e.target.value }))}
-                  placeholder="Savol matni..."
-                  className="md:col-span-2 px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-                <input
-                  value={draftQuestion.optionA}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, optionA: e.target.value }))}
-                  placeholder="A varianti"
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-                <input
-                  value={draftQuestion.optionB}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, optionB: e.target.value }))}
-                  placeholder="B varianti"
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-                <input
-                  value={draftQuestion.optionC}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, optionC: e.target.value }))}
-                  placeholder="C varianti"
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-                <input
-                  value={draftQuestion.optionD}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, optionD: e.target.value }))}
-                  placeholder="D varianti"
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-                <select
-                  value={draftQuestion.correct}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, correct: e.target.value as OptionKey }))}
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white focus:border-yellow-500 focus:outline-none"
-                >
-                  {OPTION_KEYS.map((k) => (
-                    <option key={k} value={k}>{k} - to'g'ri javob</option>
-                  ))}
-                </select>
-                <select
-                  value={draftQuestion.difficulty}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, difficulty: e.target.value as Difficulty }))}
-                  className="px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white focus:border-yellow-500 focus:outline-none"
-                >
-                  <option value="easy">easy</option>
-                  <option value="medium">medium</option>
-                  <option value="hard">hard</option>
-                  <option value="expert">expert</option>
-                </select>
-                <input
-                  value={draftQuestion.category}
-                  onChange={(e) => setDraftQuestion((p) => ({ ...p, category: e.target.value }))}
-                  placeholder="Kategoriya (ixtiyoriy)"
-                  className="md:col-span-2 px-4 py-3 rounded-lg border-2 border-blue-500 bg-blue-900/30 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
-                />
-              </div>
-
-              <button
-                onClick={addTeacherQuestion}
-                className="w-full md:w-auto px-5 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400"
-              >
-                SAVOL QO'SHISH (BACKEND)
-              </button>
-
-              {draftError && (
-                <div className="mt-3 p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-300 text-sm font-semibold">
-                  {draftError}
-                </div>
-              )}
-
-              <div className="mt-4 max-h-64 overflow-y-auto space-y-2 pr-1">
-                {questionBank.map((q, idx) => (
-                  <div key={q.id} className="p-3 rounded-lg border border-blue-500 bg-blue-900/20">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-xs text-blue-300 mb-1">
-                          #{idx + 1} | {q.difficulty.toUpperCase()} | {q.category || "General"}
-                        </div>
-                        <div className="text-sm text-white font-semibold">{q.text}</div>
-                      </div>
-                      <button
-                        onClick={() => removeTeacherQuestion(q.id)}
-                        className="px-3 py-1 rounded-md bg-red-600/80 hover:bg-red-500 text-white text-xs font-bold border border-red-400"
-                      >
-                        O'CHIRISH
-                      </button>
-                    </div>
+                {message && (
+                  <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-2 border-blue-500 text-blue-300 font-bold text-center animate-pulse">
+                    {message}
                   </div>
-                ))}
+                )}
               </div>
-            </div>
+
+              {/* Right Column - Teacher Questions */}
+              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 shadow-2xl border-2 border-yellow-500/50 hover:border-yellow-500 transition-colors">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
+                    <GiBrain className="text-2xl text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-yellow-400">O'QITUVCHI SAVOLLARI</h2>
+                </div>
+
+                <div className="space-y-4 mb-4">
+                  <input
+                    value={draftQuestion.text}
+                    onChange={(e) => setDraftQuestion((p) => ({ ...p, text: e.target.value }))}
+                    placeholder="Savol matni..."
+                    className="w-full px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                  />
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      value={draftQuestion.optionA}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, optionA: e.target.value }))}
+                      placeholder="A varianti"
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                    />
+                    <input
+                      value={draftQuestion.optionB}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, optionB: e.target.value }))}
+                      placeholder="B varianti"
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                    />
+                    <input
+                      value={draftQuestion.optionC}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, optionC: e.target.value }))}
+                      placeholder="C varianti"
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                    />
+                    <input
+                      value={draftQuestion.optionD}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, optionD: e.target.value }))}
+                      placeholder="D varianti"
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <select
+                      value={draftQuestion.correct}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, correct: e.target.value as OptionKey }))}
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white focus:border-yellow-500 focus:outline-none"
+                    >
+                      {OPTION_KEYS.map((k) => (
+                        <option key={k} value={k}>{k} - to'g'ri</option>
+                      ))}
+                    </select>
+                    <select
+                      value={draftQuestion.difficulty}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, difficulty: e.target.value as Difficulty }))}
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white focus:border-yellow-500 focus:outline-none"
+                    >
+                      <option value="easy">🌟 Oson</option>
+                      <option value="medium">⭐⭐ O'rta</option>
+                      <option value="hard">⭐⭐⭐ Qiyin</option>
+                      <option value="expert">🔥 Ekspert</option>
+                    </select>
+                    <input
+                      value={draftQuestion.category}
+                      onChange={(e) => setDraftQuestion((p) => ({ ...p, category: e.target.value }))}
+                      placeholder="Kategoriya"
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500/50 bg-blue-900/20 text-white placeholder-blue-300/50 focus:border-yellow-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={addTeacherQuestion}
+                  className="group relative w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-bold hover:from-yellow-400 hover:to-amber-400 transition-all border-2 border-yellow-400 mb-4 overflow-hidden"
+                >
+                  <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                  <span className="relative flex items-center justify-center gap-2">
+                    <FaUserPlus /> SAVOL QO'SHISH
+                  </span>
+                </button>
+
+                {draftError && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-500/20 border-2 border-red-500 text-red-300 text-sm font-semibold">
+                    {draftError}
+                  </div>
+                )}
+
+                <div className="max-h-80 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  {questionBank.map((q) => (
+                    <div key={q.id} className="group relative p-4 rounded-xl border-2 border-blue-500/30 bg-blue-900/10 hover:border-yellow-500/50 transition-all">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded-lg text-xs font-bold text-white ${getDifficultyClass(q.difficulty)}`}>
+                              {getDifficultyIcon(q.difficulty)} {q.difficulty.toUpperCase()}
+                            </span>
+                            <span className="text-xs text-blue-300">{q.category || "General"}</span>
+                          </div>
+                          <p className="text-sm text-white font-semibold">{q.text}</p>
+                        </div>
+                        <button
+                          onClick={() => removeTeacherQuestion(q.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-white text-xs font-bold border-2 border-red-400 transition-all"
+                        >
+                          O'CHIRISH
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Play Phase */}
         {phase === "play" && currentPlayer && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 h-full">
             {/* Left Side - Money Ladder */}
-            <div className="lg:col-span-3">
-              <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-xl p-4 border-2 border-yellow-500 sticky top-4">
-                <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center">PUL POG'ONASI</h3>
-                <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+            <div className="xl:col-span-2">
+              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-4 border-2 border-yellow-500/50 sticky top-4 shadow-2xl">
+                <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center flex items-center justify-center gap-2">
+                  <GiMoneyStack className="text-xl" />
+                  PUL POG'ONASI
+                </h3>
+                <div
+                  ref={ladderContainerRef}
+                  className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-2"
+                >
                   {[...MONEY_LADDER].reverse().map((amount, idx) => {
                     const reversedIndex = MONEY_LADDER.length - 1 - idx;
                     const isCurrent = reversedIndex === currentPlayer.currentQuestionIndex;
@@ -1047,19 +994,26 @@ function Millionaire() {
                     return (
                       <div
                         key={reversedIndex}
+                        ref={(element) => {
+                          ladderItemRefs.current[reversedIndex] = element;
+                        }}
                         className={`
-                          relative p-3 rounded-lg text-center transition-all border-2
+                          relative p-4 rounded-xl text-center transition-all border-2
                           ${isCurrent 
-                            ? 'bg-gradient-to-r from-yellow-500 to-amber-600 border-yellow-400 scale-105 shadow-lg' 
+                            ? 'bg-gradient-to-r from-yellow-500 to-amber-600 border-yellow-400 scale-105 shadow-xl animate-pulse' 
                             : isPassed
-                            ? 'bg-green-600/30 border-green-500 text-green-300'
-                            : 'bg-blue-900/30 border-blue-500 text-blue-300'
+                            ? 'bg-gradient-to-r from-green-600/30 to-emerald-600/30 border-green-500/50 text-green-300'
+                            : 'bg-blue-900/30 border-blue-500/50 text-blue-300'
                           }
-                          ${isSafe && !isCurrent && !isPassed ? 'bg-purple-600/30 border-purple-500' : ''}
+                          ${isSafe && !isCurrent && !isPassed ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-500/50' : ''}
                         `}
                       >
                         <div className="font-bold text-lg">{formatUZS(amount)}</div>
-                        {isSafe && <div className="text-xs text-purple-300 mt-1">XAVFSIZ</div>}
+                        {isSafe && (
+                          <div className="absolute -top-2 -right-2">
+                            <FaShieldAlt className="text-purple-400 text-sm" />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1068,39 +1022,64 @@ function Millionaire() {
             </div>
 
             {/* Center - Game Area */}
-            <div className="lg:col-span-6 space-y-6">
+            <div className="xl:col-span-7 space-y-6">
               {/* Current Player Info */}
-              <div className="bg-gradient-to-r from-blue-800 to-blue-600 rounded-xl p-6 border-2 border-yellow-500 text-center">
-                <div className="text-sm text-blue-200 mb-2">HOZIRGI O'YINCHI</div>
-                <div className="text-3xl font-bold text-yellow-400 mb-2">
-                  {answeringPlayerIndex === null ? "TANLANMAGAN" : currentPlayer.name}
-                </div>
-                {answeringPlayerIndex === null && (
-                  <div className="text-sm text-blue-200 mb-2">Birinchi bo'lib tanlagan o'yinchi javob beradi</div>
-                )}
-                <div className="flex justify-center gap-8">
-                  <div>
-                    <div className="text-xs text-blue-300">JORIY PUL</div>
-                    <div className="text-xl font-bold text-white">
-                      {answeringPlayerIndex === null ? "-" : formatUZS(currentMoneyLevel)}
+              <div className="relative bg-gradient-to-r from-blue-800/50 via-blue-700/50 to-blue-800/50 rounded-2xl p-6 border-2 border-yellow-500/50 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-transparent rounded-2xl" />
+                <div className="relative grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-sm text-blue-300 mb-1">HOZIRGI O'YINCHI</div>
+                    <div className="text-2xl font-bold text-yellow-400">
+                      {answeringPlayerIndex === null ? "⚡ TANLANMAGAN" : currentPlayer.name}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-blue-300">XAVFSIZ YUTUQ</div>
-                    <div className="text-xl font-bold text-green-400">
-                      {answeringPlayerIndex === null ? "-" : formatUZS(safeMoney)}
+                  <div className="text-center border-x-2 border-yellow-500/30">
+                    <div className="text-sm text-blue-300 mb-1">JORIY PUL</div>
+                    <div className="text-2xl font-bold text-white">
+                      {answeringPlayerIndex === null ? "—" : formatUZS(currentMoneyLevel)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-blue-300 mb-1">XAVFSIZ YUTUQ</div>
+                    <div className="text-2xl font-bold text-green-400 flex items-center justify-center gap-2">
+                      <FaShieldAlt className="text-purple-400" />
+                      {answeringPlayerIndex === null ? "—" : formatUZS(safeMoney)}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Lifelines */}
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {[
-                  { name: "50/50", action: useFiftyFifty, active: lifelines.fiftyFifty, icon: "50/50" },
-                  { name: "DO'ST", action: usePhoneFriend, active: lifelines.phoneFriend, icon: <FaPhone /> },
-                  { name: "ZAL", action: useAskAudience, active: lifelines.askAudience, icon: <FaUsers /> },
-                  { name: "ALMASHTIR", action: useSwitchQuestion, active: lifelines.switchQuestion, icon: <FaRandom /> },
+                  { 
+                    name: "50/50", 
+                    action: useFiftyFifty, 
+                    active: lifelines.fiftyFifty, 
+                    icon: "50/50",
+                    color: "from-blue-600 to-blue-500"
+                  },
+                  { 
+                    name: "DO'ST", 
+                    action: usePhoneFriend, 
+                    active: lifelines.phoneFriend, 
+                    icon: <FaPhone />,
+                    color: "from-green-600 to-emerald-500"
+                  },
+                  { 
+                    name: "ZAL", 
+                    action: useAskAudience, 
+                    active: lifelines.askAudience, 
+                    icon: <FaUsers />,
+                    color: "from-purple-600 to-pink-500"
+                  },
+                  { 
+                    name: "ALMASHTIR", 
+                    action: useSwitchQuestion, 
+                    active: lifelines.switchQuestion, 
+                    icon: <FaRandom />,
+                    color: "from-orange-600 to-red-500"
+                  },
                 ].map((lifeline, idx) => {
                   const canUse = lifeline.active && answeringPlayerIndex !== null && !!question;
                   return (
@@ -1109,33 +1088,40 @@ function Millionaire() {
                     onClick={lifeline.action}
                     disabled={!canUse}
                     className={`
-                      p-3 rounded-lg border-2 flex flex-col items-center gap-1 transition-all text-sm font-bold
+                      group relative p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all text-sm font-bold overflow-hidden
                       ${canUse
-                        ? 'bg-gradient-to-br from-blue-600 to-blue-500 border-yellow-400 text-white hover:from-blue-500 hover:to-blue-400 hover:scale-105'
+                        ? `bg-gradient-to-br ${lifeline.color} border-yellow-400 text-white hover:scale-105 hover:shadow-xl`
                         : 'bg-gray-700/30 border-gray-600 text-gray-500 opacity-50 cursor-not-allowed'
                       }
                     `}
                   >
-                    <span className="text-xl">{lifeline.icon}</span>
-                    <span>{lifeline.name}</span>
+                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="relative text-2xl">{lifeline.icon}</span>
+                    <span className="relative">{lifeline.name}</span>
                   </button>
                 )})}
               </div>
 
               {/* Question Card */}
-              <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-xl p-8 border-2 border-yellow-500">
+              <div className="relative bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-8 border-2 border-yellow-500/50 shadow-2xl">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMjAgMjAgMjAgMjAgMCAwIDEtNDAgMCAyMCAyMCAwIDAgMSAyMC0yMHoiIGZpbGw9InJnYmEoMjUxLCAxOTEsIDM2LCAwLjEpIiAvPjwvc3ZnPg==')] opacity-20" />
+                
                 {!question ? (
-                  <div className="py-12 text-center">
-                    <div className="text-2xl md:text-3xl font-bold text-white mb-3">Savol kutilyapti</div>
-                    <div className="text-blue-300">O'ng tomondan birinchi bo'lib o'yinchi tanlang.</div>
+                  <div className="py-16 text-center">
+                    <div className="text-4xl md:text-5xl font-bold text-white mb-3">🤔 Savol kutilyapti</div>
+                    <div className="text-xl text-blue-300">O'ng tomondan birinchi bo'lib o'yinchi tanlang.</div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-between items-center mb-6">
-                      <div className={`px-4 py-2 rounded-lg text-white font-bold ${getDifficultyClass(question.difficulty)}`}>
+                    <div className="flex justify-between items-center mb-8">
+                      <div className={`px-4 py-2 rounded-xl text-white font-bold border-2 ${getDifficultyClass(question.difficulty)}`}>
+                        <span className="mr-2">{getDifficultyIcon(question.difficulty)}</span>
                         {question.difficulty.toUpperCase()}
                       </div>
-                      <div className="text-blue-300 font-semibold">{question.category}</div>
+                      <div className="flex items-center gap-2 text-blue-300 font-semibold">
+                        <FaStar className="text-yellow-400" />
+                        {question.category}
+                      </div>
                     </div>
 
                     <div className="text-2xl md:text-3xl font-bold text-white mb-10 text-center leading-relaxed">
@@ -1152,20 +1138,21 @@ function Millionaire() {
                             key={k}
                             onClick={() => !isDisabled && chooseAnswer(k)}
                             className={`
-                              relative p-5 rounded-lg border-2 transition-all cursor-pointer
+                              group relative p-6 rounded-xl border-2 transition-all cursor-pointer overflow-hidden
                               ${isDisabled
                                 ? 'bg-gray-700/30 border-gray-600 opacity-50 cursor-not-allowed'
                                 : isSelected
                                 ? 'bg-yellow-500/20 border-yellow-500 hover:bg-yellow-500/30'
-                                : 'bg-blue-900/30 border-blue-500 hover:border-yellow-500 hover:bg-blue-800/30'
+                                : 'bg-blue-900/30 border-blue-500/50 hover:border-yellow-500 hover:bg-blue-800/30 hover:scale-105'
                               }
                             `}
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold text-lg">
+                            <span className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                            <div className="relative flex items-center gap-4">
+                              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold text-xl shadow-lg">
                                 {k}
                               </div>
-                              <div className="text-lg text-white">{question.options[k]}</div>
+                              <div className="text-xl text-white">{question.options[k]}</div>
                             </div>
                           </div>
                         );
@@ -1177,17 +1164,20 @@ function Millionaire() {
 
               {/* Message */}
               {message && (
-                <div className="p-4 rounded-lg bg-purple-600/20 border-2 border-purple-500 text-purple-200 text-center font-semibold">
+                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-2 border-purple-500 text-purple-200 text-center font-semibold animate-pulse">
                   {message}
                 </div>
               )}
             </div>
 
             {/* Right Side - Players */}
-            <div className="lg:col-span-3">
-              <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-xl p-4 border-2 border-yellow-500 sticky top-4">
-                <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center">O'YINCHILAR</h3>
-                <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="xl:col-span-3">
+              <div className="bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-2xl p-4 border-2 border-yellow-500/50 sticky top-4 shadow-2xl">
+                <h3 className="text-lg font-bold text-yellow-400 mb-4 text-center flex items-center justify-center gap-2">
+                  <FaUsers />
+                  O'YINCHILAR
+                </h3>
+                <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2">
                   {players.map((player, idx) => {
                     const alreadyAttempted = attemptedPlayerIds.has(player.id);
                     const claimDisabled =
@@ -1201,36 +1191,50 @@ function Millionaire() {
                     <div
                       key={player.id}
                       className={`
-                        p-3 rounded-lg border-2 transition-all
+                        relative p-4 rounded-xl border-2 transition-all
                         ${idx === answeringPlayerIndex
-                          ? 'bg-yellow-500/20 border-yellow-500'
+                          ? 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-yellow-500 shadow-lg'
                           : player.isActive && !player.hasLost
-                          ? 'bg-blue-600/20 border-blue-500'
+                          ? 'bg-blue-600/20 border-blue-500/50 hover:border-blue-400'
                           : player.hasLost
-                          ? 'bg-red-600/20 border-red-500 opacity-60'
-                          : 'bg-blue-900/30 border-blue-500'
+                          ? 'bg-red-600/20 border-red-500/50 opacity-60'
+                          : 'bg-blue-900/30 border-blue-500/30'
                         }
                       `}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-bold text-white">{player.name}</span>
-                        <span className="text-sm font-bold text-yellow-400">{formatUZS(player.totalMoney)}</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-lg">{player.name}</span>
+                          {idx === answeringPlayerIndex && (
+                            <span className="text-xs bg-yellow-500 px-2 py-1 rounded-full">🎤</span>
+                          )}
+                        </div>
+                        <span className="text-lg font-bold text-yellow-400">{formatUZS(player.totalMoney)}</span>
                       </div>
-                      <div className="flex justify-between text-xs">
-                        <span className="text-green-400">correct {player.correctAnswers}</span>
-                        <span className="text-red-400">wrong {player.wrongAnswers}</span>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-green-400 flex items-center gap-1">
+                          <FaCheck className="text-xs" /> {player.correctAnswers}
+                        </span>
+                        <span className="text-red-400 flex items-center gap-1">
+                          <FaTimes className="text-xs" /> {player.wrongAnswers}
+                        </span>
+                        {player.safeLevel >= 0 && (
+                          <span className="text-purple-400">
+                            <FaShieldAlt />
+                          </span>
+                        )}
                       </div>
                       {player.isActive && !player.hasLost && (
                         <button
                           onClick={() => claimQuestion(idx)}
                           disabled={claimDisabled}
-                          className="mt-2 w-full py-1.5 rounded-md border border-yellow-400 bg-blue-800/40 text-xs font-bold text-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700/40 transition-all"
+                          className="mt-3 w-full py-2.5 rounded-xl border-2 border-yellow-400 bg-blue-800/40 text-sm font-bold text-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700/40 transition-all"
                         >
                           {idx === answeringPlayerIndex
-                            ? "JAVOB BERMOQDA"
+                            ? "⚡ JAVOB BERMOQDA"
                             : alreadyAttempted
-                            ? "URINIB BO'LGAN"
-                            : "BIRINCHI TANLAYMAN"}
+                            ? "❌ URINIB BO'LGAN"
+                            : "🎯 BIRINCHI TANLAYMAN"}
                         </button>
                       )}
                     </div>
@@ -1239,20 +1243,26 @@ function Millionaire() {
                 </div>
 
                 {/* Control Buttons */}
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-3">
                   <button
                     onClick={walkAway}
                     disabled={reveal || answeringPlayerIndex === null}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold hover:from-orange-500 hover:to-red-500 transition-all border-2 border-orange-400 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="group relative w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold hover:from-orange-500 hover:to-red-500 transition-all border-2 border-orange-400 disabled:opacity-50 overflow-hidden"
                   >
-                    <FaHome /> CHIQIB KET
+                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      <FaHome /> CHIQIB KETISH
+                    </span>
                   </button>
                   <button
                     onClick={nextQuestion}
                     disabled={!!resultModal || modalType !== null}
-                    className="w-full py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="group relative w-full py-3.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400 disabled:opacity-50 overflow-hidden"
                   >
-                    <FaArrowRight /> YANGI SAVOL
+                    <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="relative flex items-center justify-center gap-2">
+                      <FaArrowRight /> YANGI SAVOL
+                    </span>
                   </button>
                 </div>
               </div>
@@ -1262,65 +1272,102 @@ function Millionaire() {
 
         {/* End Phase */}
         {phase === "end" && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-b from-[#1e2b4f] to-[#0f1a2f] rounded-2xl p-8 border-2 border-yellow-500 text-center">
-              <div className="text-7xl mb-8">🏆</div>
+          <div className="max-w-6xl mx-auto">
+            <div className="relative bg-gradient-to-b from-[#1a2639] to-[#0f1a2f] rounded-3xl p-8 border-4 border-yellow-500 text-center overflow-hidden">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMjAgMjAgMjAgMjAgMCAwIDEtNDAgMCAyMCAyMCAwIDAgMSAyMC0yMHoiIGZpbGw9InJnYmEoMjUxLCAxOTEsIDM2LCAwLjEpIiAvPjwvc3ZnPg==')] opacity-20" />
+              
+              <div className="relative">
+                <div className="text-8xl mb-8 animate-bounce">🏆</div>
 
-              <h2 className="text-5xl font-black text-transparent bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text mb-8">
-                O'YIN TUGADI!
-              </h2>
+                <h2 className="text-5xl md:text-7xl font-black text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400 bg-clip-text mb-12">
+                  O'YIN TUGADI!
+                </h2>
 
-              {/* Winners Podium */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {winners.map((player, idx) => (
-                  <div
-                    key={player.id}
-                    className={`
-                      relative p-6 rounded-xl border-2 text-center
-                      ${idx === 0 
-                        ? 'bg-gradient-to-b from-yellow-500/30 to-transparent border-yellow-500 scale-110' 
-                        : idx === 1
-                        ? 'bg-gradient-to-b from-gray-400/30 to-transparent border-gray-400'
-                        : 'bg-gradient-to-b from-orange-500/30 to-transparent border-orange-500'
-                      }
-                    `}
-                  >
-                    <div className="text-4xl mb-2">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
-                    <h3 className="text-xl font-bold text-white mb-2">{player.name}</h3>
-                    <p className="text-2xl font-bold text-yellow-400 mb-2">{formatUZS(player.totalMoney)}</p>
-                    <p className="text-sm text-blue-300">
-                      correct {player.correctAnswers} | wrong {player.wrongAnswers}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* All Players */}
-              <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-500 mb-6">
-                <h3 className="text-sm font-bold text-yellow-400 mb-3">BARCHA O'YINCHILAR</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                  {[...players]
-                    .sort((a, b) => b.totalMoney - a.totalMoney)
-                    .map((player, idx) => (
-                      <div key={player.id} className="bg-blue-800/30 rounded-lg p-2 text-center border border-blue-500">
-                        <div className="text-xs text-blue-300 mb-1">#{idx + 1}</div>
-                        <div className="text-sm font-bold text-white truncate">{player.name}</div>
-                        <div className="text-xs text-yellow-400">{formatUZS(player.totalMoney)}</div>
+                {/* Winners Podium */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 items-end">
+                  {winners.map((player, idx) => (
+                    <div
+                      key={player.id}
+                      className={`
+                        relative p-8 rounded-2xl border-4 text-center transform transition-all hover:scale-105
+                        ${idx === 0 
+                          ? 'bg-gradient-to-b from-yellow-500/30 to-transparent border-yellow-500 scale-110 order-2' 
+                          : idx === 1
+                          ? 'bg-gradient-to-b from-gray-400/30 to-transparent border-gray-400 order-1'
+                          : 'bg-gradient-to-b from-orange-500/30 to-transparent border-orange-500 order-3'
+                        }
+                      `}
+                    >
+                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                        <div className={`text-6xl ${idx === 0 ? 'animate-bounce' : ''}`}>
+                          {idx === 0 ? '👑' : idx === 1 ? '🥈' : '🥉'}
+                        </div>
                       </div>
-                    ))}
+                      
+                      <h3 className="text-2xl font-bold text-white mt-8 mb-3">{player.name}</h3>
+                      <p className="text-3xl font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
+                        <FaCoins />
+                        {formatUZS(player.totalMoney)}
+                      </p>
+                      <div className="flex justify-center gap-4 text-sm">
+                        <span className="text-green-400">✓ {player.correctAnswers}</span>
+                        <span className="text-red-400">✗ {player.wrongAnswers}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              <button
-                onClick={resetAll}
-                className="px-8 py-4 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold text-xl hover:from-yellow-400 hover:to-amber-500 transition-all border-2 border-yellow-400"
-              >
-                <GiMoneyStack className="inline mr-2" /> YANGI O'YIN
-              </button>
+                {/* All Players */}
+                <div className="bg-blue-900/30 rounded-xl p-6 border-2 border-blue-500 mb-8">
+                  <h3 className="text-sm font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
+                    <FaUsers /> BARCHA O'YINCHILAR
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {[...players]
+                      .sort((a, b) => b.totalMoney - a.totalMoney)
+                      .map((player, idx) => (
+                        <div key={player.id} className="bg-blue-800/30 rounded-lg p-3 text-center border-2 border-blue-500/50">
+                          <div className="text-xs text-blue-300 mb-1">#{idx + 1}</div>
+                          <div className="text-sm font-bold text-white truncate">{player.name}</div>
+                          <div className="text-xs text-yellow-400">{formatUZS(player.totalMoney)}</div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={resetAll}
+                  className="group relative px-12 py-5 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-white font-bold text-2xl hover:scale-105 transition-all border-4 border-yellow-400 overflow-hidden"
+                >
+                  <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                  <span className="relative flex items-center justify-center gap-3">
+                    <GiMoneyStack className="text-3xl" />
+                    YANGI O'YIN
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Global Styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(37, 99, 235, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #fcd34d, #fbbf24);
+        }
+      `}</style>
     </div>
   );
 }

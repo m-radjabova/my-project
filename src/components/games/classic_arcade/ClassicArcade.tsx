@@ -11,6 +11,7 @@ import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQu
 import { generateClassicArcadeChallenges } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -66,6 +67,7 @@ const buildOdd = (teacher: OddRound[]): OddRound => (teacher.length ? [...teache
 export default function ClassicArcade() {
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("teacher");
+  useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);

@@ -3,18 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaGamepad,
-  FaSearch,
   FaArrowLeft,
-  FaRocket,
-  FaQuestion,
   FaCompass,
+  FaBookOpen,
+  FaGraduationCap,
+  FaStar,
 } from "react-icons/fa";
-import { GiSpinningWheel, GiPirateFlag, GiTreasureMap } from "react-icons/gi";
-import { MdErrorOutline } from "react-icons/md";
+import { GiCherry, GiFlowerTwirl, GiPlanetCore, GiBookshelf } from "react-icons/gi";
+import { HiSparkles } from "react-icons/hi";
+import { MdAutoAwesome, MdOutlineRocketLaunch } from "react-icons/md";
 
 function NotFoundPage() {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(10);
+  const [isHovered, setIsHovered] = useState(false);
   
   useEffect(() => {
     if (countdown > 0) {
@@ -25,290 +27,238 @@ function NotFoundPage() {
     }
   }, [countdown, navigate]);
 
-  // Random game suggestions
+  // Random aesthetic suggestions
   const suggestions = [
-    { name: "Quiz Battle", path: "/games/quiz-battle", icon: "📚", color: "from-yellow-500 to-orange-500" },
-    { name: "Memory Rush", path: "/games/memory-rush", icon: "🧠", color: "from-emerald-500 to-teal-500" },
-    { name: "Treasure Hunt", path: "/games/treasure-hunt", icon: "🗺️", color: "from-amber-500 to-orange-500" },
-    { name: "Word Battle", path: "/games/word-battle", icon: "📝", color: "from-blue-500 to-cyan-500" },
-    { name: "Classic Arcade", path: "/games/classic-arcade", icon: "🎮", color: "from-purple-500 to-pink-500" },
-    { name: "Flag Battle", path: "/games/flag-battle", icon: "🏁", color: "from-blue-500 to-cyan-500" },
+    { name: "Baamboozle", path: "/games/baamboozle", icon: "🎲", color: "from-[#f7c66d] to-[#e48b52]" },
+    { name: "Treasure Hunt", path: "/games/treasure-hunt", icon: "🗺️", color: "from-[#e7b16d] to-[#c67a59]" },
+    { name: "Jumanji", path: "/games/jumanji", icon: "🌴", color: "from-[#e58ca0] to-[#bc5c74]" },
+    { name: "Quiz Battle", path: "/games/quiz-battle", icon: "⚡", color: "from-[#e07c8e] to-[#a66466]" },
+    { name: "Memory Rush", path: "/games/memory-rush", icon: "🧠", color: "from-[#a66466] to-[#7b4f53]" },
+    { name: "Word Battle", path: "/games/word-battle", icon: "📝", color: "from-[#8f6d70] to-[#6d4f52]" },
   ];
 
-  // Random fun facts
-  const funFacts = [
-    "Bu sahifa topilmasa ham, sizning o'yin ruhingiz hech qachon yo'qolmaydi! 🎮",
-    "404 - bu xato emas, bu yangi sarguzashtning boshlanishi! 🚀",
-    "O'yinlar dunyosida har bir xato yangi imkoniyatdir! ✨",
-    "Bu sahifa xuddi yashirin bonus kabi - uni topish qiyin! 🎁",
-    "Ba'zida eng yaxshi o'yinlar kutilmagan joylarda boshlanadi! 🎯",
+  // Random aesthetic quotes
+  const quotes = [
+    { text: "Har bir yo'qolish, yangi kashfiyotning boshlanishi", author: "🌸" },
+    { text: "Sahifa topilmasa ham, bilim abadiy", author: "📚" },
+    { text: "404 - bu xato emas, bu sarguzasht", author: "✨" },
+    { text: "Yo'qolgan sahifalar orqali yangi olamlar ochiladi", author: "🌺" },
+    { text: "Bilim yo'li hech qachon tugamaydi", author: "🎓" },
   ];
 
-  const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Gradient Orbs */}
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-purple-600/20 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] animate-pulse-slower rounded-full bg-pink-600/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-indigo-600/10 blur-3xl" />
-
-        {/* Floating Game Icons */}
-        <div className="absolute inset-0">
-          {[...Array(40)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-white/5 animate-float"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${15 + Math.random() * 20}s`,
-                fontSize: `${20 + Math.random() * 40}px`,
-                transform: `rotate(${Math.random() * 360}deg)`,
-              }}
-            >
-              {i % 6 === 0 && "🎮"}
-              {i % 6 === 1 && "🎲"}
-              {i % 6 === 2 && "🎯"}
-              {i % 6 === 3 && "🎨"}
-              {i % 6 === 4 && "🧩"}
-              {i % 6 === 5 && "🏆"}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid Pattern */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20px 20px, rgba(255,255,255,0.05) 2px, transparent 2px)`,
-            backgroundSize: "40px 40px",
-          }}
-        />
+    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#fff9f8] via-[#fff1f0] to-[#fae6df]">
+      
+      {/* Minimal Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Soft blurs */}
+        <div className="absolute left-[5%] top-[10%] h-72 w-72 rounded-full bg-[#f6d4da]/20 blur-3xl animate-float-soft" />
+        <div className="absolute right-[8%] bottom-[15%] h-80 w-80 rounded-full bg-[#fbe5dd]/20 blur-3xl animate-float-slow" />
+        
+        {/* Floating flowers */}
+        <GiCherry className="absolute left-[12%] top-[20%] text-6xl text-[#e07c8e]/10 animate-petal-float" />
+        <GiFlowerTwirl className="absolute right-[15%] top-[40%] text-7xl text-[#a66466]/10 animate-float-soft" />
+        <GiPlanetCore className="absolute left-[20%] bottom-[15%] text-8xl text-[#7b4f53]/10 animate-spin-slow" />
+        <GiBookshelf className="absolute right-[10%] top-[60%] text-8xl text-[#8f6d70]/10 animate-float-slow" />
+        
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, #e07c8e 1px, transparent 1px)`,
+          backgroundSize: '50px 50px'
+        }} />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 mx-auto min-h-screen w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-        {/* 404 Number with Glitch Effect */}
+        
+        {/* Floating Badge */}
+        <div className="absolute top-20 left-10 hidden lg:block">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity" />
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-[#f0d9d6] shadow-lg">
+              <div className="flex items-center gap-2">
+                <FaGraduationCap className="text-[#e07c8e] text-xl" />
+                <div>
+                  <p className="text-[#7b4f53] text-xs font-bold">50K+</p>
+                  <p className="text-[#8f6d70] text-[10px]">O'quvchilar</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-20 right-10 hidden lg:block">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-[#a66466] rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity" />
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-[#f0d9d6] shadow-lg">
+              <div className="flex items-center gap-2">
+                <FaStar className="text-[#ffb347] text-xl" />
+                <div>
+                  <p className="text-[#7b4f53] text-xs font-bold">4.9 ★</p>
+                  <p className="text-[#8f6d70] text-[10px]">Reyting</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 404 Number with Aesthetic Style */}
         <div className="relative mb-8 text-center">
-          <div className="absolute inset-0 animate-pulse">
-            <div className="text-9xl font-black text-transparent bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-indigo-500/30 bg-clip-text blur-2xl">
+          <div className="absolute inset-0">
+            <div className="text-9xl font-black text-transparent bg-gradient-to-r from-[#e07c8e]/20 to-[#a66466]/20 bg-clip-text blur-3xl">
               404
             </div>
           </div>
-          <div className="relative">
-            <span className="text-9xl font-black text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text animate-glitch">
-              404
-            </span>
-          </div>
-          <div className="absolute -top-4 -right-4 animate-bounce">
+          
+          <div className="relative flex items-center justify-center gap-2">
+            <span className="text-8xl sm:text-9xl font-light text-[#7b4f53]">4</span>
             <div className="relative">
-              <div className="absolute inset-0 animate-ping rounded-full bg-yellow-400/30" />
-              <FaQuestion className="relative text-4xl text-yellow-400" />
+              <div className="absolute inset-0 bg-[#e07c8e] rounded-full blur-2xl animate-pulse-soft" />
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-[#e07c8e] to-[#a66466] flex items-center justify-center shadow-xl">
+                <GiPlanetCore className="text-5xl sm:text-6xl text-white" />
+              </div>
+              <div className="absolute -top-2 -right-2">
+                <HiSparkles className="text-[#ffd966] text-xl animate-pulse-soft" />
+              </div>
             </div>
+            <span className="text-8xl sm:text-9xl font-light text-[#7b4f53]">4</span>
+          </div>
+
+          {/* Decorative flowers */}
+          <div className="absolute -top-10 -left-10 animate-float-soft">
+            <GiFlowerTwirl className="text-4xl text-[#e07c8e]/30" />
+          </div>
+          <div className="absolute -bottom-10 -right-10 animate-float-slow">
+            <GiCherry className="text-4xl text-[#a66466]/30" />
           </div>
         </div>
 
         {/* Error Message */}
-        <div className="relative mb-8 text-center">
-          <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-6 py-3 border border-purple-500/30 backdrop-blur-sm mb-4">
-            <MdErrorOutline className="text-purple-400 text-2xl animate-pulse" />
-            <span className="text-sm font-black tracking-wider text-transparent bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text">
-              SAHIFA TOPILMADI
+        <div className="relative mb-8 text-center max-w-2xl">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-5 py-2.5 rounded-full border border-[#f0d9d6] shadow-sm mb-5">
+            <HiSparkles className="text-[#e07c8e] text-sm animate-pulse-soft" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#a66466]">
+              Sahifa topilmadi
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-black text-white mb-4">
-            <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 bg-clip-text text-transparent">
-              Oops! Yo'qolib qoldingizmi?
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight mb-4">
+            <span className="text-[#7b4f53]">Oops! </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e07c8e] to-[#a66466] font-medium">
+              Yo'qolib qoldingizmi?
             </span>
           </h1>
 
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-6">
-            Qidirayotgan sahifangiz boshqa o'lchamga ko'chib ketganga o'xshaydi. 
-            Xuddi yashirin bonusdek topish qiyin!
+          <p className="text-base sm:text-lg text-[#8f6d70] leading-relaxed mb-6">
+            Qidirayotgan sahifangiz boshqa manzilga ko'chib ketgan bo'lishi mumkin. 
+            Xuddi gul barglari shamolda uchgandek...
           </p>
 
-          {/* Fun Fact */}
-          <div className="max-w-lg mx-auto p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 backdrop-blur-sm">
-            <p className="text-sm text-slate-300 italic">
-              <span className="text-purple-400 font-bold">🎮 Fun Fact:</span> {randomFact}
+          {/* Aesthetic Quote */}
+          <div className="max-w-lg mx-auto p-5 rounded-2xl bg-white/70 backdrop-blur-sm border border-[#f0d9d6] shadow-sm">
+            <p className="text-sm text-[#7b4f53] italic mb-2">
+              "{randomQuote.text}"
             </p>
+            <p className="text-xs text-[#b38b8d]">{randomQuote.author}</p>
           </div>
         </div>
 
         {/* Auto-redirect Counter */}
-        <div className="relative mb-12 text-center">
-          <div className="inline-flex items-center gap-3 rounded-full bg-slate-800/50 px-6 py-3 border border-slate-700/50 backdrop-blur-sm">
-            <FaRocket className="text-purple-400 animate-pulse" />
-            <span className="text-slate-300">
-              {countdown} soniyadan keyin o'yinlar sahifasiga o'tkaziladi...
+        <div className="relative mb-8 text-center">
+          <div className="inline-flex items-center gap-3 bg-white/70 backdrop-blur-sm px-5 py-2.5 rounded-full border border-[#f0d9d6] shadow-sm">
+            <MdOutlineRocketLaunch className="text-[#e07c8e] text-sm animate-float-soft" />
+            <span className="text-xs text-[#8f6d70]">
+              <span className="font-bold text-[#e07c8e]">{countdown}</span> soniyadan keyin o'yinlarga o'tamiz
             </span>
           </div>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="relative mb-12 flex flex-wrap justify-center gap-4">
+        <div className="relative mb-12 flex flex-wrap justify-center gap-3">
           <Link
             to="/games"
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-4 text-lg font-bold text-white transition-all hover:scale-105 active:scale-95"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-[#e07c8e] to-[#a66466] px-6 py-3 text-sm font-medium text-white shadow-lg hover:-translate-y-1 transition-all"
           >
-            <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
-            <span className="relative flex items-center gap-3">
-              <FaGamepad className="text-xl" />
-              O'YINLARGA O'TISH
+            <span className="relative flex items-center gap-2">
+              <FaGamepad className="text-sm" />
+              O'yinlarga o'tish
+              <FaArrowLeft className="text-xs rotate-180 group-hover:translate-x-1 transition-transform" />
             </span>
           </Link>
 
           <Link
             to="/"
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-lg font-bold text-white transition-all hover:scale-105 active:scale-95"
+            className="group relative overflow-hidden rounded-full bg-white/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-[#7b4f53] border border-[#f0d9d6] hover:bg-white hover:-translate-y-1 transition-all"
           >
-            <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
-            <span className="relative flex items-center gap-3">
-              <FaHome className="text-xl" />
-              ASOSIY SAHIFA
+            <span className="relative flex items-center gap-2">
+              <FaHome className="text-sm" />
+              Bosh sahifa
             </span>
           </Link>
 
           <button
             onClick={() => navigate(-1)}
-            className="group relative overflow-hidden rounded-2xl bg-slate-800/80 px-8 py-4 text-lg font-bold text-white border border-slate-700/50 transition-all hover:bg-slate-800 hover:scale-105 active:scale-95"
+            className="group relative overflow-hidden rounded-full bg-white/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-[#7b4f53] border border-[#f0d9d6] hover:bg-white hover:-translate-y-1 transition-all"
           >
-            <span className="relative flex items-center gap-3">
-              <FaArrowLeft className="text-xl" />
-              ORQAGA QAYTISH
+            <span className="relative flex items-center gap-2">
+              <FaArrowLeft className="text-sm" />
+              Orqaga
             </span>
           </button>
         </div>
 
         {/* Game Suggestions */}
         <div className="relative w-full max-w-4xl">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <GiSpinningWheel className="text-purple-400 animate-spin-slow" />
-            <span className="bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
-              SIZGA TAVSIYA
-            </span>
-          </h2>
+          <div className="flex items-center gap-2 mb-6">
+            <MdAutoAwesome className="text-[#e07c8e] text-xl" />
+            <h2 className="text-lg font-medium text-[#7b4f53]">
+              Sizga tavsiya qilamiz
+            </h2>
+          </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {suggestions.map((game, index) => (
               <Link
                 key={index}
                 to={game.path}
-                className="group relative overflow-hidden rounded-xl border-2 border-purple-500/30 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-4 text-center transition-all hover:scale-105 hover:border-purple-400/50"
+                className="group relative overflow-hidden"
               >
-                {/* Icon */}
-                <div className={`relative mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${game.color} text-2xl text-white mx-auto transition-transform group-hover:scale-110`}>
-                  <span className="relative z-10">{game.icon}</span>
-                  <div className="absolute inset-0 rounded-lg bg-white/20 blur-md group-hover:blur-xl transition-all" />
+                <div className="relative p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-[#f0d9d6] hover:-translate-y-1 transition-all duration-300 hover:shadow-lg">
+                  
+                  {/* Icon */}
+                  <div className={`relative mb-2 w-10 h-10 mx-auto rounded-lg bg-gradient-to-r ${game.color} flex items-center justify-center text-white text-lg shadow-md group-hover:scale-110 transition-transform`}>
+                    <span>{game.icon}</span>
+                    <div className="absolute inset-0 rounded-lg bg-white/20 blur-md group-hover:blur-lg transition-all" />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-xs font-medium text-[#7b4f53] text-center">
+                    {game.name}
+                  </h3>
+
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#e07c8e]/5 to-[#a66466]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-
-                {/* Title */}
-                <h3 className="text-sm font-bold text-white mb-1">{game.name}</h3>
-
-                {/* Hover Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               </Link>
             ))}
           </div>
         </div>
 
         {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 text-6xl text-purple-500/10 rotate-12 animate-float">
-          <GiPirateFlag />
+        <div className="absolute top-40 left-5 text-3xl text-[#e07c8e]/20 animate-float-soft">
+          <FaBookOpen />
         </div>
-        <div className="absolute bottom-20 right-10 text-6xl text-pink-500/10 -rotate-12 animate-float-delayed">
-          <GiTreasureMap />
-        </div>
-        <div className="absolute top-1/2 left-5 text-4xl text-indigo-500/10 animate-float-slow">
+        <div className="absolute bottom-40 right-5 text-3xl text-[#a66466]/20 animate-float-slow">
           <FaCompass />
         </div>
-        <div className="absolute bottom-1/3 right-5 text-4xl text-purple-500/10 animate-float-slower">
-          <FaSearch />
+        <div className="absolute top-1/3 right-10 text-2xl text-[#7b4f53]/20 animate-spin-slow">
+          <GiFlowerTwirl />
         </div>
       </div>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(-5deg); }
-        }
-
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-
-        @keyframes float-slower {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-25px); }
-        }
-
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 0.8; }
-        }
-
-        @keyframes pulse-slower {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-        }
-
-        @keyframes glitch {
-          0%, 100% { transform: translate(0); }
-          20% { transform: translate(-2px, 2px); }
-          40% { transform: translate(-2px, -2px); }
-          60% { transform: translate(2px, 2px); }
-          80% { transform: translate(2px, -2px); }
-        }
-
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .animate-float-delayed {
-          animation: float-delayed 7s ease-in-out infinite;
-        }
-
-        .animate-float-slow {
-          animation: float-slow 10s ease-in-out infinite;
-        }
-
-        .animate-float-slower {
-          animation: float-slower 12s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-
-        .animate-pulse-slower {
-          animation: pulse-slower 6s ease-in-out infinite;
-        }
-
-        .animate-glitch {
-          animation: glitch 0.5s ease-in-out infinite;
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }

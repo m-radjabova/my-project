@@ -9,6 +9,7 @@ import { RiFlashlightFill } from "react-icons/ri";
 import { TbAlt } from "react-icons/tb";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
@@ -70,6 +71,7 @@ const sanitizeWord = (value: string) => value.toUpperCase().replace(/[^A-Z]/g, "
 
 export default function WordBattle() {
   const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ 1-JAMOA", "🛡️ 2-JAMOA"]);
   const [nameError, setNameError] = useState("");
   const [deck, setDeck] = useState<Puzzle[]>([]);

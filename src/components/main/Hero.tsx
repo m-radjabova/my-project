@@ -1,222 +1,260 @@
-import {
-  FaGamepad,
-  FaFlask,
-  FaBrain,
-  FaGraduationCap,
-  FaStar,
-} from "react-icons/fa";
-import { GiSparkles, GiBookshelf, GiTrophy, GiPencil } from "react-icons/gi";
-import { HiOutlineAcademicCap } from "react-icons/hi";
-import { RiGovernmentLine } from "react-icons/ri";
-import { TbMathSymbols } from "react-icons/tb";
+import { useMemo } from "react";
+import { FaArrowRight, FaGraduationCap} from "react-icons/fa";
+import { HiSparkles } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import heroCharacter from "../../assets/hero.png";
 
-function Hero() {
+import darkHeroImg from "../../assets/hero_dark_mode.png";
+import heroImg from "../../assets/hero_img.png";
+import Header from "../header/Header";
+
+type Petal = {
+  id: number;
+  left: string;
+  delay: string;
+  duration: string;
+  scale: number;
+  opacity: number;
+  drift: number;
+  rotate: number;
+};
+
+type HeroProps = {
+  activeNav?: "O'yinlar" | "Haqida" | "Izohlar" | "Bog'lanish";
+  isDark?: boolean;
+  onNavClick?: (section: string) => void;
+  onThemeToggle?: () => void;
+};
+
+function Hero({
+  activeNav,
+  isDark = false,
+  onNavClick,
+  onThemeToggle,
+}: HeroProps) {
   const navigate = useNavigate();
+
+  const petals = useMemo<Petal[]>(
+    () =>
+      Array.from({ length: 24 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 10}s`,
+        duration: `${12 + Math.random() * 10}s`,
+        scale: 0.45 + Math.random() * 0.9,
+        opacity: 0.18 + Math.random() * 0.45,
+        drift: -40 + Math.random() * 80,
+        rotate: Math.random() * 360,
+      })),
+    [],
+  );
 
   return (
     <section
-      className={` relative mt-[80px] h-screen w-full overflow-hidden bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d]`}
+      className={`relative min-h-screen overflow-hidden transition-colors duration-500 ${
+        isDark ? "bg-[#0f172a]" : ""
+      }`}
     >
-      {/* Floating Educational Icons Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* First Row - Floating Icons */}
-        <div className="absolute top-[15%] left-[5%] animate-float-slow">
-          <HiOutlineAcademicCap className="text-7xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute top-[25%] right-[8%] animate-float-delayed">
-          <FaBrain className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute bottom-[20%] left-[12%] animate-float">
-          <GiBookshelf className="text-9xl text-white/10 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute bottom-[35%] right-[15%] animate-float-slow">
-          <FaFlask className="text-8xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
-        </div>
+      <div className="absolute inset-0">
+        <img
+          src={isDark ? darkHeroImg : heroImg}
+          alt="Hero background"
+          className={`h-full w-full object-cover transition-all duration-700 ${
+            isDark ? "scale-105" : ""
+          }`}
+        />
 
-        {/* Second Row - More Icons with different animations */}
-        <div className="absolute top-[45%] left-[18%] animate-pulse-slow">
-          <GiTrophy className="text-9xl text-[#ffd700]/20 hover:text-[#ffd700]/30 transition-all duration-1000" />
-        </div>
-        <div className="absolute top-[60%] right-[22%] animate-bounce-slow">
-          <RiGovernmentLine className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute bottom-[45%] left-[25%] animate-spin-slow">
-          <TbMathSymbols className="text-9xl text-white/10 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute bottom-[55%] right-[30%] animate-float-delayed">
-          <GiPencil className="text-8xl text-white/10 rotate-45 hover:text-white/20 transition-all duration-1000" />
-        </div>
-
-        {/* Additional decorative elements */}
-        <div className="absolute top-[75%] left-[35%] animate-pulse">
-          <FaGraduationCap className="text-8xl text-white/10 hover:text-white/20 transition-all duration-1000" />
-        </div>
-        <div className="absolute top-[12%] left-[45%] animate-float-slow">
-          <FaStar className="text-7xl text-white/10 rotate-12 hover:text-white/20 transition-all duration-1000" />
-        </div>
-
-        {/* Background glow effects */}
-        <div className="absolute top-20 left-10">
-          <GiSparkles className="text-8xl text-white/5 animate-pulse-slow" />
-        </div>
-        <div className="absolute bottom-20 right-10">
-          <GiSparkles className="text-8xl text-white/10 animate-bounce-slow" />
-        </div>
+        <div
+          className={`absolute inset-0 ${
+            isDark
+              ? "bg-[linear-gradient(180deg,rgba(15,23,42,0.35)_0%,rgba(15,23,42,0.45)_35%,rgba(15,23,42,0.55)_72%,rgba(15,23,42,0.65)_100%)]"
+              : "bg-[linear-gradient(180deg,rgba(255,250,249,0.20)_0%,rgba(255,248,247,0.30)_35%,rgba(255,248,247,0.50)_72%,rgba(255,248,247,0.70)_100%)]"
+          }`}
+        />
+        <div
+          className={`absolute inset-0 ${
+            isDark
+              ? "bg-[radial-gradient(circle_at_center,rgba(255,107,138,0.20),rgba(30,30,47,0.08)_35%,transparent_70%)]"
+              : "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18),rgba(255,255,255,0.05)_35%,transparent_70%)]"
+          }`}
+        />
+        <div
+          className={`absolute inset-0 ${
+            isDark
+              ? "bg-[linear-gradient(90deg,rgba(15,23,42,0.92)_0%,rgba(15,23,42,0.74)_26%,rgba(30,30,47,0.48)_52%,rgba(15,23,42,0.32)_100%)]"
+              : "bg-[linear-gradient(90deg,rgba(255,248,247,0.82)_0%,rgba(255,248,247,0.62)_26%,rgba(255,248,247,0.32)_52%,rgba(255,248,247,0.20)_100%)]"
+          }`}
+        />
       </div>
 
-      <Decorations />
+      <BackgroundDecorations isDark={isDark} />
+      <FallingPetals isDark={isDark} petals={petals} />
 
-      <div className="relative mx-auto max-w-7xl px-6 h-full flex items-center">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8 w-full">
-          {/* Left Content */}
+      <Header
+        active={activeNav}
+        isDark={isDark}
+        onNavClick={onNavClick}
+        onThemeToggle={onThemeToggle}
+      />
+
+      <div className="relative z-20 mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 pb-14 pt-32 sm:px-6 sm:pt-36">
+        <div className="w-full max-w-4xl text-center">
           <div
-            className="relative z-20 text-center lg:text-left"
-            data-aos="fade-right"
+            data-aos="zoom-in"
+            data-aos-delay="120"
+            className={`mb-7 inline-flex items-center gap-2 rounded-full border px-4 py-2 shadow-[0_10px_30px_rgba(166,100,102,0.10)] backdrop-blur-md ${
+              isDark
+                ? "border-[#ff6b8a]/25 bg-[#1e1e2f]/72"
+                : "border-[#f0d9d6] bg-white/85"
+            }`}
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full mb-8 animate-fade-in-up">
-              <span className="w-2 h-2 bg-[#ffd700] rounded-full animate-pulse" />
-              <span className="text-xs font-bold tracking-[0.3em] text-white/90">
-                LET THE GAMES BEGIN
-              </span>
-            </div>
+            <span
+              className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                isDark
+                  ? "bg-[#ff6b8a]/18 text-[#ff6b8a]"
+                  : "bg-[#fbe7e5] text-[#e07c8e]"
+              }`}
+            >
+              <HiSparkles className="text-sm" />
+            </span>
+            <span
+              className={`text-[10px] font-extrabold uppercase tracking-[0.22em] sm:text-[11px] ${
+                isDark ? "text-[#a1a1aa]" : "text-[#a66466]"
+              }`}
+            >
+              Zamonaviy ta'lim platformasi
+            </span>
+          </div>
 
-            <h1 className="font-bebas text-6xl sm:text-7xl lg:text-8xl leading-[0.95] text-white mb-6">
-              <span className="block transform hover:scale-105 hover:translate-x-2 transition-all duration-300 animate-slide-in-left">
-                TA'LIM
-              </span>
-              <span className="block bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f] animate-slide-in-right">
-                JARAYONI
-              </span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#ffd966] to-[#ffb347] drop-shadow-[0_4px_0_#b94b1f] animate-slide-in-left delay-200">
-                BIZ BILAN!
-              </span>
-            </h1>
+          <h1
+            data-aos="fade-up"
+            data-aos-delay="180"
+            className={`mx-auto max-w-4xl text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl ${
+              isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"
+            }`}
+          >
+            Ta'lim jarayonini
+            <span className="mt-1 block bg-gradient-to-r from-[#ff6b8a] via-[#ff4f74] to-[#ff8ba3] bg-clip-text text-transparent">
+              yanada qiziqarli
+            </span>
+            <span
+              className={`mt-1 block ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}
+            >
+              va samarali qiling
+            </span>
+          </h1>
 
-            <p className="max-w-lg mx-auto lg:mx-0 text-base leading-relaxed text-white/80 mb-10 font-inter animate-fade-in-up delay-300">
-              O‘yin orqali fanlarni qiziqarli va oson o‘rganing. Topshiriqlarni
-              bajaring, savollarga javob bering va bilim darajangizni oshiring.
-              Do‘stlaringiz bilan birga o‘rganing va yuqori natijalarga
-              erishing.
-            </p>
+          <p
+            data-aos="fade-up"
+            data-aos-delay="240"
+            className={`mx-auto mt-6 max-w-2xl text-sm leading-7 sm:text-base sm:leading-8 md:text-lg ${
+              isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"
+            }`}
+          >
+            Interaktiv topshiriqlar, oson boshqaruv va natijalarni qulay
+            kuzatish imkoniyati. O'qituvchi, o'quvchi va maktab uchun mos,
+            chiroyli va zamonaviy yagona platforma.
+          </p>
 
-            {/* CTA Button */}
+          <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row" data-aos="fade-up" data-aos-delay="300">
             <button
               onClick={() => navigate("/games")}
-              className="group relative mt-8 overflow-hidden rounded-full border-2 border-[#ffe24d] bg-gradient-to-b from-[#ffd966] to-[#ffb347] px-12 py-4 text-lg font-black tracking-wider text-[#1a1a1a] shadow-[0_12px_0_0_rgba(230,126,34,0.95),0_15px_25px_rgba(0,0,0,0.2)] transition-all hover:translate-y-1 hover:shadow-[0_10px_0_0_rgba(230,126,34,0.95)] active:translate-y-3 active:shadow-[0_8px_0_0_rgba(230,126,34,0.95)] animate-fade-in-up"
+              className="group inline-flex cursor-pointer items-center gap-3 rounded-full bg-gradient-to-r from-[#ff6b8a] to-[#ff4f74] px-7 py-4 text-sm font-extrabold tracking-[0.06em] text-white shadow-[0_16px_30px_rgba(255,107,138,0.30)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_36px_rgba(255,79,116,0.36)]"
             >
-              <span className="relative z-10 flex items-center gap-3">
-                <FaGamepad className="text-xl" />
-                HOZIROQ BOSHLANG
-              </span>
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12" />
+              <FaGraduationCap className="text-base" />
+              Boshlash
+              <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
             </button>
-
-            {/* Stats */}
-            <div className="flex gap-8 mt-12 justify-center lg:justify-start animate-fade-in-up delay-700">
-              {[
-                { value: "50K+", label: "Active Players", icon: FaGamepad },
-                { value: "100+", label: "Dungeons", icon: GiTrophy },
-                { value: "4.9", label: "Rating", icon: GiSparkles },
-              ].map((stat, idx) => (
-                <div
-                  key={idx}
-                  className="text-center group hover:transform hover:scale-110 transition-all duration-300"
-                >
-                  <div className="text-2xl font-black text-white flex items-center gap-1 justify-center lg:justify-start">
-                    <stat.icon className="text-[#ffd966] text-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                    {stat.value}
-                  </div>
-                  <div className="text-xs font-medium text-white/60">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Right Image */}
           <div
-            className="relative z-20 flex items-center justify-center lg:justify-end"
-            data-aos="fade-left"
-            data-aos-delay="200"
+            data-aos="fade-up"
+            data-aos-delay="360"
+            className={`mx-auto mt-8 max-w-xl rounded-full border px-5 py-3 text-center text-xs font-semibold tracking-[0.08em] shadow-[0_8px_20px_rgba(166,100,102,0.06)] backdrop-blur-md sm:text-sm ${
+              isDark
+                ? "border-[#ff6b8a]/20 bg-[#1a1a28]/75 text-[#a1a1aa]"
+                : "border-[#f0d9d6] bg-white/70 text-[#a07b7e]"
+            }`}
           >
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#ffd966] to-[#ffb347] rounded-full blur-2xl opacity-30 group-hover:opacity-50 transition-opacity animate-pulse-slow" />
-              <img
-                src={heroCharacter}
-                alt="Hero character"
-                className="relative z-10 w-[300px] sm:w-[400px] lg:w-[500px] select-none object-contain
-                         drop-shadow-[0_35px_25px_rgba(0,0,0,0.4)] transform transition-all 
-                         
-                        "
-                draggable={false}
-              />
-            </div>
+            Bilim • Qulay boshqaruv • Chiroyli tajriba
           </div>
-        </div>
-
-        {/* Pagination Dots */}
-        <div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3"
-          data-aos="fade-up"
-          data-aos-delay="300"
-        >
-          {[0, 1, 2, 3].map((dot) => (
-            <button
-              key={dot}
-              className={`h-3 w-3 rounded-full transition-all duration-300 ${
-                dot === 0
-                  ? "bg-[#ffd966] scale-125 shadow-lg animate-pulse"
-                  : "bg-white/30 hover:bg-white/50 hover:scale-110"
-              }`}
-            />
-          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function Decorations() {
+function FallingPetals({
+  isDark = false,
+  petals,
+}: {
+  isDark?: boolean;
+  petals: Petal[];
+}) {
   return (
-    <div className="pointer-events-none absolute inset-0">
-      {/* Animated Clouds */}
-      <svg
-        className="absolute left-5 top-40 w-[320px] opacity-25 animate-float-slow-hero"
-        viewBox="0 0 420 260"
-        fill="none"
-      >
-        <path
-          d="M120 210c-50 0-88-30-88-70 0-36 31-66 72-70 13-34 48-59 89-59 48 0 88 32 96 76 50 3 90 36 90 76 0 42-44 77-98 77H120z"
-          fill="#ff9acb"
-        />
-      </svg>
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      {petals.map((petal) => (
+        <span
+          key={petal.id}
+          className="absolute top-[-10%] animate-petal-fall"
+          style={{
+            left: petal.left,
+            animationDelay: petal.delay,
+            animationDuration: petal.duration,
+            opacity: petal.opacity,
+            transform: `scale(${petal.scale}) rotate(${petal.rotate}deg)`,
+            ["--drift" as string]: `${petal.drift}px`,
+          }}
+        >
+          <svg
+            width="24"
+            height="18"
+            viewBox="0 0 24 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="drop-shadow-[0_6px_12px_rgba(224,124,142,0.14)]"
+          >
+            <path
+              d="M11.463 1.07C8.632-1.419 3.319 0.023 1.744 3.739C0.233 7.304 2.751 11.317 6.342 12.159C7.981 12.544 9.53 12.298 10.906 11.616C10.846 13.431 11.308 15.315 12.612 16.744C15.356 19.739 20.706 19.196 22.68 15.438C24.734 11.528 22.119 6.502 17.588 6.037C16.618 5.938 15.662 6.048 14.775 6.334C15.198 4.293 14.562 2.136 12.571 1.112L11.463 1.07Z"
+              fill={isDark ? "#ff6b8a" : "#f4c7cf"}
+            />
+          </svg>
+        </span>
+      ))}
+    </div>
+  );
+}
 
-      <svg
-        className="pointer-events-none absolute right-0 top-40 w-[380px] opacity-40 animate-float-delayed"
-        viewBox="0 0 420 260"
-        fill="none"
-      >
-        <path
-          d="M120 210c-50 0-88-30-88-70 0-36 31-66 72-70 13-34 48-59 89-59 48 0 88 32 96 76 50 3 90 36 90 76 0 42-44 77-98 77H120z"
-          fill="#ffd2e4"
-        />
-      </svg>
+function BackgroundDecorations({ isDark = false }: { isDark?: boolean }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      <div
+        className={`absolute left-[8%] top-[18%] h-28 w-28 rounded-full blur-3xl ${
+          isDark ? "bg-[#ff6b8a]/20" : "bg-[#f6d9db]/35"
+        }`}
+      />
+      <div
+        className={`absolute right-[10%] top-[24%] h-32 w-32 rounded-full blur-3xl ${
+          isDark ? "bg-[#1e1e2f]/80" : "bg-[#f1c5cd]/30"
+        }`}
+      />
+      <div
+        className={`absolute bottom-[12%] left-[20%] h-36 w-36 rounded-full blur-3xl ${
+          isDark ? "bg-[#ff4f74]/16" : "bg-[#f7ebe0]/55"
+        }`}
+      />
 
-      {/* Orbital Rings */}
-      <div className="absolute left-1/2 top-1/3 -translate-x-1/2 opacity-30">
-        <div className="relative w-64 h-64">
-          <div className="absolute inset-0 border-4 border-white/10 rounded-full animate-spin-slow" />
-          <div className="absolute inset-4 border-2 border-white/20 rounded-full animate-spin-slower" />
-          <div className="absolute inset-8 border border-white/30 rounded-full animate-pulse" />
-        </div>
-      </div>
-
-      {/* Floating Orbs */}
-      <div className="absolute right-40 bottom-40 w-24 h-24 rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347] opacity-30 blur-xl animate-pulse-slow" />
-      <div className="absolute left-60 top-60 w-32 h-32 rounded-full bg-gradient-to-br from-[#ff9acb] to-[#d42d73] opacity-30 blur-xl animate-pulse-slow delay-1000" />
+      <div
+        className={`absolute left-[14%] top-[22%] h-2.5 w-2.5 rounded-full ${isDark ? "bg-[#f1f1f1]/60" : "bg-white/70"}`}
+      />
+      <div
+        className={`absolute right-[20%] top-[30%] h-2 w-2 rounded-full ${isDark ? "bg-[#ff6b8a]/70" : "bg-[#f3cbd1]/70"}`}
+      />
+      <div
+        className={`absolute left-[22%] bottom-[22%] h-3 w-3 rounded-full ${isDark ? "bg-[#1e1e2f]" : "bg-[#eed0d4]/50"}`}
+      />
+      <div
+        className={`absolute right-[14%] bottom-[18%] h-2.5 w-2.5 rounded-full ${isDark ? "bg-[#f1f1f1]/50" : "bg-white/60"}`}
+      />
     </div>
   );
 }

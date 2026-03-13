@@ -9,6 +9,7 @@ import {
 import { GiCardJoker, GiJigsawPiece} from "react-icons/gi";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 import { SAMPLE_16_LINES } from "./data";
 import type { BingoCell, CellInputRow, Student } from "./types";
 import {
@@ -42,6 +43,7 @@ function Bingo() {
   const [completedLines, setCompletedLines] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  useFinishApplause(gameOver);
   const [showConfetti, setShowConfetti] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [turboActive, setTurboActive] = useState(false);

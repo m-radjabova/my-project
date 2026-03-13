@@ -16,10 +16,11 @@ import { GiEarthAfricaEurope, GiEarthAmerica, GiEarthAsiaOceania } from "react-i
 import { RiShieldFill, RiSwordFill } from "react-icons/ri";
 import Confetti from "react-confetti-boom";
 import correctSfx from "../../../assets/sounds/correct.m4a";
-import wrongSfx from "../../../assets/sounds/wrong.m4a";
+import wrongSfx from "../../../assets/sounds/wrong.mp3";
 import { FLAG_QUESTIONS, type FlagQuestion } from "./data";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type TeamId = 0 | 1;
 type Phase = "setup" | "play" | "round" | "finish";
@@ -60,6 +61,7 @@ type RoundCount = 10 | 15 | 20;
 
 export default function FlagBattle() {
   const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>(["SHIMOL", "JANUB"]);
   const [nameError, setNameError] = useState("");
 

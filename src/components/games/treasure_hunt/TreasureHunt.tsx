@@ -25,6 +25,7 @@ import pirateOrchestra from "../../../assets/sounds/pirate_orchestra.m4a";
 import { TREASURE_RIDDLES } from "./data/riddles";
 import type { Riddle } from "./types";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type Phase = "intro" | "play" | "finish";
 type RiddleDraft = {
@@ -399,6 +400,7 @@ export default function TreasureHunt() {
   const skipInitialRemoteSaveRef = useRef(true);
 
   const [phase, setPhase] = useState<Phase>("intro");
+  useFinishApplause(phase === "finish");
   const [questionBank, setQuestionBank] = useState<Riddle[]>(TREASURE_RIDDLES);
   const [riddles, setRiddles] = useState<Riddle[]>(() => randomizeRiddles(TREASURE_RIDDLES));
   const [draft, setDraft] = useState<RiddleDraft>(EMPTY_DRAFT);

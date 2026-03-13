@@ -1,17 +1,5 @@
-import {
-  FaUsers,
-  FaTrophy,
-  FaCrown,
-  FaCoins,
-  FaQuestion
-} from "react-icons/fa";
-import {
-  GiAchievement,
-  GiPodium,
-  GiSpinningWheel,
-  GiBrain,
-  GiMoneyStack,
-} from "react-icons/gi";
+import { FaUsers, FaTrophy, FaCrown, FaQuestion } from "react-icons/fa";
+import { GiAchievement, GiPodium, GiSpinningWheel, GiBrain, GiMoneyStack } from "react-icons/gi";
 import img from "../../../assets/millionaire_photo.jpg";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
@@ -50,7 +38,7 @@ function MillionairePage() {
       title: "Pul pog'onasi",
       desc: "15 pog'onali pul ro'yxati, har bir to'g'ri javob bilan yuqoriga ko'tarilasiz",
       color: "from-yellow-500 to-amber-500",
-      bgIcon: FaCoins,
+      bgIcon: FaTrophy,
       stats: "15 pog'ona",
     },
     {
@@ -69,6 +57,13 @@ function MillionairePage() {
       bgIcon: FaTrophy,
       stats: "5, 10, 15",
     },
+  ];
+
+  const difficultyLevels = [
+    { name: "OSON", color: "from-green-600 to-green-500", desc: "1-4 pog'onalar", icon: "🌟" },
+    { name: "O'RTA", color: "from-yellow-600 to-amber-500", desc: "5-8 pog'onalar", icon: "⭐⭐" },
+    { name: "QIYIN", color: "from-orange-600 to-red-500", desc: "9-12 pog'onalar", icon: "⭐⭐⭐" },
+    { name: "EKSPERT", color: "from-red-600 to-rose-500", desc: "13-15 pog'onalar", icon: "🔥" },
   ];
 
   return (
@@ -283,18 +278,14 @@ function MillionairePage() {
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: "OSON", color: "from-green-600 to-green-500", desc: "1-4 pog'onalar" },
-              { name: "O'RTA", color: "from-yellow-600 to-amber-500", desc: "5-8 pog'onalar" },
-              { name: "QIYIN", color: "from-orange-600 to-red-500", desc: "9-12 pog'onalar" },
-              { name: "EKSPERT", color: "from-red-600 to-rose-500", desc: "13-15 pog'onalar" },
-            ].map((item, idx) => (
+            {difficultyLevels.map((item, idx) => (
               <div
                 key={idx}
                 className="group relative transform-gpu overflow-hidden rounded-xl border-2 border-yellow-500/30 bg-[#1e2b4f]/50 p-5 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-xl text-center"
               >
                 <div className={`absolute inset-0 bg-gradient-to-r ${item.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
                 <div className="relative">
+                  <span className="text-2xl mb-2 block">{item.icon}</span>
                   <h3 className="text-lg font-black text-white mb-2">{item.name}</h3>
                   <p className="text-sm text-blue-300">{item.desc}</p>
                 </div>
@@ -323,11 +314,34 @@ function MillionairePage() {
           <div className="h-px w-12 bg-gradient-to-r from-yellow-500/30 via-transparent to-transparent" />
         </div>
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        .animate-float {
+          animation: float linear infinite;
+        }
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
     </div>
   );
 }
 
 export default MillionairePage;
-
-
-

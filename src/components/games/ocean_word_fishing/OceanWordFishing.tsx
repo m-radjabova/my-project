@@ -15,8 +15,8 @@ import Confetti from "react-confetti-boom";
 import oceanSound from "../../../assets/sounds/ocean-wave-1.m4a";
 
 import dingSound from "../../../assets/sounds/ding.m4a";
-import oopsSound from "../../../assets/sounds/wrong.m4a";
-import tadaSound from "../../../assets/sounds/tada.mp3";
+import oopsSound from "../../../assets/sounds/wrong.mp3";
+import tadaSound from "../../../assets/sounds/applause.mp3";
 
 import fish1 from "../../../assets/blue-fish-removebg-preview.png";
 import fish2 from "../../../assets/cute_fish-removebg-preview.png";

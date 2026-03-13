@@ -18,6 +18,7 @@ import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
 import type { Phase, Question, QuestionDraft, TeamId } from "./types";
@@ -26,6 +27,7 @@ function QuizBattle() {
   const finishViewRef = useRef<HTMLDivElement | null>(null);
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("question-setup");
+  useFinishApplause(phase === "finish");
   const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
   const [nameError, setNameError] = useState("");
 

@@ -15,6 +15,7 @@ import { MdTimer } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import GameFeedbackPanel from "../shared/GameFeedbackPanel";
 import GamePagePlayButton from "../shared/GamePagePlayButton";
+import reverseThinkingImg from "../../../assets/reverse_thinking.png";
 
 function ReverseThinkingPage() {
   const gameStats = [
@@ -200,22 +201,21 @@ function ReverseThinkingPage() {
               <div className="absolute -bottom-8 -right-8 text-6xl -rotate-12 animate-float-delayed">🧠</div>
 
               {/* Preview Card */}
-              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/50 to-emerald-900/50 p-6 shadow-2xl">
-                <div className="space-y-4">
-                  <div className="bg-green-800/30 rounded-xl p-4 border border-green-500/30">
-                    <p className="text-white text-lg mb-2">Qaysi oyda 28 kun bor?</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2 bg-green-900/50 rounded-lg text-white text-sm">Fevral</div>
-                      <div className="p-2 bg-green-900/50 rounded-lg text-white text-sm">Yanvar</div>
-                      <div className="p-2 bg-green-900/50 rounded-lg text-white text-sm">Mart</div>
-                      <div className="p-2 bg-green-500/30 rounded-lg text-white text-sm font-bold border-2 border-green-400">Hammasida</div>
+              <div className="relative transform-gpu overflow-hidden rounded-2xl border-2 border-green-500/30 bg-gradient-to-br from-green-900/50 to-emerald-900/50 p-5 shadow-2xl">
+                <div className="mb-4 overflow-hidden rounded-2xl border border-green-400/20 bg-green-950/30 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
+                  <div className="relative aspect-[16/10]">
+                    <img
+                      src={reverseThinkingImg}
+                      alt="Teskari Fikr preview"
+                      className="h-full w-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-green-950/85 via-green-950/20 to-transparent" />
+                    <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-950/65 px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-green-200 backdrop-blur-md">
+                      <GiSpinningWheel className="text-green-400" />
+                      Teskari Fikr
                     </div>
                   </div>
-                  <div className="text-center text-green-300 text-sm">
-                    🤯 Mantiqiy tuzoq: Har bir oyda 28 kun bor!
-                  </div>
                 </div>
-
                 {/* Overlay Badge */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 p-4">
                   <div className="inline-flex items-center gap-3 rounded-2xl bg-black/50 backdrop-blur-md px-4 py-2 border border-green-500/30">

@@ -24,7 +24,8 @@ import {
   FaSkull,
   FaKeyboard,
   FaBrush,
-  FaEye
+  FaEye,
+  // FaMap
 } from "react-icons/fa";
 import {
   GiPuzzle,
@@ -61,6 +62,31 @@ import mathChickImg from "../../assets/math_chick_img.png"
 import { PiDetective } from "react-icons/pi";
 
 const rawGameCards = [
+//   {
+//   id: "knowledge-adventure",
+//   title: "Knowledge Adventure",
+//   description: "2 jamoa bilim sarguzashtida xarita bo‘ylab harakat qiladi va savollarga javob berib finishga yetishga harakat qiladi.",
+//   mainIcon: GiTreasureMap,
+//   icon: FaMap,
+//   iconBg: "from-indigo-500 to-purple-500",
+//   iconColor: "text-indigo-300",
+//   shadowColor: "indigo",
+//   available: true,
+//   path: "/games/knowledge-adventure",
+//   bgPattern: "bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600",
+//   image: "",
+//   players: "2 jamoa",
+//   level: "3 daraja",
+//   levelIcon: FaStar,
+//   badge: "NEW",
+//   badgeIcon: FaRocket,
+//   time: "10-20 min",
+//   points: "Team score",
+//   category: "Bilim",
+//   categoryIcon: FaQuestion,
+//   gradient: "from-indigo-400 to-purple-400",
+//   borderGlow: "hover:border-indigo-400/50",
+// },
   {
     id: "quiz-battle",
     title: "Tezkor Savollar",
@@ -608,11 +634,10 @@ const rawGameCards = [
   iconBg: "from-indigo-500 to-purple-500",
   iconColor: "text-indigo-300",
   shadowColor: "indigo",
-  available: true,
+  available: false,
   path: "/games/pictionary",
   bgPattern: "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
   image: "https://media.istockphoto.com/id/2225108078/vector/hand-drawn-doodle-rock-punk-pop-music-festival-funky-background-karaoke-bachelorette-girly.jpg?s=612x612&w=0&k=20&c=fQGF0A9QZClxs8hFGG6RbtSsxqfWIy0X2NiB31G1aUU=",
-  // image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   players: "2 jamoa",
   level: "3 daraja",
   levelIcon: FaStar,
@@ -678,6 +703,7 @@ const rawGameCards = [
  ];
 
 const curatedGameOrder = [
+  "knowledge-adventure",
   "millionaire",
   "jumanji",
   "classic-arcade",

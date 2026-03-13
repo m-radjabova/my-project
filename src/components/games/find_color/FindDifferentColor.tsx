@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa";
 import {GiLevelFour } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type RoundState = {
   count: number;
@@ -102,6 +103,7 @@ function FindDifferentColor() {
   const [timeLeft, setTimeLeft] = useState(START_TIME);
   const [elapsed, setElapsed] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
+  useFinishApplause(isGameOver);
   const [endReason, setEndReason] = useState<EndReason>("time");
   const [selectedWrongIndex, setSelectedWrongIndex] = useState<number | null>(
     null

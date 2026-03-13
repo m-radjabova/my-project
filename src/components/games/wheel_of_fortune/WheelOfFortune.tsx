@@ -17,6 +17,7 @@ import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 import { EMPTY_OPTIONS, SAMPLE_QUESTIONS, WHEEL_COLORS, WHEEL_OF_FORTUNE_GAME_KEY } from "./constants";
 import type { Phase, Question, Student } from "./types";
@@ -25,6 +26,7 @@ import { normalizeQuestions, shuffle } from "./utils";
 export default function WheelOfFortune() {
   const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("setup");
+  useFinishApplause(phase === "finish");
   const [students, setStudents] = useState<Student[]>([]);
   const [questions, setQuestions] = useState<Question[]>(SAMPLE_QUESTIONS);
   const [newStudent, setNewStudent] = useState("");

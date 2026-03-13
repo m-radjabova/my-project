@@ -18,7 +18,7 @@ function HelloAdmin() {
           </h1>
 
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 transition"
           >
             <FaHome />

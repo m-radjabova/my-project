@@ -1,283 +1,332 @@
-import { FaStar, FaQuoteRight, FaRegSmile, FaRegHeart, FaRegCommentDots } from "react-icons/fa";
-import { FiMoreHorizontal } from "react-icons/fi";
-import { GiCrown, GiSparkles, GiPartyPopper } from "react-icons/gi";
-import { useMemo, useState, useEffect } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import { useState } from "react";
+import { 
+  FaStar, 
+  FaQuoteRight, 
+  FaRegHeart, 
+  FaRegSmile,
+  FaGraduationCap,
+  FaRegCommentDots,
+  FaChevronLeft,
+  FaChevronRight
+} from "react-icons/fa";
+import { GiCherry, GiFlowerTwirl, GiCrown } from "react-icons/gi";
+import { HiSparkles } from "react-icons/hi";
+import { MdAutoAwesome } from "react-icons/md";
 
-import { fetchRecentGameComments } from "../../apiClient/gameFeedback";
-import { gameCards } from "../../pages/games/data";
-import type { GameComment } from "../../types/types";
-import { toMediaUrl } from "../../utils";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation, EffectCoverflow } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import 'swiper/css/effect-fade';
+import 'swiper/css/effect-coverflow';
+import { comments } from "./commentsData";
 
-type CommentItem = {
-  id: string;
-  fullName: string;
-  game: string;
-  rating: number;
-  comment: string;
-  avatar: string;
-  likes: number;
-  timeAgo: string;
-};
+function CommentsSection({ isDark = false }: { isDark?: boolean }) {
+  const [likedComments, setLikedComments] = useState<number[]>([]);
+  const [swiperRef, setSwiperRef] = useState<any>(null);
 
-function timeAgoFromISO(value?: string): string {
-  if (!value) return "hozir";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "hozir";
-
-  const diffMs = Date.now() - date.getTime();
-  const min = Math.floor(diffMs / 60000);
-  if (min < 1) return "hozir";
-  if (min < 60) return `${min} daqiqa oldin`;
-
-  const hours = Math.floor(min / 60);
-  if (hours < 24) return `${hours} soat oldin`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} kun oldin`;
-
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks} hafta oldin`;
-
-  const months = Math.floor(days / 30);
-  return `${Math.max(1, months)} oy oldin`;
-}
-
-function buildAvatar(username?: string | null): string {
-  const seed = (username || "teacher").replace(/\s+/g, "-").toLowerCase();
-  return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(seed)}`;
-}
-
-function CommentsSection() {
-  const [likedComments, setLikedComments] = useState<string[]>([]);
-  const [comments, setComments] = useState<CommentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const gameTitleByKey = useMemo(
-    () => Object.fromEntries(gameCards.map((g) => [g.id, g.title])),
-    [],
-  );
-
-  useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      easing: "ease-out-cubic",
-    });
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadComments = async () => {
-      setLoading(true);
-      const rows = await fetchRecentGameComments(60);
-      if (!mounted) return;
-
-      const next: CommentItem[] = rows
-        .filter((item: GameComment) => item.rating === 5)
-        .slice(0, 6)
-        .map((item: GameComment, index) => ({
-          id: item.id,
-          fullName: item.username || "Teacher",
-          game: gameTitleByKey[item.game_key] || item.game_key,
-          rating: item.rating,
-          comment: item.comment,
-          avatar: item.avatar ? toMediaUrl(item.avatar) : buildAvatar(item.username),
-          likes: item.rating * 6 + (index % 5) + 8,
-          timeAgo: timeAgoFromISO(item.created_at),
-        }));
-
-      setComments(next);
-      setLoading(false);
-      AOS.refresh();
-    };
-
-    void loadComments();
-
-    return () => {
-      mounted = false;
-    };
-  }, [gameTitleByKey]);
-
-  const handleLike = (id: string) => {
+  const handleLike = (id: number) => {
     setLikedComments((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  const averageRating = comments.length
-    ? comments.reduce((sum, item) => sum + item.rating, 0) / comments.length
-    : 0;
+  const totalComments = comments.length;
 
   return (
-    <section
-      id="comments"
-      className="relative overflow-hidden bg-gradient-to-br from-[#0f0c1f] via-[#1a1a2e] to-[#16213e] py-20 lg:py-28"
-    >
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-[10%] animate-float-slow">
-          <GiSparkles className="text-6xl text-[#ffd966]/10" />
-        </div>
-        <div className="absolute bottom-20 right-[15%] animate-float">
-          <GiCrown className="text-7xl text-[#ffb347]/10" />
-        </div>
-        <div className="absolute top-1/3 right-[5%] animate-pulse-slow">
-          <GiPartyPopper className="text-8xl text-[#d42d73]/10" />
-        </div>
-
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20">
-          <div className="relative h-[800px] w-[800px]">
-            <div className="absolute inset-0 animate-spin-slow rounded-full border-4 border-white/5" />
-            <div className="absolute inset-32 animate-spin-slower rounded-full border-2 border-white/10" />
-            <div className="absolute inset-64 animate-pulse rounded-full border border-white/20" />
-          </div>
-        </div>
-
-        <div className="absolute top-0 -left-20 h-96 w-96 animate-blob rounded-full bg-[#d42d73] opacity-20 mix-blend-multiply blur-3xl filter" />
-        <div className="animation-delay-2000 absolute top-0 -right-20 h-96 w-96 animate-blob rounded-full bg-[#ffb347] opacity-20 mix-blend-multiply blur-3xl filter" />
-        <div className="animation-delay-4000 absolute bottom-0 left-20 h-96 w-96 animate-blob rounded-full bg-[#4f46e5] opacity-20 mix-blend-multiply blur-3xl filter" />
+    <section className={`relative overflow-hidden py-16 lg:py-24 ${
+      isDark
+        ? "bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#131a2d]"
+        : "bg-gradient-to-br from-[#fff9f8] via-[#fff3f1] to-[#faeae5]"
+    }`}>
+      
+      {/* Soft Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Large soft blurs */}
+        <div className={`absolute -left-32 -top-32 w-96 h-96 rounded-full blur-3xl animate-pulse-slow ${isDark ? "bg-[#ff6b8a]/10" : "bg-[#f6d4da]/20"}`} />
+        <div className={`absolute -right-32 top-1/2 w-96 h-96 rounded-full blur-3xl animate-pulse-slower ${isDark ? "bg-[#1e1e2f]" : "bg-[#fbe5dd]/20"}`} />
+        <div className={`absolute left-1/3 bottom-0 w-80 h-80 rounded-full blur-3xl animate-float-soft ${isDark ? "bg-[#ff4f74]/10" : "bg-[#e07c8e]/10"}`} />
+        
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <GiCherry
+            key={i}
+            className={`absolute animate-float ${isDark ? "text-[#ff6b8a]/10" : "text-[#e07c8e]/10"}`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              fontSize: `${20 + Math.random() * 40}px`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${8 + Math.random() * 8}s`
+            }}
+          />
+        ))}
+        
+        {/* Soft grid */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `
+            radial-gradient(circle at 20px 20px, #e07c8e 1px, transparent 1px),
+            linear-gradient(45deg, #f0d9d6 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px, 60px 60px'
+        }} />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center lg:mb-16" data-aos="fade-down">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-2 backdrop-blur-sm">
-            <GiSparkles className="animate-pulse text-[#ffd966]" />
-            <span className="text-xs font-black tracking-[0.2em] text-white/80">FOYDALANUVCHILAR FIKRI</span>
-            <GiSparkles className="animate-pulse text-[#ffb347]" />
+        
+        {/* Header Section - More subtle */}
+        <div className="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up" data-aos-delay="80">
+          {/* Minimal badge */}
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm mb-5 backdrop-blur-sm ${
+            isDark ? "border-[#ff6b8a]/20 bg-[#1e1e2f]/80" : "border-white/60 bg-white/80"
+          }`}>
+            <HiSparkles className="text-[#ff6b8a] text-xs animate-twinkle" />
+            <span className={`text-[9px] font-medium uppercase tracking-[0.2em] ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+              O'qituvchilar fikri
+            </span>
           </div>
 
-          <h2 className="mb-4 font-bebas text-5xl leading-none text-white sm:text-6xl lg:text-7xl">
-            NIMA UCHUN BIZNI
-            <span className="block bg-gradient-to-r from-[#ffd966] to-[#ffb347] bg-clip-text text-transparent">
-              TANLASHADI?
+          {/* Soft title */}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light leading-tight">
+            <span className={isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}>Nima uchun</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#e07c8e] to-[#a66466] font-medium">
+              bizni tanlashadi?
             </span>
           </h2>
 
-          <p className="mx-auto max-w-2xl text-sm text-white/60" data-aos="fade-up" data-aos-delay="200">
-            Teacherlar tomonidan yozilgan real izohlar backenddan yuklanmoqda
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8" data-aos="fade-up" data-aos-delay="300">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347]">
-                <FaRegSmile className="text-[#1a1a2e]" />
+          {/* Soft stats */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+            {[
+              { icon: FaRegSmile, text: `${totalComments}+ izohlar`, color: "#e07c8e" },
+              { icon: FaStar, text: "4.9 reyting", color: "#ffb347" },
+              { icon: FaGraduationCap, text: "50+ maktab", color: "#a66466" },
+            ].map((stat, i) => (
+              <div key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border backdrop-blur-sm ${isDark ? "border-[#2b3146] bg-[#1e1e2f]" : "border-white/60 bg-white/60"}`}>
+                <stat.icon className="text-xs" style={{ color: stat.color }} />
+                <span className={`text-xs font-medium ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>{stat.text}</span>
               </div>
-              <div className="text-left">
-                <p className="text-lg font-bold text-white">{comments.length}+</p>
-                <p className="text-xs text-white/60">Real izohlar</p>
-              </div>
-            </div>
-            <div className="hidden h-8 w-px bg-white/20 sm:block" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347]">
-                <FaStar className="text-[#1a1a2e]" />
-              </div>
-              <div className="text-left">
-                <p className="text-lg font-bold text-white">{averageRating.toFixed(1)}</p>
-                <p className="text-xs text-white/60">O'rtacha reyting</p>
-              </div>
-            </div>
-            <div className="hidden h-8 w-px bg-white/20 sm:block" />
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#ffd966] to-[#ffb347]">
-                <FaRegCommentDots className="text-[#1a1a2e]" />
-              </div>
-              <div className="text-left">
-                <p className="text-lg font-bold text-white">{Math.max(0, comments.length - 1)}+</p>
-                <p className="text-xs text-white/60">Faol sharhlar</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {loading ? (
-          <div className="py-10 text-center text-sm text-white/70">Izohlar yuklanmoqda...</div>
-        ) : comments.length === 0 ? (
-          <div className="py-10 text-center text-sm text-white/70">Hozircha izohlar yo'q.</div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {comments.map((item, index) => (
-                <article
-                  key={item.id}
-                  className="group relative"
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100}
-                >
-                  <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#ffd966] to-[#ffb347] opacity-0 blur transition-opacity duration-500 group-hover:opacity-30" />
-
-                  <div className="relative rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-white/30">
-                    <div className="absolute -top-2 -right-2 rotate-12 transform rounded-full bg-gradient-to-r from-[#ffd966] to-[#ffb347] p-2 shadow-lg transition-transform duration-500 group-hover:rotate-0">
-                      <FaQuoteRight className="text-xs text-[#1a1a2e]" />
-                    </div>
-
-                    <div className="mb-4 flex items-start gap-3">
-                      <div className="relative">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#ffd966] to-[#ffb347] opacity-50 blur-md transition-opacity group-hover:opacity-100" />
-                        <img
-                          src={item.avatar}
-                          alt={item.fullName}
-                          className="relative h-12 w-12 rounded-full border-2 border-white/20 object-cover transition-all group-hover:border-white/40"
-                        />
-                        <div className="absolute -right-1 -bottom-1 h-4 w-4 animate-pulse rounded-full border-2 border-[#1a1a2e] bg-emerald-500" />
+        {/* Swiper Carousel - Soft & Smooth */}
+        <div className="relative px-4 md:px-10" data-aos="fade-up" data-aos-delay="140">
+          <Swiper
+            onSwiper={setSwiperRef}
+            modules={[Autoplay, Pagination, Navigation, EffectCoverflow]}
+            spaceBetween={24}
+            slidesPerView={1}
+            centeredSlides={false}
+            loop={true}
+            autoplay={{
+              delay: 5000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            pagination={{
+              clickable: true,
+              dynamicBullets: true,
+              dynamicMainBullets: 5,
+            }}
+            navigation={{
+              prevEl: '.swiper-button-prev-custom',
+              nextEl: '.swiper-button-next-custom',
+            }}
+            breakpoints={{
+              640: { slidesPerView: 2, spaceBetween: 20 },
+              1024: { slidesPerView: 3, spaceBetween: 24 },
+            }}
+            className="!overflow-visible !pb-12"
+          >
+            {comments.map((item, index) => (
+              <SwiperSlide key={item.id} className="!h-auto">
+                {({ isActive }) => (
+                  <article
+                    data-aos="fade-up"
+                    data-aos-delay={120 + (index % 3) * 80}
+                    className={`group relative h-full transition-all duration-700 ${
+                      isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-70'
+                    }`}
+                  >
+                    {/* Soft glow on active */}
+                    <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${item.color} opacity-0 blur-lg transition-opacity duration-700 ${
+                      isActive ? 'opacity-20' : ''
+                    }`} />
+                    
+                    {/* Main Card - Very soft */}
+                    <div className={`relative h-full rounded-3xl border ${isDark ? "border-[#2b3146] bg-[#1a1a28]/88" : `border-white/60 ${item.bgColor} bg-white/40`} backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_15px_40px_rgba(224,124,142,0.08)]`}>
+                      
+                      {/* Quote icon - soft */}
+                      <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-r ${item.color} bg-opacity-20 flex items-center justify-center shadow-sm`}>
+                        <FaQuoteRight className="text-white text-xs opacity-80" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="flex items-center gap-1 text-sm font-bold text-white">
-                          {item.fullName}
-                          {item.rating === 5 && <GiCrown className="text-xs text-[#ffd966]" />}
-                        </h3>
-                        <p className="text-xs font-semibold text-[#ffb347]">{item.game}</p>
-                        <p className="mt-0.5 text-[10px] text-white/40">{item.timeAgo}</p>
+                      
+                      {/* User info */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="relative">
+                          <img
+                            src={item.avatar}
+                            alt={item.fullName}
+                            className="relative w-12 h-12 rounded-full border-2 border-white/80 shadow-sm"
+                          />
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-400/80 border border-white animate-pulse-soft" />
+                        </div>
+                        
+                        <div className="flex-1">
+                          <h3 className={`text-base font-semibold flex items-center gap-1 ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
+                            {item.fullName}
+                            {item.rating === 5 && (
+                              <GiCrown className="text-[#e07c8e] text-xs opacity-70" />
+                            )}
+                          </h3>
+                          <p className={`text-[10px] font-medium opacity-80 ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>{item.role}</p>
+                          <p className={`text-[8px] mt-0.5 opacity-70 ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>{item.school}</p>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="mb-3 flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <FaStar
-                          key={i}
-                          className={`transition-all duration-300 ${
-                            i < item.rating
-                              ? "text-[#ffd966] drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]"
-                              : "text-white/20"
-                          }`}
-                          size={14}
-                        />
-                      ))}
-                    </div>
-
-                    <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-white/80">"{item.comment}"</p>
-
-                    <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                      <button onClick={() => handleLike(item.id)} className="group/btn flex items-center gap-1.5">
-                        <FaRegHeart
-                          className={`transition-all duration-300 ${
-                            likedComments.includes(item.id)
-                              ? "scale-110 text-[#ff4d4d]"
-                              : "text-white/40 group-hover/btn:scale-110 group-hover/btn:text-[#ff4d4d]"
-                          }`}
-                          size={14}
-                        />
-                        <span className="text-xs text-white/40 transition-colors group-hover/btn:text-white/60">
-                          {item.likes + (likedComments.includes(item.id) ? 1 : 0)}
+                      
+                      {/* Rating - soft */}
+                      <div className="flex items-center gap-1 mb-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <FaStar
+                            key={i}
+                            className={`${
+                              i < item.rating ? 'text-[#ffb347]' : isDark ? 'text-[#2b3146]' : 'text-[#f0d9d6]'
+                            } drop-shadow-none`}
+                            size={12}
+                          />
+                        ))}
+                        <span className={`ml-2 text-[9px] font-medium opacity-70 ${isDark ? "text-[#a1a1aa]" : "text-[#a66466]"}`}>
+                          {item.game}
                         </span>
-                      </button>
-
-                      <button className="text-white/40 transition-colors hover:text-white/60">
-                        <FiMoreHorizontal size={16} />
-                      </button>
+                      </div>
+                      
+                      {/* Comment - soft */}
+                      <p className={`text-xs leading-relaxed mb-4 line-clamp-3 font-light ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                        "{item.comment}"
+                      </p>
+                      
+                      {/* Footer - minimal */}
+                      <div className={`flex items-center justify-between border-t pt-3 ${isDark ? "border-[#2b3146]" : "border-[#f0d9d6]/30"}`}>
+                        <button
+                          onClick={() => handleLike(item.id)}
+                          className="flex items-center gap-1.5 group/btn"
+                        >
+                          <FaRegHeart
+                            className={`transition-all duration-300 ${
+                              likedComments.includes(item.id)
+                                ? 'text-[#e07c8e] scale-110'
+                                : 'text-[#b38b8d]/50 group-hover/btn:text-[#e07c8e] group-hover/btn:scale-110'
+                            }`}
+                            size={11}
+                          />
+                          <span className={`text-[9px] font-medium group-hover/btn:text-[#7b4f53] ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]/70"}`}>
+                            {item.likes + (likedComments.includes(item.id) ? 1 : 0)}
+                          </span>
+                        </button>
+                        
+                        <span className={`text-[8px] ${isDark ? "text-[#a1a1aa]/60" : "text-[#b38b8d]/60"}`}>
+                          {item.timeAgo}
+                        </span>
+                      </div>
+                      
+                      {/* Soft decorative element */}
+                      <div className="absolute bottom-2 left-2 opacity-10">
+                        <GiFlowerTwirl className={`text-base bg-gradient-to-r ${item.color} bg-clip-text text-transparent`} />
+                      </div>
                     </div>
+                  </article>
+                )}
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-transparent to-white/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  </div>
-                </article>
-              ))}
-            </div>
+          {/* Custom Navigation Buttons - Minimal */}
+          <button className={`swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full backdrop-blur-sm border shadow-sm flex items-center justify-center transition-all hover:-translate-x-1 md:flex hidden ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/60 bg-white/80 hover:bg-white"}`}>
+            <FaChevronLeft className={`text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          </button>
+          
+          <button className={`swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full backdrop-blur-sm border shadow-sm flex items-center justify-center transition-all hover:translate-x-1 md:flex hidden ${isDark ? "border-[#2b3146] bg-[#1e1e2f] hover:bg-[#25253a]" : "border-white/60 bg-white/80 hover:bg-white"}`}>
+            <FaChevronRight className={`text-xs ${isDark ? "text-[#f1f1f1]" : "text-[#a66466]"}`} />
+          </button>
+        </div>
 
-          </>
-        )}
+        {/* Bottom CTA - Minimal */}
+        <div className="text-center mt-12" data-aos="zoom-in-up" data-aos-delay="200">
+          <button
+            onClick={() => window.location.href = '/comments'}
+            className={`group inline-flex items-center gap-2 rounded-full backdrop-blur-sm border px-6 py-3 text-sm font-medium shadow-sm transition-all duration-300 hover:shadow-md ${
+              isDark
+                ? "border-[#2b3146] bg-[#1e1e2f] text-[#f1f1f1] hover:bg-[#25253a]"
+                : "border-white/60 bg-white/80 text-[#7b4f53] hover:bg-white"
+            }`}
+          >
+            <MdAutoAwesome className="text-[#e07c8e] text-base" />
+            <span>Barcha izohlar</span>
+            <FaRegCommentDots className="text-[#a66466] text-xs opacity-60" />
+          </button>
+        </div>
       </div>
+
+      {/* Custom Swiper Styles */}
+      <style>{`
+        .swiper-pagination {
+          bottom: 0 !important;
+        }
+        
+        .swiper-pagination-bullet {
+          width: 6px;
+          height: 6px;
+          background: ${isDark ? "#2b3146" : "#f0d9d6"};
+          opacity: 0.5;
+          transition: all 0.3s ease;
+        }
+        
+        .swiper-pagination-bullet-active {
+          width: 20px;
+          border-radius: 4px;
+          background: linear-gradient(to right, #ff6b8a, #ff4f74);
+          opacity: 0.8;
+        }
+        
+        .swiper-pagination-bullet-active-main {
+          transform: scale(1);
+        }
+        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.3; }
+        }
+        
+        @keyframes pulse-slower {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.25; }
+        }
+        
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        
+        .animate-pulse-slower {
+          animation: pulse-slower 6s ease-in-out infinite;
+        }
+        
+        .animate-twinkle {
+          animation: twinkle 2s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   );
 }

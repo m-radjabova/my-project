@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import AOS from "aos";
-import Header from "../../components/header/Header";
 import Hero from "../../components/main/Hero";
 import TrialSection from "../../components/main/TrialSection";
 import AppsServiceSection from "../../components/main/AppsServiceSection";
@@ -11,7 +10,10 @@ import CommentsSection from "../../components/main/CommentsSection";
 
 function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeNav, setActiveNav] = useState<"O'yinlar" | "Haqida" | "Izohlar" | "Bog'lanish">("O'yinlar");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeNav, setActiveNav] = useState<
+    "O'yinlar" | "Haqida" | "Izohlar" | "Bog'lanish" | undefined
+  >(undefined);
 
   const sectionByNav: Record<string, string> = {
     "O'yinlar": "games",
@@ -19,6 +21,13 @@ function Home() {
     Izohlar: "comments",
     "Bog'lanish": "contact",
   };
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("home-theme");
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+    }
+  }, []);
 
   useEffect(() => {
     AOS.init({
@@ -43,6 +52,22 @@ function Home() {
     }
   }, [isLoading]);
 
+  useEffect(() => {
+    if (isLoading) return;
+
+    const syncAos = window.setTimeout(() => {
+      AOS.refreshHard();
+    }, 220);
+
+    return () => {
+      window.clearTimeout(syncAos);
+    };
+  }, [isDarkMode, isLoading]);
+
+  useEffect(() => {
+    window.localStorage.setItem("home-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
   if (isLoading) {
     return <SiteLoader />;
   }
@@ -62,24 +87,36 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#d42d73]">
-      <Header active={activeNav} onNavClick={handleNavClick} />
-      <div className="bg-gradient-to-br from-[#d42d73] via-[#c2185b] to-[#b0134d]">
-        <div id="games">
-          <Hero />
+    <div
+      className={`min-h-screen transition-colors duration-500 ${
+        isDarkMode ? "bg-[#0f172a] text-[#f1f1f1]" : "bg-white"
+      }`}
+    >
+      <div>
+        <div id="home">
+          <Hero
+            activeNav={activeNav}
+            isDark={isDarkMode}
+            onNavClick={handleNavClick}
+            onThemeToggle={() => setIsDarkMode((prev) => !prev)}
+          />
         </div>
-        <TrialSection />
+        <div id="about">
+          <TrialSection isDark={isDarkMode} />
+        </div>
       </div>
-      <div id="about">
-        <AppsServiceSection />
+      <div id="games">
+        <AppsServiceSection isDark={isDarkMode} />
       </div>
-      <HowItWorksSection />
-      <CommentsSection />
+      <HowItWorksSection isDark={isDarkMode} />
+      <div id="comments">
+        <CommentsSection isDark={isDarkMode} />
+      </div>
       <div id="contact">
-        <Footer />
+        <Footer isDark={isDarkMode} />
       </div>
     </div>
   );
 }
 
-export default Home
+export default Home;

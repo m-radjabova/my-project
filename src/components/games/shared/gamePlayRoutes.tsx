@@ -23,6 +23,7 @@ import Millionaire from "../millionaire/Millionaire";
 import Pictionary from "../pictionary/Pictionary";
 import TruthDetector from "../truth_detector/TruthDetector";
 import MathChickGame from "../math_chick_game/MathChickGame";
+import KnowledgeAdventure from "../knowledge_adventure/KnowledgeAdventure";
 
 type GamePlayRoute = {
   path: string;
@@ -85,6 +86,11 @@ export const gamePlayRoutes: GamePlayRoute[] = [
     path: "/games/math-chick/play",
     colorClassName: "from-[#3b82f6] via-[#7c3aed] to-[#ec4899]",
     element: <MathChickGame />,
+  },
+  {
+    path: "/games/knowledge-adventure/play",
+    colorClassName: "from-fuchsia-500 via-pink-500 to-orange-400",
+    element: <KnowledgeAdventure />,
   },
   {
     path: "/games/baamboozle/play",

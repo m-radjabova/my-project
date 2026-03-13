@@ -15,8 +15,8 @@ import {
 import { GiJungle } from "react-icons/gi";
 import diceSound from "../../../assets/sounds/roll_dice.mp3";
 import correctSound from "../../../assets/sounds/correct.m4a";
-import wrongSound from "../../../assets/sounds/wrong.m4a";
-import winSound from "../../../assets/sounds/tada.mp3";
+import wrongSound from "../../../assets/sounds/wrong.mp3";
+import winSound from "../../../assets/sounds/applause.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import { generateJumanjiQuestions } from "./ai";

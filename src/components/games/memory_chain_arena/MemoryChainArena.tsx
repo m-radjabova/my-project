@@ -12,6 +12,7 @@ import { GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type Difficulty = "Oson" | "O'rta" | "Qiyin";
 type Side = "left" | "right";
@@ -141,6 +142,7 @@ function MemoryChainArena({
 
   const [round, setRound] = useState(1);
   const [phase, setPhase] = useState<Phase>("ready");
+  useFinishApplause(phase === "finished");
   const [leftTeam, setLeftTeam] = useState<TeamState>(() => createTeamState(config.inputSeconds));
   const [rightTeam, setRightTeam] = useState<TeamState>(() => createTeamState(config.inputSeconds));
   const [leftSequence, setLeftSequence] = useState<number[]>([]);

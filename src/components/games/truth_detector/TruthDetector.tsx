@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaSave, FaTimes, FaTrash, FaUsers } from "react-icons/fa";
+import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaRobot, FaSave, FaTimes, FaTrash, FaUsers } from "react-icons/fa";
 import { PiDetective } from "react-icons/pi";
 import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
+import { generateTruthDetectorPacks } from "./ai";
 
 type Difficulty = "easy" | "medium" | "hard";
 type FakeLetter = "A" | "B" | "C";
@@ -72,6 +73,13 @@ const DEMO_PACKS: RoundPack[] = [
 ];
 
 const EMPTY_PACK_DRAFT: PackDraft = { difficulty: "easy", claimA: "", claimB: "", claimC: "", fakeLetter: "A" };
+const AI_PACK_COUNT_OPTIONS = [1, 3, 5, 8] as const;
+const AI_DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Oson" },
+  { value: "medium", label: "O'rtacha" },
+  { value: "hard", label: "Qiyin" },
+  { value: "mixed", label: "Aralash" },
+] as const;
 
 function TruthDetector() {
   const { state } = useContextPro();
@@ -93,10 +101,15 @@ function TruthDetector() {
   const [draft, setDraft] = useState<PackDraft>(EMPTY_PACK_DRAFT);
   const [teacherMsg, setTeacherMsg] = useState("");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiPackCount, setAiPackCount] = useState<number>(3);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const allPacks = useMemo(() => [...DEMO_PACKS, ...teacherPacks], [teacherPacks]);
   const desiredDiff = useMemo(() => difficultyForRound(round), [round]);
   const allTeamsPicked = useMemo(() => teams.length === 2 && teams.every((t) => t.pickIndex !== null), [teams]);
+  const hasGeminiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY?.trim());
 
   useEffect(() => {
     let alive = true;
@@ -241,6 +254,39 @@ function TruthDetector() {
     setTeacherMsg("Faktlar o'chirildi.");
   }
 
+  async function generateAiPacks() {
+    if (isGeneratingAi) return;
+
+    try {
+      setIsGeneratingAi(true);
+      setTeacherMsg("");
+      const generated = await generateTruthDetectorPacks({
+        topic: aiTopic,
+        count: aiPackCount,
+        difficulty: aiDifficulty,
+      });
+
+      const stamp = Date.now();
+      const mapped: RoundPack[] = generated.map((pack, index) => ({
+        id: `ai-${stamp}-${index}-${Math.random().toString(36).slice(2, 7)}`,
+        title: pack.title?.trim() || `AI faktlar #${index + 1}`,
+        difficulty: pack.difficulty,
+        claims: pack.claims.map((claim, claimIndex) => ({
+          id: `ai-${stamp}-${index}-c${claimIndex}`,
+          text: claim.text,
+          truth: claim.truth,
+        })) as [Claim, Claim, Claim],
+      }));
+
+      setTeacherPacks((prev) => [...prev, ...mapped]);
+      setTeacherMsg(`AI ${mapped.length} ta faktlar to'plamini qo'shdi.`);
+    } catch (error) {
+      setTeacherMsg(error instanceof Error ? error.message : "AI fakt yaratishda xato bo'ldi.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  }
+
   const fakeIndex = useMemo(() => (currentPack ? currentPack.claims.findIndex((c) => !c.truth) : -1), [currentPack]);
   const leaders = useMemo(() => {
     if (!teams.length) return [];
@@ -295,6 +341,58 @@ function TruthDetector() {
               <input value={draft.claimA} onChange={(e) => setDraft((p) => ({ ...p, claimA: e.target.value }))} placeholder="1-fakt" className="px-4 py-2 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 placeholder-indigo-400 dark:placeholder-indigo-300/70" />
               <input value={draft.claimB} onChange={(e) => setDraft((p) => ({ ...p, claimB: e.target.value }))} placeholder="2-fakt" className="px-4 py-2 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 placeholder-indigo-400 dark:placeholder-indigo-300/70" />
               <input value={draft.claimC} onChange={(e) => setDraft((p) => ({ ...p, claimC: e.target.value }))} placeholder="3-fakt" className="px-4 py-2 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 placeholder-indigo-400 dark:placeholder-indigo-300/70" />
+            </div>
+
+            <div className="mt-4 rounded-2xl border-2 border-cyan-300/60 bg-cyan-50/70 p-4 dark:border-cyan-700 dark:bg-cyan-950/20">
+              <div className="mb-3 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+                <FaRobot />
+                <p className="text-sm font-bold">AI FAKT GENERATSIYASI</p>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <input
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder="Mavzu: hayvonlar, kosmos, tarix..."
+                  className="px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100 placeholder-cyan-500/70 dark:placeholder-cyan-300/60"
+                />
+                <select
+                  value={aiPackCount}
+                  onChange={(e) => setAiPackCount(Number(e.target.value))}
+                  className="px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100"
+                >
+                  {AI_PACK_COUNT_OPTIONS.map((count) => (
+                    <option key={count} value={count}>
+                      {count} ta to'plam
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={aiDifficulty}
+                  onChange={(e) => setAiDifficulty(e.target.value as "easy" | "medium" | "hard" | "mixed")}
+                  className="px-4 py-2 rounded-xl border-2 border-cyan-200 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/50 text-slate-900 dark:text-cyan-100"
+                >
+                  {AI_DIFFICULTY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => void generateAiPacks()}
+                  disabled={!hasGeminiKey || isGeneratingAi}
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
+                >
+                  {isGeneratingAi ? `${aiPackCount} ta yaratilmoqda...` : `AI bilan ${aiPackCount} ta yaratish`}
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-cyan-700/80 dark:text-cyan-200/80">
+                AI har bir to'plam uchun 3 ta fact yaratadi: 2 tasi rost, 1 tasi yolg'on.
+              </p>
+              {!hasGeminiKey && (
+                <p className="mt-2 text-xs text-amber-600 dark:text-amber-300">
+                  AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                </p>
+              )}
             </div>
 
             <div className="mt-3 flex gap-2 flex-wrap">

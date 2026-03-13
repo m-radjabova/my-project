@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useFinishApplause } from "../shared/useFinishApplause";
 
 type Team = {
   id: number;
@@ -48,9 +49,10 @@ const UZBEK_WORDS = [
 
 function WordChain() {
   const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
+  const [phase, setPhase] = useState<Phase>("teacher");
+  useFinishApplause(phase === "finish");
 
   // O'qituvchi paneli
-  const [phase, setPhase] = useState<Phase>("teacher");
   const [teams, setTeams] = useState<Team[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
   const [teamError, setTeamError] = useState("");

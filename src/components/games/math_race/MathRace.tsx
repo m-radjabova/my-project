@@ -26,9 +26,9 @@ import carBlack from "../../../assets/black-car-removebg-preview.png";
 import carSound from "../../../assets/sounds/car_sound.mp3";
 
 import sfxCorrect from "../../../assets/sounds/ding.m4a";
-import sfxWrong from "../../../assets/sounds/wrong.m4a";
+import sfxWrong from "../../../assets/sounds/wrong.mp3";
 import sfxNitro from "../../../assets/sounds/whoosh.m4a";
-import sfxFinish from "../../../assets/sounds/tada.mp3";
+import sfxFinish from "../../../assets/sounds/applause.mp3";
 
 import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
 import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";

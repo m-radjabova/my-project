@@ -1,8 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Confetti from "react-confetti-boom";
+import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
+import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
+import wrongSound from "../../../assets/sounds/wrong.mp3";
+import finishSound from "../../../assets/sounds/applause.mp3";
 
 type Difficulty = "easy" | "medium" | "hard" | "mixed";
 type PlayerId = "A" | "B";
 type FeedbackState = "idle" | "correct" | "wrong";
+type Phase = "setup" | "game" | "finish";
 
 type Problem = {
   question: string;
@@ -265,18 +272,22 @@ function drawChick(
   },
   label: string,
 ) {
-  const walkPhase = Math.sin(t * 9 + (label === "B" ? 0.9 : 0));
-  const bounce = active ? Math.abs(walkPhase) * 2.2 : 0.6;
-  const eyeLook = Math.sin(t * 2.2 + (label === "B" ? 0.4 : 0)) * 1.2;
-  const blink = Math.abs(Math.sin(t * 1.4 + (label === "B" ? 0.3 : 0))) > 0.975 ? 0.12 : 1;
-  const wing = Math.sin(t * 8.2 + (label === "B" ? 0.6 : 0)) * 0.15;
-  const bodyLean = active ? walkPhase * 0.05 : 0;
-  const leftStep = active ? walkPhase * 4.2 : 0.25;
-  const rightStep = active ? -walkPhase * 4.2 : -0.25;
+  const phaseShift = label === "B" ? 0.75 : 0;
+  const walkPhase = Math.sin(t * 4.2 + phaseShift);
+  const secondaryWalk = Math.cos(t * 4.2 + phaseShift);
+  const bounce = active ? Math.abs(walkPhase) * 1.15 : 0.38;
+  const eyeLook = Math.sin(t * 1.35 + phaseShift * 0.5) * 0.65;
+  const blink = Math.abs(Math.sin(t * 1.1 + phaseShift)) > 0.985 ? 0.16 : 1;
+  const wingTilt = active ? secondaryWalk * 0.05 : -0.015;
+  const bodyLean = active ? walkPhase * 0.022 : 0;
+  const headBob = active ? Math.abs(secondaryWalk) * 0.7 : 0.25;
+  const leftStep = active ? walkPhase * 2.2 : 0.15;
+  const rightStep = active ? -walkPhase * 2.2 : -0.15;
+  const tailLift = active ? secondaryWalk * 0.25 : 0.08;
 
   ctx.fillStyle = palette.shadow;
   ctx.beginPath();
-  ctx.ellipse(x + 8, y + 36, 28 * scale, 9 * scale, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 6, y + 37, 31 * scale, 8.5 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.save();
@@ -284,133 +295,163 @@ function drawChick(
   ctx.scale(scale, scale);
   ctx.rotate(bodyLean);
 
-  ctx.strokeStyle = palette.leg;
-  ctx.lineCap = "round";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-1, 16);
-  ctx.lineTo(-1 + rightStep * 0.25, 24);
-  ctx.lineTo(-1 + rightStep * 0.65, 32);
-  ctx.stroke();
-  ctx.lineWidth = 2.4;
-  ctx.beginPath();
-  ctx.moveTo(-7 + rightStep * 0.65, 32);
-  ctx.lineTo(-1 + rightStep * 0.65, 32);
-  ctx.stroke();
+  const drawLeg = (baseX: number, lift: number, back: boolean) => {
+    const kneeX = baseX + lift * 0.24;
+    const kneeY = 22 - Math.abs(lift) * 0.08;
+    const footX = baseX + lift * 0.62;
+    const footY = 33 + Math.abs(lift) * 0.12;
 
-  const bodyGrad = ctx.createRadialGradient(6, -8, 3, 0, 2, 30);
-  bodyGrad.addColorStop(0, palette.bodyInner);
-  bodyGrad.addColorStop(1, palette.bodyOuter);
-  ctx.fillStyle = bodyGrad;
-  ctx.beginPath();
-  ctx.ellipse(0, 3, 20, 17, 0.05, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = palette.outline;
-  ctx.lineWidth = 1.3;
-  ctx.stroke();
+    ctx.strokeStyle = palette.leg;
+    ctx.lineCap = "round";
+    ctx.lineWidth = back ? 2.6 : 3;
+    ctx.beginPath();
+    ctx.moveTo(baseX, 15);
+    ctx.lineTo(kneeX, kneeY);
+    ctx.lineTo(footX, footY);
+    ctx.stroke();
 
-  ctx.fillStyle = palette.tail;
-  ctx.beginPath();
-  ctx.ellipse(-14, -2, 7.2, 9.8, -0.45, 0, Math.PI * 2);
-  ctx.ellipse(-18, 5, 5.7, 8.1, -0.55, 0, Math.PI * 2);
-  ctx.fill();
+    ctx.lineWidth = 1.6;
+    [-4.4, 0, 4.4].forEach((toeOffset, toeIndex) => {
+      ctx.beginPath();
+      ctx.moveTo(footX, footY);
+      ctx.lineTo(footX + toeOffset, footY + (toeIndex === 1 ? 1.2 : 0.2));
+      ctx.stroke();
+    });
+  };
+
+  drawLeg(-2, rightStep, true);
 
   ctx.save();
-  ctx.translate(0, 5);
-  ctx.rotate(wing);
-  ctx.fillStyle = palette.wing;
+  ctx.translate(-16, -2 + tailLift);
+  ctx.rotate(-0.42 + tailLift * 0.04);
+  ctx.fillStyle = palette.tail;
   ctx.beginPath();
-  ctx.ellipse(0, 0, 9, 7.2, -0.3, 0, Math.PI * 2);
+  ctx.moveTo(-4, 2);
+  ctx.quadraticCurveTo(-12, -8, -2, -17);
+  ctx.quadraticCurveTo(6, -13, 3, 0);
+  ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = palette.wingStroke;
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, 4);
+  ctx.quadraticCurveTo(-9, -2, 1, -14);
+  ctx.quadraticCurveTo(7, -10, 5, 1);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 
-  ctx.fillStyle = palette.jersey;
+  const bodyGrad = ctx.createRadialGradient(8, -10, 4, 0, 1, 34);
+  bodyGrad.addColorStop(0, palette.bodyInner);
+  bodyGrad.addColorStop(0.45, palette.bodyOuter);
+  bodyGrad.addColorStop(1, palette.tail);
+  ctx.fillStyle = bodyGrad;
   ctx.beginPath();
-  ctx.roundRect(-5, 0, 14, 12, 4);
-  ctx.fill();
-
-  const headGrad = ctx.createRadialGradient(12, -14, 2, 12, -10, 14);
-  headGrad.addColorStop(0, palette.bodyInner);
-  headGrad.addColorStop(1, palette.tail);
-  ctx.fillStyle = headGrad;
-  ctx.beginPath();
-  ctx.arc(13, -10, 12, 0, Math.PI * 2);
+  ctx.ellipse(1, 2, 22, 18, -0.05, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = palette.outline;
   ctx.lineWidth = 1.2;
   ctx.stroke();
 
+  ctx.save();
+  ctx.translate(0, 4);
+  ctx.rotate(-0.18 + wingTilt);
+  const wingGrad = ctx.createLinearGradient(-2, -2, 12, 12);
+  wingGrad.addColorStop(0, palette.bodyInner);
+  wingGrad.addColorStop(1, palette.wing);
+  ctx.fillStyle = wingGrad;
+  ctx.beginPath();
+  ctx.moveTo(-1, -3);
+  ctx.quadraticCurveTo(11, -8, 13, 3);
+  ctx.quadraticCurveTo(10, 13, -1, 9);
+  ctx.quadraticCurveTo(-7, 3, -1, -3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = palette.wingStroke;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.beginPath();
+  ctx.moveTo(1, 0);
+  ctx.quadraticCurveTo(6, 2, 7, 8);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = palette.jersey;
+  ctx.beginPath();
+  ctx.roundRect(-5, -1, 12, 10, 4);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(11, -12 - headBob * 0.16);
+  ctx.rotate(0.08 + bodyLean * 0.4);
+
+  const headGrad = ctx.createRadialGradient(2, -5, 2, 2, 0, 15);
+  headGrad.addColorStop(0, palette.bodyInner);
+  headGrad.addColorStop(0.58, palette.bodyOuter);
+  headGrad.addColorStop(1, palette.tail);
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, 12.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = palette.outline;
+  ctx.lineWidth = 1.15;
+  ctx.stroke();
+
   ctx.fillStyle = palette.comb;
   ctx.beginPath();
-  ctx.arc(6, -20, 3.6, 0, Math.PI * 2);
-  ctx.arc(12, -23, 4.6, 0, Math.PI * 2);
-  ctx.arc(18, -20, 3.6, 0, Math.PI * 2);
+  ctx.arc(-5.4, -9.6, 3.2, 0, Math.PI * 2);
+  ctx.arc(0.8, -12.6, 4.4, 0, Math.PI * 2);
+  ctx.arc(6.6, -9.8, 3.1, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = palette.beak;
   ctx.beginPath();
-  ctx.moveTo(22, -10);
-  ctx.lineTo(31, -7);
-  ctx.lineTo(22, -3.5);
+  ctx.moveTo(9.5, -0.8);
+  ctx.lineTo(19.8, 2.2);
+  ctx.lineTo(10.2, 5.4);
+  ctx.quadraticCurveTo(12, 2.2, 10.2, -0.2);
   ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = palette.cheek;
   ctx.beginPath();
-  ctx.ellipse(8.4, -7.8, 3.2, 2.4, -0.2, 0, Math.PI * 2);
-  ctx.ellipse(18.6, -6.4, 3.2, 2.4, 0.2, 0, Math.PI * 2);
+  ctx.ellipse(-2.4, 2.4, 3.2, 2.3, -0.2, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = palette.eye;
   ctx.beginPath();
-  ctx.ellipse(9, -11, 5.3, 5.3 * blink, 0, 0, Math.PI * 2);
-  ctx.ellipse(18.6, -9.2, 5.1, 5.1 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(-2.8, -1.8, 4.1, 4.1 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(4.6, -0.6, 4, 4 * blink, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.ellipse(9, -11, 3.2, 3.2 * blink, 0, 0, Math.PI * 2);
-  ctx.ellipse(18.6, -9.2, 3, 3 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(-2.8, -1.8, 2.4, 2.4 * blink, 0, 0, Math.PI * 2);
+  ctx.ellipse(4.6, -0.6, 2.25, 2.25 * blink, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#0f172a";
   ctx.beginPath();
-  ctx.arc(9 + eyeLook, -11, 1.35, 0, Math.PI * 2);
-  ctx.arc(18.6 + eyeLook, -9.2, 1.25, 0, Math.PI * 2);
+  ctx.arc(-2.4 + eyeLook, -1.6, 1.15, 0, Math.PI * 2);
+  ctx.arc(5 + eyeLook, -0.45, 1.1, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(9.7 + eyeLook, -11.7, 0.55, 0, Math.PI * 2);
-  ctx.arc(19.3 + eyeLook, -9.9, 0.55, 0, Math.PI * 2);
+  ctx.arc(-1.8 + eyeLook, -2.2, 0.45, 0, Math.PI * 2);
+  ctx.arc(5.6 + eyeLook, -1.1, 0.45, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "#cf6f12";
-  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = "#b45309";
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.arc(18.6, -4.6, 2.4, 0.2, Math.PI - 0.2);
+  ctx.arc(1.4, 5.5, 2.8, 0.15, Math.PI - 0.2);
   ctx.stroke();
+  ctx.restore();
 
-  ctx.strokeStyle = palette.leg;
-  ctx.lineCap = "round";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(7, 16);
-  ctx.lineTo(7 + leftStep * 0.25, 24);
-  ctx.lineTo(7 + leftStep * 0.65, 32);
-  ctx.stroke();
-  ctx.lineWidth = 2.4;
-  ctx.beginPath();
-  ctx.moveTo(1 + leftStep * 0.65, 32);
-  ctx.lineTo(8 + leftStep * 0.65, 32);
-  ctx.stroke();
+  drawLeg(8, leftStep, false);
 
-  ctx.fillStyle = "rgba(255,255,255,0.88)";
-  ctx.font = "bold 12px Arial";
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.font = "bold 11px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(label, 2, 6);
-
+  ctx.fillText(label, 1, 4);
   ctx.restore();
 }
 
@@ -482,6 +523,7 @@ function getShortLabel(name: string, fallback: string) {
 }
 
 export default function MathChickGame() {
+  const { countdownValue, countdownVisible, runStartCountdown } = useGameStartCountdown();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -492,12 +534,16 @@ export default function MathChickGame() {
   const lockedByRef = useRef<PlayerId | null>(null);
   const burstsRef = useRef<ExplosionBurst[]>([]);
   const customProblemsRef = useRef<Problem[]>([]);
+  const bgAudioRef = useRef<HTMLAudioElement | null>(null);
+  const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
+  const finishAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const initialRound = useMemo(() => createRound("easy"), []);
 
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [started, setStarted] = useState(false);
+  const [phase, setPhase] = useState<Phase>("setup");
   const [winner, setWinner] = useState<PlayerId | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [currentProblem, setCurrentProblem] = useState<Problem>(initialRound.problem);
   const [playerOptions, setPlayerOptions] = useState<PlayerMap<number[]>>(initialRound.options);
   const [playerScores, setPlayerScores] = useState<PlayerMap<number>>({ A: 0, B: 0 });
@@ -532,11 +578,46 @@ export default function MathChickGame() {
   }, [lockedBy]);
 
   useEffect(() => {
+    bgAudioRef.current = new Audio(mathChickGameSound);
+    bgAudioRef.current.loop = true;
+    bgAudioRef.current.volume = 0.45;
+
+    wrongAudioRef.current = new Audio(wrongSound);
+    wrongAudioRef.current.volume = 0.85;
+
+    finishAudioRef.current = new Audio(finishSound);
+    finishAudioRef.current.volume = 0.9;
+
     return () => {
       if (roundTimerRef.current) {
         window.clearTimeout(roundTimerRef.current);
       }
+      [bgAudioRef, wrongAudioRef, finishAudioRef].forEach((ref) => {
+        if (!ref.current) return;
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      });
     };
+  }, []);
+
+  useEffect(() => {
+    if (!showConfetti) return;
+    const timer = window.setTimeout(() => setShowConfetti(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [showConfetti]);
+
+  const playSfx = useCallback((ref: React.RefObject<HTMLAudioElement | null>) => {
+    const audio = ref.current;
+    if (!audio) return;
+    audio.currentTime = 0;
+    void audio.play().catch(() => undefined);
+  }, []);
+
+  const stopAudio = useCallback((ref: React.RefObject<HTMLAudioElement | null>) => {
+    const audio = ref.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
   }, []);
 
   const scheduleNextRound = useCallback((mode: Difficulty) => {
@@ -568,8 +649,9 @@ export default function MathChickGame() {
     const next = takeNextRound(mode, customProblemsRef.current);
     customProblemsRef.current = next.remaining;
     setDifficulty(mode);
-    setStarted(true);
+    setPhase("game");
     setWinner(null);
+    setShowConfetti(false);
     setCustomProblems(next.remaining);
     setCurrentProblem(next.round.problem);
     setPlayerOptions(next.round.options);
@@ -585,28 +667,36 @@ export default function MathChickGame() {
     burstsRef.current = [];
     startTimeRef.current = 0;
     problemRevealStartRef.current = 0;
-  }, []);
+    stopAudio(finishAudioRef);
+    if (bgAudioRef.current) {
+      bgAudioRef.current.currentTime = 0;
+      void bgAudioRef.current.play().catch(() => undefined);
+    }
+  }, [stopAudio]);
 
   const triggerCorrectEffect = useCallback((player: PlayerId) => {
     burstsRef.current = [...burstsRef.current, createExplosionBurst(player)];
   }, []);
 
   const handleStartGame = useCallback(() => {
-    restartGame(difficulty);
-  }, [difficulty, restartGame]);
+    runStartCountdown(() => restartGame(difficulty));
+  }, [difficulty, restartGame, runStartCountdown]);
 
   const handleBackToSetup = useCallback(() => {
     if (roundTimerRef.current) {
       window.clearTimeout(roundTimerRef.current);
     }
-    setStarted(false);
+    setPhase("setup");
     setWinner(null);
+    setShowConfetti(false);
     setRoundLocked(false);
     setLockedBy(null);
     setSelectedAnswers({ A: null, B: null });
     setFeedback({ A: "idle", B: "idle" });
     burstsRef.current = [];
-  }, []);
+    stopAudio(bgAudioRef);
+    stopAudio(finishAudioRef);
+  }, [stopAudio]);
 
   const updateTeamName = useCallback((player: PlayerId, value: string) => {
     setTeamNames((prev) => ({
@@ -629,7 +719,7 @@ export default function MathChickGame() {
 
   const handleAnswer = useCallback(
     (player: PlayerId, value: number) => {
-      if (!started || winner || roundLocked) return;
+      if (phase !== "game" || winner || roundLocked) return;
 
       setRoundLocked(true);
       setLockedBy(player);
@@ -658,6 +748,12 @@ export default function MathChickGame() {
 
         if (nextProgress[player] >= TOTAL_STEPS) {
           setWinner(player);
+          setPhase("finish");
+          setShowConfetti(true);
+          setRoundLocked(true);
+          setLockedBy(player);
+          stopAudio(bgAudioRef);
+          playSfx(finishAudioRef);
           return;
         }
 
@@ -669,11 +765,12 @@ export default function MathChickGame() {
         ...playerProgressRef.current,
         [player]: clampProgress(playerProgressRef.current[player] - 1),
       };
+      playSfx(wrongAudioRef);
       setPlayerProgress(nextProgress);
       playerProgressRef.current = nextProgress;
       scheduleNextRound(difficulty);
     },
-    [currentProblem.answer, difficulty, playerScores, roundLocked, scheduleNextRound, started, triggerCorrectEffect, winner],
+    [currentProblem.answer, difficulty, phase, playSfx, playerScores, roundLocked, scheduleNextRound, stopAudio, triggerCorrectEffect, winner],
   );
 
   useEffect(() => {
@@ -726,8 +823,8 @@ export default function MathChickGame() {
         .filter((burst) => timestamp - burst.startTime < burst.duration);
 
       renderProgress = {
-        A: renderProgress.A + (playerProgressRef.current.A - renderProgress.A) * 0.1,
-        B: renderProgress.B + (playerProgressRef.current.B - renderProgress.B) * 0.1,
+        A: renderProgress.A + (playerProgressRef.current.A - renderProgress.A) * 0.028,
+        B: renderProgress.B + (playerProgressRef.current.B - renderProgress.B) * 0.028,
       };
 
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
@@ -899,13 +996,16 @@ export default function MathChickGame() {
         drawFloatingScore(ctx, burst, pos.x + 4, pos.y - 6, timestamp);
       });
 
+      const movingA = Math.abs(playerProgressRef.current.A - renderProgress.A) > 0.015;
+      const movingB = Math.abs(playerProgressRef.current.B - renderProgress.B) > 0.015;
+
       drawChick(
         ctx,
         chickAX,
         LANE_Y.A - jumpOffsets.A,
         CHICK_SCALE,
         t,
-        started && !winnerRef.current,
+        movingA && phase === "game" && !winnerRef.current,
         palettes.A,
         getShortLabel(teamNames.A, "A"),
       );
@@ -915,7 +1015,7 @@ export default function MathChickGame() {
         LANE_Y.B - jumpOffsets.B,
         CHICK_SCALE,
         t,
-        started && !winnerRef.current,
+        movingB && phase === "game" && !winnerRef.current,
         palettes.B,
         getShortLabel(teamNames.B, "B"),
       );
@@ -943,7 +1043,7 @@ export default function MathChickGame() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [currentProblem.question, difficulty, roundLocked, started, teamNames]);
+  }, [currentProblem.question, difficulty, phase, roundLocked, teamNames]);
 
   const categoryButton = (mode: Difficulty, label: string, accent: string) => {
     const active = difficulty === mode;
@@ -1102,7 +1202,7 @@ export default function MathChickGame() {
               <button
                 key={`${player}-${option}-${index}`}
                 type="button"
-                disabled={!started || !!winner || roundLocked}
+                disabled={phase !== "game" || !!winner || roundLocked}
                 onClick={() => handleAnswer(player, option)}
                 className={`rounded-2xl border px-4 py-5 text-2xl font-black transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${classes}`}
               >
@@ -1117,6 +1217,19 @@ export default function MathChickGame() {
 
   return (
     <div className="min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(245,158,11,0.12),_transparent_28%),linear-gradient(135deg,_#020617,_#0f172a_48%,_#020617)] p-6 text-white">
+      {showConfetti && (
+        <div className="pointer-events-none fixed inset-0 z-50">
+          <Confetti
+            mode="boom"
+            particleCount={180}
+            effectCount={1}
+            x={0.5}
+            y={0.3}
+            colors={["#fbbf24", "#f59e0b", "#38bdf8", "#22c55e", "#ec4899"]}
+          />
+        </div>
+      )}
+
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute left-[-80px] top-24 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="absolute bottom-0 right-[-40px] h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
@@ -1129,20 +1242,10 @@ export default function MathChickGame() {
             <h1 className="bg-gradient-to-r from-amber-300 via-white to-cyan-300 bg-clip-text text-4xl font-black tracking-[0.08em] text-transparent md:text-5xl">
               Math Chick Game
             </h1>
-            <p className="mt-3 text-sm text-slate-400 md:text-base">
-              Shared question. Two answer panels. First click decides the round.
-            </p>
-          </div>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/70 px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-sm">
-            <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Race Rule</div>
-            <div className="mt-2 text-lg font-bold text-slate-100">First Click Wins</div>
-            <div className="mt-1 text-sm text-slate-400">
-              Same answers, different button order, one lock per round.
-            </div>
           </div>
         </div>
 
-        {!started && (
+        {phase === "setup" && (
           <>
             <div className="mb-6 rounded-[32px] border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-md">
               <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
@@ -1302,7 +1405,7 @@ export default function MathChickGame() {
           </>
         )}
 
-        {started && (
+        {phase !== "setup" && (
           <>
             <div className="mb-6 grid gap-4 md:grid-cols-2">
               {playerCard("A")}
@@ -1319,18 +1422,15 @@ export default function MathChickGame() {
               </button>
             </div>
 
-            <div className="rounded-[32px] border border-white/10 bg-slate-900/50 p-4 shadow-2xl shadow-black/30 backdrop-blur-md">
+            <div className="relative rounded-[32px] border border-white/10 bg-slate-900/50 p-4 shadow-2xl shadow-black/30 backdrop-blur-md">
               <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <div className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
                     Game Arena
                   </div>
-                  <div className="mt-2 text-xl font-black text-white">
-                    Canvas poyga va javob panellari
-                  </div>
                 </div>
                 <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-bold text-cyan-100">
-                  {roundLocked ? "Round locked" : "Round live"}
+                  {phase === "finish" ? "Match finished" : roundLocked ? "Round locked" : "Round live"}
                 </div>
               </div>
 
@@ -1348,30 +1448,43 @@ export default function MathChickGame() {
                 {answerPanel("B")}
               </div>
 
-              {winner && (
-                <div className="mt-6 rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-emerald-500/15 via-slate-900/60 to-cyan-500/15 p-6 text-center shadow-xl shadow-emerald-500/10">
-                  <div className="text-xs font-black uppercase tracking-[0.35em] text-emerald-200">
-                    Match Complete
+              {winner && phase === "finish" && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[32px] bg-slate-950/72 p-4 backdrop-blur-md">
+                  <div className="w-full max-w-3xl rounded-3xl border border-emerald-300/30 bg-gradient-to-r from-emerald-500/15 via-slate-900/90 to-cyan-500/15 p-6 text-center shadow-xl shadow-emerald-500/10 md:p-8">
+                    <div className="text-xs font-black uppercase tracking-[0.35em] text-emerald-200">
+                      Match Complete
+                    </div>
+                    <div className="mt-3 text-4xl font-black text-white md:text-5xl">
+                      {winner ? `\uD83C\uDFC6 ${teamNames[winner]} Wins!` : ""}
+                    </div>
+                    <div className="mt-2 text-slate-300">
+                      Qayta start qilib yangi poyga boshlashingiz yoki teacher panelga qaytishingiz mumkin.
+                    </div>
+                    <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={handleStartGame}
+                        className="rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-cyan-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                      >
+                        Restart Match
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBackToSetup}
+                        className="rounded-2xl border border-white/10 bg-slate-900/70 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-slate-100 transition hover:scale-[1.02] hover:bg-slate-800"
+                      >
+                        Teacher Panel
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-3 text-4xl font-black text-white">
-                    {winner ? `\uD83C\uDFC6 ${teamNames[winner]} Wins!` : ""}
-                  </div>
-                  <div className="mt-2 text-slate-300">
-                    Restart to run another head-to-head race.
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleStartGame}
-                    className="mt-5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-cyan-500 px-6 py-3 text-sm font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-cyan-500/20 transition duration-200 hover:scale-[1.03] active:scale-[0.98]"
-                  >
-                    Restart Match
-                  </button>
                 </div>
               )}
             </div>
           </>
         )}
       </div>
+
+      <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
     </div>
   );
 }
