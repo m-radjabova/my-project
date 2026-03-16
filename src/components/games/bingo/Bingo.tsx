@@ -8,8 +8,8 @@ import {
 } from "react-icons/fa";
 import { GiCardJoker, GiJigsawPiece} from "react-icons/gi";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { SAMPLE_16_LINES } from "./data";
 import type { BingoCell, CellInputRow, Student } from "./types";
 import {
@@ -784,3 +784,4 @@ function Bingo() {
 }
 
 export default Bingo;
+

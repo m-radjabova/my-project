@@ -21,12 +21,13 @@ import {
   FaHeart,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { fetchGameQuestions, saveGameQuestions } from "../../apiClient/gameQuestions";
 import { GiCherry, GiFlowerTwirl, GiPlanetCore } from "react-icons/gi";
 import { HiSparkles } from "react-icons/hi";
 import { MdAutoAwesome } from "react-icons/md";
 import { generateTeacherPanelQuestions, type SupportedTeacherGameKey } from "./teacherQuestionPanelAi";
 import type { GameDifficulty } from "../../apiClient/gemini";
+import useContextPro from "../../hooks/useContextPro";
+import useGameQuestions from "../../hooks/useGameQuestions";
 
 type GameRegistryItem = {
   gameKey: string;
@@ -854,48 +855,42 @@ function FormField({
 }
 
 export default function TeacherQuestionPanel() {
-  const [questionsByGame, setQuestionsByGame] = useState<Record<string, unknown[]>>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    state: { user },
+  } = useContextPro();
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeGameKey, setActiveGameKey] = useState(GAME_REGISTRY[0]?.gameKey ?? "");
-  const [draftValue, setDraftValue] = useState<unknown>(GAME_REGISTRY[0]?.template ?? {});
+  const [activeGameKey, setActiveGameKey] = useState("");
+  const [draftValue, setDraftValue] = useState<unknown>({});
   const [editorError, setEditorError] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showExtraFields, setShowExtraFields] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
   const [aiCount, setAiCount] = useState<(typeof AI_COUNT_OPTIONS)[number]>(5);
   const [aiDifficulty, setAiDifficulty] = useState<GameDifficulty>("mixed");
+  const {
+    questionsByGame,
+    getQuestions,
+    loadQuestions,
+    saveQuestionsForGame,
+    loadingByGame,
+    loadedByGame,
+    savingByGame,
+    anySaving,
+  } = useGameQuestions<unknown>({ teacherId: user?.id });
 
-  const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? GAME_REGISTRY[0];
-  const activeItems = questionsByGame[activeGame?.gameKey ?? ""] ?? [];
+  const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? null;
+  const activeItems = activeGame ? getQuestions(activeGame.gameKey) : [];
   const aiPanelContent = useMemo(() => getAiPanelContent(activeGame?.gameKey ?? ""), [activeGame?.gameKey]);
+  const loading = activeGame ? Boolean(loadingByGame[activeGame.gameKey]) : false;
+  const saving = activeGame ? Boolean(savingByGame[activeGame.gameKey]) : anySaving;
 
   useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      setLoading(true);
-      const entries = await Promise.all(
-        GAME_REGISTRY.map(async (game) => {
-          const items = await fetchGameQuestions<unknown>(game.gameKey);
-          return [game.gameKey, items ?? []] as const;
-        }),
-      );
-
-      if (!alive) return;
-      setQuestionsByGame(Object.fromEntries(entries));
-      setLoading(false);
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!activeGame) return;
+    if (!activeGame) {
+      setDraftValue({});
+      setEditorError("");
+      return;
+    }
     if (selectedIndex === null) {
       setDraftValue(activeGame.template);
       setEditorError("");
@@ -924,14 +919,15 @@ export default function TeacherQuestionPanel() {
   );
 
   async function persistGameItems(gameKey: string, nextItems: unknown[]) {
-    setSaving(true);
-    const ok = await saveGameQuestions(gameKey, nextItems);
-    setSaving(false);
+    if (!user?.id) {
+      setEditorError("Teacher akkaunt topilmadi. Qayta login qilib ko'ring.");
+      return false;
+    }
+    const ok = await saveQuestionsForGame(gameKey, nextItems, true);
     if (!ok) {
       setEditorError("Saqlashda xato bo'ldi. Token yoki backendni tekshiring.");
       return false;
     }
-    setQuestionsByGame((prev) => ({ ...prev, [gameKey]: nextItems }));
     setEditorError("");
     return true;
   }
@@ -1079,6 +1075,7 @@ export default function TeacherQuestionPanel() {
                     setActiveGameKey(game.gameKey);
                     setSelectedIndex(null);
                     setSearch("");
+                    void loadQuestions(game.gameKey, { teacherScoped: true });
                   }}
                   className={`w-full overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${
                     active 
@@ -1110,7 +1107,9 @@ export default function TeacherQuestionPanel() {
           </aside>
 
           {/* Questions List Section */}
-          <section className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-xl p-6 shadow-xl">
+          <section className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-6 shadow-xl backdrop-blur-xl">
+            {activeGame ? (
+              <>
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="text-[10px] font-medium uppercase tracking-wider text-[#b38b8d]">Tanlangan O'yin</div>
@@ -1207,14 +1206,31 @@ export default function TeacherQuestionPanel() {
 
               {!loading && filteredItems.length === 0 && (
                 <div className="rounded-xl border border-dashed border-[#f0d9d6] bg-white/80 p-8 text-center">
-                  <p className="text-xs text-[#b38b8d]">Bu o'yinda hozircha savol topilmadi.</p>
+                  <p className="text-xs text-[#b38b8d]">
+                    {loadedByGame[activeGame.gameKey]
+                      ? "Bu o'yinda hozircha savol topilmadi."
+                      : "Savollarni ko'rish uchun chap tomondan o'yinni tanlang."}
+                  </p>
                 </div>
               )}
             </div>
+              </>
+            ) : (
+              <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-[#f0d9d6] bg-white/60 text-center">
+                <div>
+                  <p className="text-sm font-medium text-[#7b4f53]">Avval o'yinni tanlang</p>
+                  <p className="mt-2 text-xs text-[#b38b8d]">
+                    Qaysi o'yin ustiga bossangiz, savollar o'sha paytda yuklanadi.
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Editor Section */}
-          <aside className="rounded-3xl border border-[#f0d9d6] bg-white/70 backdrop-blur-xl p-6 shadow-xl">
+          <aside className="rounded-3xl border border-[#f0d9d6] bg-white/70 p-6 shadow-xl backdrop-blur-xl">
+            {activeGame ? (
+              <>
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-medium uppercase tracking-wider text-[#b38b8d]">Savol Tahrirlash</div>
@@ -1418,6 +1434,17 @@ export default function TeacherQuestionPanel() {
               <FaHeart className="text-[#e07c8e] text-[8px] animate-pulse-soft" />
               <span>bilan yaratilmoqda</span>
             </div>
+              </>
+            ) : (
+              <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-[#f0d9d6] bg-white/60 text-center">
+                <div>
+                  <p className="text-sm font-medium text-[#7b4f53]">Editor tayyor</p>
+                  <p className="mt-2 text-xs text-[#b38b8d]">
+                    Savol qo'shish yoki tahrirlash uchun chapdan o'yinni tanlang.
+                  </p>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
       </div>

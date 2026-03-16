@@ -15,9 +15,9 @@ import {
   FaEdit,
   FaSave,
 } from "react-icons/fa";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { MORE_QUESTIONS } from "./data";
 
 import { REVERSE_THINKING_GAME_KEY, TEAM_AVATARS, TEAM_COLORS } from "./constants";
@@ -914,4 +914,5 @@ function ReverseThinking() {
 }
 
 export default ReverseThinking;
+
 

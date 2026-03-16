@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
 import { FaRegStar, FaStar } from "react-icons/fa";
 
-import {
-  fetchGameComments,
-  fetchGameRatingSummary,
-  submitMyGameFeedback,
-} from "../../../apiClient/gameFeedback";
 import useContextPro from "../../../hooks/useContextPro";
-import type { GameComment, GameRatingSummary } from "../../../types/types";
+import useGameFeedback from "../../../hooks/useGameFeedback";
 import { hasAnyRole } from "../../../utils/roles";
 import { toMediaUrl } from "../../../utils";
 
@@ -58,33 +53,19 @@ function GameFeedbackPanel({ gameKey }: Props) {
   const {
     state: { user },
   } = useContextPro();
-
-  const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<GameRatingSummary | null>(null);
-  const [comments, setComments] = useState<GameComment[]>([]);
+  const { loading, summary, comments, submitting, submitFeedback } = useGameFeedback(gameKey);
   const [ratingInput, setRatingInput] = useState(0);
   const [commentInput, setCommentInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const canLeaveFeedback = hasAnyRole(user, ["teacher"]);
 
-  const reload = async () => {
-    setLoading(true);
-    const [summaryData, commentsData] = await Promise.all([
-      fetchGameRatingSummary(gameKey),
-      fetchGameComments(gameKey),
-    ]);
-    setSummary(summaryData);
-    setComments(commentsData);
-    if (summaryData?.my_rating) setRatingInput(summaryData.my_rating);
-    setLoading(false);
-  };
-
   useEffect(() => {
-    void reload();
-  }, [gameKey]);
+    if (summary?.my_rating) {
+      setRatingInput(summary.my_rating);
+    }
+  }, [summary?.my_rating]);
 
   const handleSubmit = async () => {
     if (!canLeaveFeedback) {
@@ -104,19 +85,15 @@ function GameFeedbackPanel({ gameKey }: Props) {
       return;
     }
 
-    setSubmitting(true);
     setError("");
     setSuccess("");
 
-    const ok = await submitMyGameFeedback(gameKey, { rating, comment });
+    const ok = await submitFeedback({ rating, comment });
     if (!ok) {
-      setSubmitting(false);
       setError("Yuborishda xatolik. Qayta urinib ko'ring.");
       return;
     }
 
-    await reload();
-    setSubmitting(false);
     setSuccess("Saqlandi.");
     setCommentInput("");
   };

@@ -18,10 +18,10 @@ import correctSound from "../../../assets/sounds/correct.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import winSound from "../../../assets/sounds/applause.mp3";
 import jumanjiSound from "../../../assets/sounds/jumanji_sound.m4a";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateJumanjiQuestions } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import type { Phase, Question, ScoreAnnouncement, Team, Tile } from "./types";
 import {
   DICE_ROLL_STEPS,
@@ -1713,3 +1713,4 @@ function Jumanji() {
 }
 
 export default Jumanji;
+

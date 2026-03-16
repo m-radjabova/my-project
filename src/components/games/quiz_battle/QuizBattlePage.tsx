@@ -114,13 +114,13 @@ function QuizBattlePage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl font-black leading-tight md:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-black md:text-5xl lg:text-6xl">
                 <span className="bg-gradient-to-r from-yellow-200 via-orange-200 to-red-200 bg-clip-text text-transparent">
-                  Bilimlar
+                  Tezkor 
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                  jangi
+                  savollar
                 </span>
               </h1>
 

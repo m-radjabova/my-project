@@ -14,10 +14,10 @@ import {
 import { GiPodiumWinner, GiSpinningWheel} from "react-icons/gi";
 import { MdQuiz, MdTimer} from "react-icons/md";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 import { EMPTY_OPTIONS, SAMPLE_QUESTIONS, WHEEL_COLORS, WHEEL_OF_FORTUNE_GAME_KEY } from "./constants";
 import type { Phase, Question, Student } from "./types";
@@ -883,4 +883,5 @@ export default function WheelOfFortune() {
     </div>
   );
 }
+
 

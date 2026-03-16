@@ -11,8 +11,8 @@ import {
 import { GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 type Difficulty = "Oson" | "O'rta" | "Qiyin";
 type Side = "left" | "right";
@@ -626,3 +626,4 @@ function MemoryChainArena({
 }
 
 export default MemoryChainArena;
+

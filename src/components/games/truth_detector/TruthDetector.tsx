@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaCheck, FaEye, FaEyeSlash, FaGamepad, FaRedo, FaRobot, FaSave, FaTimes, FaTrash, FaUsers } from "react-icons/fa";
 import { PiDetective } from "react-icons/pi";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import { generateTruthDetectorPacks } from "./ai";

@@ -12,7 +12,7 @@ import {
   FaMagic,
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 
 import { COLORS, PUZZLE_TEMPLATES, TEAM_AVATARS, TEAM_COLORS } from "./constants";
 import type { Phase, Team } from "./types";
@@ -835,6 +835,7 @@ function MagicSquare() {
 }
 
 export default MagicSquare;
+
 
 
 

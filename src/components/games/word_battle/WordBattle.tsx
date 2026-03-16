@@ -8,8 +8,10 @@ import { GiBattleGear, GiTeamIdea, GiSwordsEmblem } from "react-icons/gi";
 import { RiFlashlightFill } from "react-icons/ri";
 import { TbAlt } from "react-icons/tb";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
 
 type Phase = "setup" | "play" | "round" | "finish";
 type TeamId = 0 | 1;
@@ -96,6 +98,20 @@ export default function WordBattle() {
   }, [currentPuzzle]);
 
   const winner = scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1;
+  useGameResultSubmission(phase === "finish", "word-battle", [
+    {
+      participant_name: teamNames[0],
+      participant_mode: "2 jamoa",
+      score: scores[0],
+      metadata: { rounds: deck.length },
+    },
+    {
+      participant_name: teamNames[1],
+      participant_mode: "2 jamoa",
+      score: scores[1],
+      metadata: { rounds: deck.length },
+    },
+  ]);
 
   useEffect(() => {
     if (phase !== "play") return;
@@ -668,6 +684,7 @@ export default function WordBattle() {
                 </span>
               </button>
             </div>
+            <GameLeaderboardPanel gameKey="word-battle" title="Word Battle Reytingi" />
           </div>
         )}
         <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
@@ -675,3 +692,4 @@ export default function WordBattle() {
     </div>
   );
 }
+

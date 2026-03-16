@@ -31,13 +31,13 @@ function IQGamePage() {
     {
       icon: <MdTimer className="text-2xl text-white" />,
       label: 'TIME',
-      value: '10-30s each',
+      value: '12-24s each',
       color: 'from-indigo-500 to-purple-500',
     },
     {
       icon: <GiLightBulb className="text-2xl text-white" />,
       label: 'QUESTIONS',
-      value: '15',
+      value: '18',
       color: 'from-purple-500 to-pink-500',
     },
     {
@@ -439,7 +439,7 @@ function IQGamePage() {
               {/* Badges */}
               <div className="flex gap-2">
                 <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 border-2 border-white/10">
-                  <span className="text-xs font-bold text-white">15 Questions</span>
+                  <span className="text-xs font-bold text-white">18 Questions</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 border-2 border-white/10">
                   <span className="text-xs font-bold text-white">10-30s each</span>

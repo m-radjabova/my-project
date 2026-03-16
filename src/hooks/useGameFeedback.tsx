@@ -1,5 +1,6 @@
-import apiClient from "./apiClient";
-import type { GameCommentOut, GameRatingSummary } from "../types/types";
+import { useCallback, useEffect, useState } from "react";
+import apiClient from "../apiClient/apiClient";
+import type { GameComment, GameRatingSummary } from "../types/types";
 import { getAccessToken } from "../utils/auth";
 
 type RatingSummaryResponse = {
@@ -10,13 +11,8 @@ type RatingSummaryResponse = {
 };
 
 type CommentsResponse = {
-  items?: GameCommentOut[];
-  comments?: GameCommentOut[];
-};
-
-type SubmitFeedbackPayload = {
-  rating: number;
-  comment: string;
+  items?: GameComment[];
+  comments?: GameComment[];
 };
 
 const toSummaryPath = (gameKey: string) =>
@@ -25,7 +21,6 @@ const toCommentsPath = (gameKey: string) =>
   `/game-feedback/${encodeURIComponent(gameKey)}/comments`;
 const toMyFeedbackPath = (gameKey: string) =>
   `/game-feedback/${encodeURIComponent(gameKey)}/my`;
-const RECENT_PATH = "/game-feedback/recent";
 
 export async function fetchGameRatingSummary(
   gameKey: string,
@@ -46,7 +41,7 @@ export async function fetchGameRatingSummary(
   }
 }
 
-export async function fetchGameComments(gameKey: string): Promise<GameCommentOut[]> {
+export async function fetchGameComments(gameKey: string): Promise<GameComment[]> {
   try {
     const { data } = await apiClient.get<CommentsResponse>(toCommentsPath(gameKey));
     const items = data?.items ?? data?.comments ?? [];
@@ -56,21 +51,9 @@ export async function fetchGameComments(gameKey: string): Promise<GameCommentOut
   }
 }
 
-export async function fetchRecentGameComments(limit = 20): Promise<GameCommentOut[]> {
-  try {
-    const { data } = await apiClient.get<CommentsResponse>(RECENT_PATH, {
-      params: { limit },
-    });
-    const items = data?.items ?? data?.comments ?? [];
-    return Array.isArray(items) ? items : [];
-  } catch {
-    return [];
-  }
-}
-
 export async function submitMyGameFeedback(
   gameKey: string,
-  payload: SubmitFeedbackPayload,
+  payload: { rating: number; comment: string },
 ): Promise<boolean> {
   if (!getAccessToken()) return false;
   try {
@@ -79,4 +62,49 @@ export async function submitMyGameFeedback(
   } catch {
     return false;
   }
+}
+
+export default function useGameFeedback(gameKey: string) {
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [summary, setSummary] = useState<GameRatingSummary | null>(null);
+  const [comments, setComments] = useState<GameComment[]>([]);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    const [summaryData, commentsData] = await Promise.all([
+      fetchGameRatingSummary(gameKey),
+      fetchGameComments(gameKey),
+    ]);
+    setSummary(summaryData);
+    setComments(commentsData);
+    setLoading(false);
+    return { summary: summaryData, comments: commentsData };
+  }, [gameKey]);
+
+  const submitFeedback = useCallback(
+    async (payload: { rating: number; comment: string }) => {
+      setSubmitting(true);
+      const ok = await submitMyGameFeedback(gameKey, payload);
+      if (ok) {
+        await reload();
+      }
+      setSubmitting(false);
+      return ok;
+    },
+    [gameKey, reload],
+  );
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  return {
+    loading,
+    submitting,
+    summary,
+    comments,
+    reload,
+    submitFeedback,
+  };
 }

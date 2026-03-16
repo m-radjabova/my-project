@@ -5,6 +5,7 @@ export const BASE_MOVE_AMOUNT = 10;
 export const TIME_BONUS_MULTIPLIER = 0.3;
 export const ROUND_TIME = 15;
 export const MATH_RACE_GAME_KEY = "math_race";
+export const MATH_RACE_RESULT_KEY = "math-race";
 
 export const DEFAULT_QUESTIONS: MathQuestion[] = [
   { id: "1", question: "5 + 3 = ?", answer: 8, difficulty: "easy", points: 10 },

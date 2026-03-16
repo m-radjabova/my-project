@@ -12,7 +12,6 @@ import {
   FaRocket,
   FaShieldAlt,
   FaGraduationCap,
-  FaStar,
 } from "react-icons/fa";
 import { GiPlanetCore} from "react-icons/gi";
 import { toast } from "react-toastify";
@@ -94,15 +93,7 @@ function Register() {
         password: data.password,
       });
 
-      toast.success("Hisob muvaffaqiyatli yaratildi!", {
-        icon: <FaStar className="text-[#e07c8e]" />,
-        style: {
-          borderRadius: "20px",
-          background: "linear-gradient(135deg, #e07c8e, #a66466)",
-          color: "#fff",
-          boxShadow: "0 10px 30px rgba(224,124,142,0.3)",
-        },
-      });
+      toast.success("Hisob muvaffaqiyatli yaratildi!");
 
       reset();
       navigate("/login");

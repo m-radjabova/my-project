@@ -15,27 +15,43 @@ import {
 } from "react-icons/fa";
 import { MdQuiz} from "react-icons/md";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { getGameSessionConfig } from "../../../hooks/gameSession";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
+import useContextPro from "../../../hooks/useContextPro";
+import useGameQuestions from "../../../hooks/useGameQuestions";
 
-import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
+import { BASE_POINTS, createEmptyDraft, QUIZ_BATTLE_GAME_KEY, QUIZ_BATTLE_RESULT_KEY, SECONDS_PER_QUESTION, STREAK_BONUS } from "./constants";
 import type { Phase, Question, QuestionDraft, TeamId } from "./types";
 
 function QuizBattle() {
+  const session = getGameSessionConfig("quiz-battle");
+  const {
+    state: { user },
+  } = useContextPro();
+  const { loadQuestions } = useGameQuestions<Question>({ teacherId: user?.id });
+  const isSinglePlayer = session?.participantCount === 1;
+  const singlePlayerName =
+    session?.participantLabels[0]?.trim() &&
+    !/^O'YINCHI\s+\d+$/i.test(session.participantLabels[0])
+      ? session.participantLabels[0]
+      : user?.username?.trim() || "O'YINCHI 1";
   const finishViewRef = useRef<HTMLDivElement | null>(null);
-  const skipInitialRemoteSaveRef = useRef(true);
   const [phase, setPhase] = useState<Phase>("question-setup");
   useFinishApplause(phase === "finish");
-  const [teamNames, setTeamNames] = useState<[string, string]>(["⚔️ YULDUZLAR", "🛡️ CHAQQONLAR"]);
+  const [teamNames, setTeamNames] = useState<[string, string]>([
+    isSinglePlayer ? singlePlayerName : "⚔️ YULDUZLAR",
+    "🛡️ CHAQQONLAR",
+  ]);
   const [nameError, setNameError] = useState("");
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [draft, setDraft] = useState<QuestionDraft>(createEmptyDraft());
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [questionError, setQuestionError] = useState("");
-  const [remoteLoaded, setRemoteLoaded] = useState(false);
 
   const [current, setCurrent] = useState(0);
   const [turn, setTurn] = useState<TeamId>(0);
@@ -54,9 +70,37 @@ function QuizBattle() {
   // const maxScore = Math.max(1, questions.length * BASE_POINTS * 2);
 
   const winner = useMemo(() => {
+    if (isSinglePlayer) return 0;
     if (scores[0] === scores[1]) return null;
     return scores[0] > scores[1] ? 0 : 1;
-  }, [scores]);
+  }, [isSinglePlayer, scores]);
+  useGameResultSubmission(
+    phase === "finish",
+    QUIZ_BATTLE_RESULT_KEY,
+    isSinglePlayer
+      ? [
+          {
+            participant_name: teamNames[0],
+            participant_mode: "1 o'yinchi",
+            score: scores[0],
+            metadata: { questions: questions.length },
+          },
+        ]
+      : [
+          {
+            participant_name: teamNames[0],
+            participant_mode: "2 jamoa",
+            score: scores[0],
+            metadata: { questions: questions.length, winner: winner === 0 },
+          },
+          {
+            participant_name: teamNames[1],
+            participant_mode: "2 jamoa",
+            score: scores[1],
+            metadata: { questions: questions.length, winner: winner === 1 },
+          },
+        ]
+  );
 
   useEffect(() => {
     if (!toast) return;
@@ -91,29 +135,20 @@ function QuizBattle() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const remoteQuestions = await fetchGameQuestions<Question>(QUIZ_BATTLE_GAME_KEY);
+      const remoteQuestions = await loadQuestions(QUIZ_BATTLE_GAME_KEY, {
+        teacherScoped: Boolean(
+          user?.id && user.roles?.some((role) => role === "teacher" || role === "admin"),
+        ),
+      });
       if (!alive) return;
       if (remoteQuestions && remoteQuestions.length > 0) {
         setQuestions(remoteQuestions);
       }
-      setRemoteLoaded(true);
     })();
     return () => {
       alive = false;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!remoteLoaded) return;
-    if (skipInitialRemoteSaveRef.current) {
-      skipInitialRemoteSaveRef.current = false;
-      return;
-    }
-    const t = window.setTimeout(() => {
-      void saveGameQuestions<Question>(QUIZ_BATTLE_GAME_KEY, questions);
-    }, 500);
-    return () => window.clearTimeout(t);
-  }, [questions, remoteLoaded]);
+  }, [loadQuestions, user?.id, user?.roles]);
 
   const resetQuestionDraft = () => {
     setDraft(createEmptyDraft());
@@ -217,16 +252,16 @@ function QuizBattle() {
 
     const a = teamNames[0].trim();
     const b = teamNames[1].trim();
-    if (!a || !b) {
-      setNameError("Ikkala guruh nomini ham kiriting.");
+    if (!a || (!isSinglePlayer && !b)) {
+      setNameError(isSinglePlayer ? "O'yinchi nomini kiriting." : "Ikkala guruh nomini ham kiriting.");
       return;
     }
-    if (a.toLowerCase() === b.toLowerCase()) {
+    if (!isSinglePlayer && a.toLowerCase() === b.toLowerCase()) {
       setNameError("Guruh nomlari bir xil bo'lmasligi kerak.");
       return;
     }
 
-    setTeamNames([a, b]);
+    setTeamNames([a, isSinglePlayer ? teamNames[1] : b]);
     setNameError("");
     setCurrent(0);
     setTurn(0);
@@ -247,7 +282,9 @@ function QuizBattle() {
       setLocked(true);
       return;
     }
-    setTurn((v) => (v === 0 ? 1 : 0));
+    if (!isSinglePlayer) {
+      setTurn((v) => (v === 0 ? 1 : 0));
+    }
     setCurrent((v) => v + 1);
   };
 
@@ -297,7 +334,6 @@ function QuizBattle() {
   };
 
   const resetEverything = () => {
-    setQuestions([]);
     resetQuestionDraft();
     setQuestionError("");
     setNameError("");
@@ -506,7 +542,7 @@ function QuizBattle() {
               <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
               <span className="relative flex items-center gap-3">
                 <FaUsers />
-                GURUHLARGA O'TISH
+                {isSinglePlayer ? "O'YINCHIGA O'TISH" : "GURUHLARGA O'TISH"}
               </span>
             </button>
           </div>
@@ -518,21 +554,24 @@ function QuizBattle() {
         <div className="relative transform-gpu overflow-hidden rounded-2xl border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 to-orange-900/30 p-8 backdrop-blur-xl">
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10" />
           
-          <h3 className="relative mb-6 text-center text-2xl font-black text-white">GURUH NOMLARINI KIRITING</h3>
+          <h3 className="relative mb-6 text-center text-2xl font-black text-white">
+            {isSinglePlayer ? "O'YINCHI NOMINI KIRITING" : "GURUH NOMLARINI KIRITING"}
+          </h3>
           
-          <div className="relative grid gap-6 md:grid-cols-2">
+          <div className={`relative grid gap-6 ${isSinglePlayer ? "md:grid-cols-1" : "md:grid-cols-2"}`}>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-yellow-400">
-                ⚔️ 1-GURUH
+                {isSinglePlayer ? "🎮 O'YINCHI" : "⚔️ 1-GURUH"}
               </label>
               <input
                 value={teamNames[0]}
                 onChange={(e) => setTeamNames([e.target.value, teamNames[1]])}
                 className={fieldClass}
-                placeholder="YULDUZLAR"
+                placeholder={isSinglePlayer ? "O'YINCHI 1" : "YULDUZLAR"}
               />
             </div>
             
+            {!isSinglePlayer && (
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-orange-400">
                 🛡️ 2-GURUH
@@ -544,6 +583,7 @@ function QuizBattle() {
                 placeholder="CHAQQONLAR"
               />
             </div>
+            )}
           </div>
           
           {nameError && (
@@ -581,8 +621,8 @@ function QuizBattle() {
       {phase === "play" && question && (
         <div className="space-y-6">
           {/* Teams Score */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {[0, 1].map((i) => {
+          <div className={`grid gap-4 ${isSinglePlayer ? "md:grid-cols-1" : "md:grid-cols-2"}`}>
+            {(isSinglePlayer ? [0] : [0, 1]).map((i) => {
               const active = turn === i;
               return (
                 <div
@@ -600,7 +640,7 @@ function QuizBattle() {
                   <div className="relative flex items-center justify-between">
                     <div>
                       <p className={`text-xs font-bold ${i === 0 ? 'text-yellow-400' : 'text-orange-400'}`}>
-                        {i === 0 ? '⚔️ 1-GURUH' : '🛡️ 2-GURUH'}
+                        {isSinglePlayer ? "🎮 O'YINCHI" : i === 0 ? '⚔️ 1-GURUH' : '🛡️ 2-GURUH'}
                       </p>
                       <p className="text-lg font-black text-white">{teamNames[i as TeamId]}</p>
                     </div>
@@ -660,7 +700,11 @@ function QuizBattle() {
             {/* Question */}
             <h3 className="relative mb-2 text-xl font-black text-white">{question.question}</h3>
             <p className="relative mb-4 text-sm text-yellow-200/80">
-              Navbat: <span className="font-bold text-yellow-400">{teamNames[turn]}</span>
+              {isSinglePlayer ? (
+                <>O'yinchi: <span className="font-bold text-yellow-400">{teamNames[0]}</span></>
+              ) : (
+                <>Navbat: <span className="font-bold text-yellow-400">{teamNames[turn]}</span></>
+              )}
             </p>
 
             {/* Options */}
@@ -741,21 +785,23 @@ function QuizBattle() {
           </div>
           
           <h2 className="relative mb-4 text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-            {winner === null ? "DURRANG!" : `${teamNames[winner]} G'OLIB!`}
+            {isSinglePlayer ? `${teamNames[0]} NATIJASI` : winner === null ? "DURRANG!" : `${teamNames[winner]} G'OLIB!`}
           </h2>
           
           <div className="relative mx-auto mb-8 max-w-md rounded-xl border border-yellow-500/30 bg-yellow-950/30 p-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${isSinglePlayer ? "grid-cols-1" : "grid-cols-2"}`}>
               <div className="text-center">
-                <p className="text-yellow-400 font-bold">⚔️ 1-GURUH</p>
+                <p className="text-yellow-400 font-bold">{isSinglePlayer ? "🎮 O'YINCHI" : "⚔️ 1-GURUH"}</p>
                 <p className="text-2xl font-black text-white">{teamNames[0]}</p>
                 <p className="text-3xl font-black text-yellow-400 mt-2">{scores[0]}</p>
               </div>
+              {!isSinglePlayer && (
               <div className="text-center">
                 <p className="text-orange-400 font-bold">🛡️ 2-GURUH</p>
                 <p className="text-2xl font-black text-white">{teamNames[1]}</p>
                 <p className="text-3xl font-black text-orange-400 mt-2">{scores[1]}</p>
               </div>
+              )}
             </div>
           </div>
           
@@ -781,6 +827,7 @@ function QuizBattle() {
               </span>
             </button>
           </div>
+          <GameLeaderboardPanel gameKey={QUIZ_BATTLE_RESULT_KEY} title="Quiz Battle Reytingi" />
         </div>
       )}
       <GameStartCountdownOverlay visible={countdownVisible} value={countdownValue} />
@@ -789,4 +836,3 @@ function QuizBattle() {
 }
 
 export default QuizBattle;
-

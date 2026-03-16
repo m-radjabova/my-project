@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
@@ -17,15 +17,15 @@ import { GiTreasureMap, GiAnchor, GiPirateFlag } from "react-icons/gi";
 import { MdOutlineTimer } from "react-icons/md";
 import { IoMdNuclear } from "react-icons/io";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateTreasureHuntRiddles } from "./ai";
 import useContextPro from "../../../hooks/useContextPro";
 import { hasAnyRole } from "../../../utils/roles";
 import pirateOrchestra from "../../../assets/sounds/pirate_orchestra.m4a";
 import { TREASURE_RIDDLES } from "./data/riddles";
 import type { Riddle } from "./types";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 type Phase = "intro" | "play" | "finish";
 type RiddleDraft = {
@@ -65,7 +65,7 @@ const formatTime = (seconds: number) => {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 };
 
-// ── Realistic SVG Treasure Map ──────────────────────────────────────────────
+// -- Realistic SVG Treasure Map ----------------------------------------------
 function TreasureMapSVG({ progress }: { progress: number }) {
   // Path waypoints
   const pathD = "M 9,72 C 18,58 26,78 35,65 C 44,52 52,70 62,55 C 70,43 80,48 93,30";
@@ -160,7 +160,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         </linearGradient>
       </defs>
 
-      {/* ── Ocean background ── */}
+      {/* -- Ocean background -- */}
       <rect x="0" y="0" width="102" height="90" fill="url(#oceanGrad)" />
       <rect x="0" y="0" width="102" height="90" fill="url(#waves)" opacity="0.6"/>
 
@@ -169,7 +169,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <line key={y} x1="0" y1={y} x2="102" y2={y+1} stroke="#1a6ba0" strokeWidth="0.15" opacity="0.2"/>
       ))}
 
-      {/* ── Compass rose (background) ── */}
+      {/* -- Compass rose (background) -- */}
       <g transform="translate(88,75)" opacity="0.25">
         <circle cx="0" cy="0" r="7" stroke="#c9a96e" strokeWidth="0.4" fill="none"/>
         <circle cx="0" cy="0" r="5" stroke="#c9a96e" strokeWidth="0.2" fill="none"/>
@@ -186,7 +186,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <text x="0" y="-6.5" textAnchor="middle" fontSize="2" fill="#e8b84b" fontWeight="bold">N</text>
       </g>
 
-      {/* ── Main Continent (left side) ── */}
+      {/* -- Main Continent (left side) -- */}
       <path d="M0,28 C7,21 16,17 23,20 C30,23 35,19 39,23 C43,27 41,36 35,42 C29,48 20,50 12,54 C6,57 2,60 0,64 Z"
         fill="url(#landGrad1)" stroke="#7a5510" strokeWidth="0.5"/>
       {/* Forest details on continent */}
@@ -201,7 +201,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       <polygon points="9,44 13,37 17,44" fill="#9a8070" stroke="#6a5040" strokeWidth="0.3"/>
       <polygon points="10,37 13,35 16,37" fill="white" opacity="0.6"/>
 
-      {/* ── Small island (middle) ── */}
+      {/* -- Small island (middle) -- */}
       <ellipse cx="50" cy="67" rx="10.5" ry="6.8" fill="url(#landGrad2)" stroke="#7a5510" strokeWidth="0.4"/>
       <ellipse cx="50" cy="67" rx="8.2" ry="4.8" fill="#b08040" opacity="0.4"/>
       {/* Palm tree */}
@@ -215,7 +215,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
       {/* Sandy beach ring */}
       <ellipse cx="50" cy="69.8" rx="11.5" ry="2.9" fill="#d4aa70" opacity="0.35"/>
 
-      {/* ── Treasure island (right side) ── */}
+      {/* -- Treasure island (right side) -- */}
       <path d="M76,16 C82,10 93,8 100,13 C107,18 107,31 101,39 C95,47 85,50 78,47 C71,44 66,35 69,25 C70,21 72,18 76,16 Z"
         fill="url(#landGrad3)" stroke="#7a5510" strokeWidth="0.5"/>
       {/* Jungle on treasure island */}
@@ -247,7 +247,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <line x1="3.7" y1="0" x2="0" y2="3.7" stroke="#cc0000" strokeWidth="1" strokeLinecap="round"/>
       </g>
 
-      {/* ── Decorative rocks / reefs ── */}
+      {/* -- Decorative rocks / reefs -- */}
       {[[38,40],[40,42],[42,40]].map(([x,y],i) => (
         <ellipse key={i} cx={x} cy={y} rx="1.2" ry="0.7" fill="#556b5a" opacity="0.7"/>
       ))}
@@ -255,7 +255,7 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <ellipse key={i} cx={x} cy={y} rx="1" ry="0.6" fill="#446b55" opacity="0.6"/>
       ))}
 
-      {/* ── Navigation route (dashed) ── */}
+      {/* -- Navigation route (dashed) -- */}
       <path
         d={pathGlowD}
         stroke="#fde68a"
@@ -306,10 +306,10 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         );
       })}
 
-      {/* ── Vignette overlay ── */}
+      {/* -- Vignette overlay -- */}
       <rect x="0" y="0" width="102" height="90" fill="url(#vignette)"/>
 
-      {/* ── Ship (player marker) ── */}
+      {/* -- Ship (player marker) -- */}
       <g transform={`translate(${sx}, ${sy - 3.4})`} filter="url(#shipGlow)">
         <ellipse cx="-4.8" cy="2.5" rx="5.8" ry="1.6" fill="url(#shipWake)" opacity="0.55"/>
         <ellipse cx="-7.2" cy="2.6" rx="2.4" ry="0.75" fill="#e0f2fe" opacity="0.4"/>
@@ -354,13 +354,13 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         />
       </g>
 
-      {/* ── START marker ── */}
+      {/* -- START marker -- */}
       <g transform="translate(9,72)">
         <rect x="-5" y="-3" width="10" height="6" rx="1.5" fill="#16a34a" opacity="0.9"/>
         <text x="0" y="1.2" textAnchor="middle" fontSize="2.5" fill="white" fontWeight="bold">START</text>
       </g>
 
-      {/* ── Grid lines (map aesthetic) ── */}
+      {/* -- Grid lines (map aesthetic) -- */}
       {[20,40,60,80].map(x => (
         <line key={`vg${x}`} x1={x} y1="0" x2={x} y2="90" stroke="#1a6ba0" strokeWidth="0.1" opacity="0.15"/>
       ))}
@@ -368,13 +368,13 @@ function TreasureMapSVG({ progress }: { progress: number }) {
         <line key={`hg${y}`} x1="0" y1={y} x2="102" y2={y} stroke="#1a6ba0" strokeWidth="0.1" opacity="0.15"/>
       ))}
 
-      {/* ── Decorative border ── */}
+      {/* -- Decorative border -- */}
       <rect x="0.5" y="0.5" width="101" height="89" rx="2"
         fill="none" stroke="#c9a96e" strokeWidth="1" opacity="0.5"/>
       <rect x="1.5" y="1.5" width="99" height="87" rx="1.5"
         fill="none" stroke="#8b6914" strokeWidth="0.3" opacity="0.4"/>
 
-      {/* ── Sea monsters (decorative) ── */}
+      {/* -- Sea monsters (decorative) -- */}
       <g transform="translate(68,62)" opacity="0.35">
         <path d="M0,0 Q2,-2 4,0 Q6,2 8,0" stroke="#1a4a6a" strokeWidth="0.8" fill="none"/>
         <circle cx="0.5" cy="-0.5" r="0.4" fill="#1a4a6a"/>
@@ -602,7 +602,7 @@ export default function TreasureHunt() {
     return { name: "Jake Varabey", color: "from-stone-400 to-stone-600", icon: GiPirateFlag };
   }, [score]);
 
-  // ── Timer ring ──
+  // -- Timer ring --
   const timerPct = (questionSeconds / SECONDS_PER_QUESTION) * 100;
   const timerColor = questionSeconds <= 10 ? "#ef4444" : questionSeconds <= 20 ? "#f59e0b" : "#22c55e";
 
@@ -611,7 +611,7 @@ export default function TreasureHunt() {
       className="relative min-h-screen text-white"
       style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
     >
-      {/* ── Atmospheric background ── */}
+      {/* -- Atmospheric background -- */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#08151f] via-[#0d1f2d] to-[#060e16]" />
         {/* Animated stars */}
@@ -638,7 +638,7 @@ export default function TreasureHunt() {
         />
       </div>
 
-      {/* ── Toast ── */}
+      {/* -- Toast -- */}
       {toast && (
         <div className="fixed left-1/2 top-6 z-50 -translate-x-1/2">
           <div className="relative rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-3 font-bold text-amber-950 shadow-2xl shadow-amber-500/40">
@@ -648,7 +648,7 @@ export default function TreasureHunt() {
         </div>
       )}
 
-      {/* ── INTRO PHASE ── */}
+      {/* -- INTRO PHASE -- */}
       {phase === "intro" && (
         <div className="space-y-6 p-4">
           {canManageQuestions && (
@@ -704,8 +704,8 @@ export default function TreasureHunt() {
               )}
               <div className="grid gap-3 md:grid-cols-2">
                 {[
-                  { val: draft.title, ph: "📝 Sarlavha", key: "title" },
-                  { val: draft.story, ph: "📖 Hikoya", key: "story" },
+                  { val: draft.title, ph: "?? Sarlavha", key: "title" },
+                  { val: draft.story, ph: "?? Hikoya", key: "story" },
                 ].map(({ val, ph, key }) => (
                   <input key={key} value={val}
                     onChange={(e) => setDraft((p) => ({ ...p, [key]: e.target.value }))}
@@ -715,7 +715,7 @@ export default function TreasureHunt() {
                 <input value={draft.question}
                   onChange={(e) => setDraft((p) => ({ ...p, question: e.target.value }))}
                   className="rounded-xl border border-amber-600/30 bg-black/40 px-4 py-3 text-amber-100 outline-none transition-all placeholder-amber-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 md:col-span-2"
-                  placeholder="❓ Savol" />
+                  placeholder="? Savol" />
                 {draft.options.map((o, i) => (
                   <input key={i} value={o}
                     onChange={(e) => setDraft((p) => {
@@ -729,16 +729,16 @@ export default function TreasureHunt() {
                 <select value={draft.answerIndex}
                   onChange={(e) => setDraft((p) => ({ ...p, answerIndex: Number(e.target.value) }))}
                   className="rounded-xl border border-amber-600/30 bg-stone-900 px-4 py-3 text-amber-100 outline-none focus:border-amber-400">
-                  {[0,1,2,3].map(i => <option key={i} value={i} className="bg-stone-900">✅ To'g'ri javob: {i+1}</option>)}
+                  {[0,1,2,3].map(i => <option key={i} value={i} className="bg-stone-900">? To'g'ri javob: {i+1}</option>)}
                 </select>
                 <input value={draft.reward}
                   onChange={(e) => setDraft((p) => ({ ...p, reward: e.target.value }))}
                   className="rounded-xl border border-amber-600/30 bg-black/40 px-4 py-3 text-amber-100 outline-none placeholder-amber-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30"
-                  placeholder="💰 Ball (masalan: 120)" />
+                  placeholder="?? Ball (masalan: 120)" />
                 <input value={draft.hint}
                   onChange={(e) => setDraft((p) => ({ ...p, hint: e.target.value }))}
                   className="rounded-xl border border-amber-600/30 bg-black/40 px-4 py-3 text-amber-100 outline-none transition-all placeholder-amber-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 md:col-span-2"
-                  placeholder="💡 Maslahat (hint)" />
+                  placeholder="?? Maslahat (hint)" />
               </div>
               {questionError && <p className="mt-2 text-sm text-rose-400">{questionError}</p>}
               <div className="mt-4 flex gap-3">
@@ -780,26 +780,26 @@ export default function TreasureHunt() {
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-yellow-600/10 blur-3xl" />
 
-            {/* Decorative map preview — LARGE */}
+            {/* Decorative map preview � LARGE */}
             <div className="relative mb-6 overflow-hidden rounded-3xl border-2 border-amber-600/50 shadow-2xl shadow-amber-900/40" style={{ height: "400px" }}>
               <TreasureMapSVG progress={8} />
               {/* Bottom gradient title */}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-6 pb-5 pt-12 text-center">
                 <p className="text-2xl font-black tracking-[0.18em] text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
-                  ☠ XAZINA OVCHILARI ☠
+                  ? XAZINA OVCHILARI ?
                 </p>
                 <p className="mt-1 text-xs tracking-widest text-amber-500/80">Xazinani top!</p>
               </div>
               {/* Corner badges */}
-              <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">🦜</div>
-              <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">⚓</div>
+              <div className="absolute left-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">??</div>
+              <div className="absolute right-4 top-4 rounded-full border border-amber-600/40 bg-black/60 px-3 py-1.5 text-lg backdrop-blur-sm">?</div>
             </div>
 
             <div className="relative z-10 mb-6 grid gap-4 sm:grid-cols-3">
               {[
-                { icon: "⚔️", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
-                { icon: "💰", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
-                { icon: "🏆", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
+                { icon: "??", title: "Qanday o'ynaladi?", text: "Har to'g'ri javob kemangizni xazinaga yaqinlashtiradi. Xato javob orqaga qaytaradi." },
+                { icon: "??", title: "Ballar", text: `To'g'ri: +ball+vaqt bonusi\nXato: -${WRONG_PENALTY} ball\nHint: -${HINT_PENALTY} ball` },
+                { icon: "??", title: "G'alaba", text: `${minScoreToWin}+ ball yig'ib, xazinaga yeting!` },
               ].map(({ icon, title, text }) => (
                 <div key={title} className="rounded-2xl border border-amber-700/20 bg-black/30 p-4 backdrop-blur-sm">
                   <div className="mb-2 text-2xl">{icon}</div>
@@ -814,7 +814,7 @@ export default function TreasureHunt() {
               <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
               <span className="relative flex items-center justify-center gap-4">
                 <GiAnchor className="text-2xl" />
-                ☠️ SARGUZASHTNI BOSHLASH ☠️
+                ?? SARGUZASHTNI BOSHLASH ??
                 <FaShip className="text-2xl" />
               </span>
             </button>
@@ -822,10 +822,10 @@ export default function TreasureHunt() {
         </div>
       )}
 
-      {/* ── PLAY PHASE ── */}
+      {/* -- PLAY PHASE -- */}
       {phase === "play" && current && (
         <div className="flex min-h-screen flex-col">
-          {/* ── Top status bar ── */}
+          {/* -- Top status bar -- */}
           <div className="sticky top-0 z-30 border-b border-amber-800/30 bg-slate-950/90 px-4 py-2 backdrop-blur-md shadow-lg">
             <div className="mx-auto flex max-w-7xl items-center gap-3">
               {/* Savol */}
@@ -874,7 +874,7 @@ export default function TreasureHunt() {
           <div className="flex-1 p-4">
             <div className="mx-auto grid max-w-7xl gap-4 xl:grid-cols-[1.45fr_1fr] xl:items-start">
               <div className="space-y-4">
-                {/* ── TREASURE MAP ── */}
+                {/* -- TREASURE MAP -- */}
                 <div className="relative overflow-hidden rounded-[32px] border-2 border-amber-700/50 bg-gradient-to-br from-slate-950/70 via-sky-950/40 to-amber-950/20 p-3 shadow-2xl shadow-amber-900/30">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
                   <div
@@ -886,7 +886,7 @@ export default function TreasureHunt() {
                     <div className="absolute left-4 top-4">
                       <div className="rounded-2xl border border-amber-600/50 bg-black/55 px-5 py-3 shadow-lg backdrop-blur-md">
                         <p className="text-[11px] font-bold tracking-[0.28em] text-amber-500/80">TREASURE HUNT</p>
-                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">☠ XAZINA XARITASI ☠</p>
+                        <p className="text-lg font-black tracking-[0.16em] text-amber-300">? XAZINA XARITASI ?</p>
                       </div>
                     </div>
 
@@ -925,7 +925,7 @@ export default function TreasureHunt() {
                 </button>
               </div>
 
-              {/* ── Question card ── */}
+              {/* -- Question card -- */}
               <div className="relative overflow-hidden rounded-[32px] border border-amber-700/30 bg-gradient-to-br from-amber-950/70 via-stone-950/80 to-black/80 p-5 shadow-xl backdrop-blur-sm xl:sticky xl:top-20">
                 <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
                 <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-amber-500/10 to-transparent" />
@@ -968,7 +968,7 @@ export default function TreasureHunt() {
 
                 {showHint && (
                   <div className="mb-4 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                    💡 {current.hint}
+                    ?? {current.hint}
                   </div>
                 )}
 
@@ -1015,7 +1015,7 @@ export default function TreasureHunt() {
         </div>
       )}
 
-      {/* ── Answer flash overlay ── */}
+      {/* -- Answer flash overlay -- */}
       {showAnswerEffect && answerResult && (
         <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
           <div className={`flex h-32 w-32 items-center justify-center rounded-full border-4 text-5xl font-black shadow-2xl ${
@@ -1023,12 +1023,12 @@ export default function TreasureHunt() {
               ? "border-emerald-400 bg-emerald-500/30 text-emerald-300 shadow-emerald-500/50"
               : "border-rose-400 bg-rose-500/30 text-rose-300 shadow-rose-500/50"
           }`}>
-            {answerResult === "correct" ? "✓" : "✗"}
+            {answerResult === "correct" ? "?" : "?"}
           </div>
         </div>
       )}
 
-      {/* ── FINISH PHASE ── */}
+      {/* -- FINISH PHASE -- */}
       {phase === "finish" && (
         <div className="flex min-h-screen items-center justify-center p-4">
           <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-amber-600/30 bg-gradient-to-br from-amber-950/70 to-stone-900/70 p-8 text-center shadow-2xl backdrop-blur-sm">
@@ -1037,7 +1037,7 @@ export default function TreasureHunt() {
             <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-yellow-600/10 blur-3xl" />
 
             <div className="mb-5 text-8xl drop-shadow-2xl">
-              {won ? "🏆" : "☠️"}
+              {won ? "??" : "??"}
             </div>
 
             {/* Mini map preview on finish */}
@@ -1046,7 +1046,7 @@ export default function TreasureHunt() {
             </div>
 
             <h2 className="mb-4 text-3xl font-black tracking-wide text-amber-300">
-              {won ? "🏆 XAZINA TOPILDI! 🏆" : "☠️ MAG'LUB BO'LDINGIZ ☠️"}
+              {won ? "?? XAZINA TOPILDI! ??" : "?? MAG'LUB BO'LDINGIZ ??"}
             </h2>
 
             <div className="mb-6 space-y-3">
@@ -1074,7 +1074,7 @@ export default function TreasureHunt() {
         </div>
       )}
 
-      {/* ── Countdown Overlay ── */}
+      {/* -- Countdown Overlay -- */}
       {countdownVisible && countdownValue !== null && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center" style={{ pointerEvents: "all" }}>
           {/* Dark backdrop */}
@@ -1102,7 +1102,7 @@ export default function TreasureHunt() {
             </div>
             <div className="rounded-full border border-amber-600/40 bg-black/60 px-6 py-2 backdrop-blur-sm">
               <p className="font-black tracking-[0.2em] text-amber-400" style={{ fontSize: "14px" }}>
-                ☠ BOSHLANMOQDA ☠
+                ? BOSHLANMOQDA ?
               </p>
             </div>
           </div>
@@ -1111,3 +1111,4 @@ export default function TreasureHunt() {
     </div>
   );
 }
+

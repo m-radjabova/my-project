@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Confetti from "react-confetti-boom";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import mathChickGameSound from "../../../assets/sounds/math_chick_game.m4a";
 import wrongSound from "../../../assets/sounds/wrong.mp3";
 import finishSound from "../../../assets/sounds/applause.mp3";
@@ -1501,3 +1501,4 @@ export default function MathChickGame() {
     </div>
   );
 }
+

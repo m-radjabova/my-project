@@ -13,7 +13,7 @@ import {
   FaUpload
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 import { TEAM_AVATARS, TEAM_COLORS, DIFFICULTY_CONFIG } from "./constants";
 import type { Phase, Puzzle, PuzzlePiece, Team } from "./types";
 import { getComboBonus, getRandomViewTransform } from "./utils";
@@ -985,6 +985,7 @@ function MiniPuzzle() {
 }
 
 export default MiniPuzzle;
+
 
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import applauseSound from "../../../assets/sounds/applause.mp3";
+import applauseSound from "../assets/sounds/applause.mp3";
 
 export function useFinishApplause(shouldPlay: boolean, enabled = true) {
   const audioRef = useRef<HTMLAudioElement | null>(null);

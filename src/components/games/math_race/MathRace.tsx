@@ -15,10 +15,12 @@ import {
 } from "react-icons/fa";
 import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateMathRaceQuestions } from "./ai";
+import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
+import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
 
 import trackImg from "../../../assets/track-road.jpg";
 import carBlue from "../../../assets/blue-car-removebg-preview.png";
@@ -30,7 +32,7 @@ import sfxWrong from "../../../assets/sounds/wrong.mp3";
 import sfxNitro from "../../../assets/sounds/whoosh.m4a";
 import sfxFinish from "../../../assets/sounds/applause.mp3";
 
-import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
+import { BASE_MOVE_AMOUNT, DEFAULT_QUESTIONS, MATH_RACE_GAME_KEY, MATH_RACE_RESULT_KEY, RACE_TRACK_LENGTH, ROUND_TIME, TIME_BONUS_MULTIPLIER } from "./constants";
 import type { Difficulty, MathQuestion, Phase, Player, PlayerId, PlayerStats, QuestionDraft } from "./types";
 import { clamp, createDefaultStats, nitroBonusFromStreak, shuffleArray, wrongPenalty } from "./utils";
 
@@ -177,6 +179,17 @@ export default function MathRace() {
 
   const currentQuestion = activeQuestions[currentQuestionIndex];
   const progress = activeQuestions.length > 0 ? ((currentQuestionIndex + 1) / activeQuestions.length) * 100 : 0;
+  useGameResultSubmission(phase === "finish", MATH_RACE_RESULT_KEY, players.map((player) => ({
+    participant_name: player.name,
+    participant_mode: `${players.length} o'yinchi`,
+    score: Math.round(player.position),
+    metadata: {
+      winner: winner === player.id,
+      track_length: RACE_TRACK_LENGTH,
+      stars,
+      medal,
+    },
+  })));
 
   const baseOptions = useMemo(() => {
     if (!currentQuestion) return [];
@@ -974,6 +987,7 @@ export default function MathRace() {
                 <FaArrowLeft className="mr-2 inline" />O'yinlar
               </button>
             </div>
+            <GameLeaderboardPanel gameKey={MATH_RACE_RESULT_KEY} title="Math Race Reytingi" />
           </div>
         </div>
       )}
@@ -982,4 +996,5 @@ export default function MathRace() {
     </div>
   );
 }
+
 

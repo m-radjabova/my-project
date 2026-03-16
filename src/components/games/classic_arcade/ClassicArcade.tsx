@@ -7,11 +7,11 @@ import {
 } from "react-icons/gi";
 import { 
   MdSkipNext, } from "react-icons/md";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateClassicArcadeChallenges } from "./ai";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 type Phase = "teacher" | "teams" | "play" | "finish";
 type Mini = "math" | "pattern" | "odd";
@@ -858,3 +858,4 @@ export default function ClassicArcade() {
     </div>
   );
 }
+

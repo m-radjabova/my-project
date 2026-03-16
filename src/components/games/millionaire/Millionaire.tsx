@@ -20,7 +20,7 @@ import { GiMoneyStack, GiBrain } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import millionaireSound from "../../../assets/sounds/millionaire_sound.m4a";
 import tadaSound from "../../../assets/sounds/applause.mp3";
-import { fetchGameQuestions, saveGameQuestions } from "../../../apiClient/gameQuestions";
+import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { QUESTION_BANK } from "./data";
 
 type OptionKey = "A" | "B" | "C" | "D";

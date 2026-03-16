@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import {GiLevelFour } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 type RoundState = {
   count: number;
@@ -628,3 +628,4 @@ function FindDifferentColor() {
 }
 
 export default FindDifferentColor;
+

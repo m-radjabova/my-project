@@ -39,3 +39,20 @@ export interface GameRatingSummary {
   ratings_count: number;
   my_rating?: number | null;
 }
+
+export interface GameLeaderboardEntry {
+  id: string;
+  game_key: string;
+  participant_name: string;
+  participant_mode: string;
+  score: number;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string;
+}
+
+export interface SubmitGameResultPayload {
+  participant_name: string;
+  participant_mode: string;
+  score: number;
+  metadata?: Record<string, unknown>;
+}

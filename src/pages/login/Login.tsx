@@ -11,7 +11,6 @@ import { FcGoogle } from "react-icons/fc";
 import {
   FaRocket,
   FaShieldAlt,
-  FaSmile,
   FaGraduationCap,
 } from "react-icons/fa";
 import { GiPlanetCore } from "react-icons/gi";
@@ -74,15 +73,7 @@ function LoginForm() {
 
       await completeAuth(res.data.access_token, res.data.refresh_token);
 
-      toast.success("Xush kelibsiz! 🎉", {
-        icon: <FaSmile className="text-[#e07c8e]" />,
-        style: {
-          borderRadius: "20px",
-          background: "linear-gradient(135deg, #e07c8e, #a66466)",
-          color: "#fff",
-          boxShadow: "0 10px 30px rgba(224,124,142,0.3)",
-        },
-      });
+      toast.success("Xush kelibsiz! 🎉");
     } catch (error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
 

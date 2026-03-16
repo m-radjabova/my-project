@@ -12,8 +12,8 @@ import {
   FaKeyboard,
 } from "react-icons/fa";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
-import { useGameStartCountdown } from "../shared/useGameStartCountdown";
-import { useFinishApplause } from "../shared/useFinishApplause";
+import { useGameStartCountdown } from "../../../hooks/useGameStartCountdown";
+import { useFinishApplause } from "../../../hooks/useFinishApplause";
 
 type Team = {
   id: number;
@@ -652,3 +652,4 @@ function WordChain() {
 }
 
 export default WordChain;
+
