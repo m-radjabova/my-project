@@ -517,11 +517,14 @@ export default function TreasureHunt() {
         hint: item.hint,
         reward: item.reward,
       }));
-      setQuestionBank(generatedItems);
-      setRiddles(randomizeRiddles(generatedItems));
+      setQuestionBank((prev) => {
+        const nextItems = [...prev, ...generatedItems];
+        setRiddles(randomizeRiddles(nextItems));
+        return nextItems;
+      });
       setEditingIdx(null);
       setDraft(EMPTY_DRAFT);
-      setToast(`${generatedItems.length} ta ${AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol yangilandi`);
+      setToast(`${generatedItems.length} ta ${AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol qo'shildi`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "AI savol yaratib bo'lmadi.";
       setQuestionError(message);
@@ -690,11 +693,11 @@ export default function TreasureHunt() {
                   disabled={!hasGeminiKey || isGeneratingAi}
                   className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-3 font-bold text-slate-950 shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-cyan-500/40"
                 >
-                  {isGeneratingAi ? `${aiCount} ta yaratilmoqda...` : `AI bilan ${aiCount} ta yangilash`}
+                  {isGeneratingAi ? `${aiCount} ta yaratilmoqda...` : `AI bilan ${aiCount} ta qo'shish`}
                 </button>
               </div>
               <p className="mb-3 text-xs text-cyan-200/80">
-                AI yaratganda hozirgi savollar o'chadi va o'rniga yangi {aiCount} ta {AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol yoziladi.
+                AI yaratganda yangi {aiCount} ta {AI_DIFFICULTY_OPTIONS.find((item) => item.value === aiDifficulty)?.label.toLowerCase()} savol hozirgi ro'yxatga qo'shiladi.
               </p>
               {!hasGeminiKey && (
                 <p className="mb-3 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>

@@ -43,6 +43,7 @@ import MathChickGamePage from "./components/games/math_chick_game/MathChickGameP
 import TeacherQuestionPanel from "./pages/teacher/TeacherQuestionPanel";
 import TeacherLayout from "./layout/TeacherLayout";
 import KnowledgeAdventurePage from "./components/games/knowledge_adventure/KnowledgeAdventurePage";
+import IQGamePage from "./components/games/iq_game/IQGamePage";
 
 function App() {
   const {
@@ -152,6 +153,7 @@ function App() {
         <Route path="/games/pictionary" element={<PictionaryPage />} />
         <Route path="/games/truth-detector" element={<TruthDetectorPage />} />
         <Route path="/games/math-chick" element={<MathChickGamePage />} />
+        <Route path="/games/iq-game" element={<IQGamePage />} />
         <Route
           path="/games/knowledge-adventure"
           element={<KnowledgeAdventurePage />}

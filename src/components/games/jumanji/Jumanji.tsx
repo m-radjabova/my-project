@@ -352,12 +352,11 @@ function Jumanji() {
         count: aiQuestionCount,
         difficulty: aiDifficulty,
       });
-      setQuestions(
-        generated.map((item, index) => ({
+      const generatedQuestions = generated.map((item, index) => ({
           ...item,
           id: `ai-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
-        })),
-      );
+        }));
+      setQuestions((prev) => [...prev, ...generatedQuestions]);
       setEditingId(null);
       setNewQuestion({
         subject: aiSubject === "Aralash fanlar" ? "Matematika" : aiSubject,
@@ -1009,7 +1008,7 @@ function Jumanji() {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-100/75">
-                    AI savollar mavjud ro'yxatni yangilaydi. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi, "Aralash" qiyinlik tanlansa easy, medium va hard savollar aralash bo'ladi.
+                    AI savollar mavjud ro'yxatga qo'shiladi. "Aralash fanlar" tanlansa bir nechta fanlardan savollar keladi, "Aralash" qiyinlik tanlansa easy, medium va hard savollar aralash bo'ladi.
                   </p>
                   {!hasGeminiKey && (
                     <p className="mt-2 text-xs text-amber-300">

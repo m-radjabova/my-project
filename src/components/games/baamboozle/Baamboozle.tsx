@@ -229,7 +229,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
         count: aiQuestionCount,
         difficulty: aiDifficulty,
       });
-      setQuestionBank(generated);
+      setQuestionBank((prev) => [...prev, ...generated]);
       setDraft({ question: "", answer: "" });
       setEditingQuestionIndex(null);
     } catch (error) {
@@ -569,7 +569,7 @@ const Baamboozle: React.FC<BaamboozleProps> = ({ initialQuestions }) => {
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-cyan-200/80">
-                    AI yaratganda hozirgi Baamboozle savollari o'rniga yangi savollar yoziladi.
+                    AI yaratgan savollar hozirgi Baamboozle savollariga qo'shiladi.
                   </p>
                   {!hasGeminiKey && (
                     <p className="mt-2 text-xs text-rose-300">`.env` ichida `VITE_GEMINI_API_KEY` ni to'ldiring va dev serverni qayta ishga tushiring.</p>

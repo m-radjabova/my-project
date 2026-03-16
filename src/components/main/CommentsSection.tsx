@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { 
   FaStar, 
   FaQuoteRight, 
@@ -22,7 +22,6 @@ import { comments } from "./commentsData";
 
 function CommentsSection({ isDark = false }: { isDark?: boolean }) {
   const [likedComments, setLikedComments] = useState<number[]>([]);
-  const [swiperRef, setSwiperRef] = useState<any>(null);
 
   const handleLike = (id: number) => {
     setLikedComments((prev) =>
@@ -31,7 +30,11 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
   };
 
   const totalComments = comments.length;
-  const shouldLoop = comments.length > 3;
+  const shouldLoop = comments.length > 1;
+  const carouselComments = useMemo(() => {
+    if (!shouldLoop) return comments;
+    return [...comments, ...comments, ...comments];
+  }, [shouldLoop]);
 
   return (
     <section className={`relative overflow-hidden py-16 lg:py-24 ${
@@ -112,18 +115,18 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
         {/* Swiper Carousel - Soft & Smooth */}
         <div className="relative px-4 md:px-10">
           <Swiper
-            onSwiper={setSwiperRef}
             modules={[Autoplay, Pagination, Navigation, EffectCoverflow]}
             spaceBetween={24}
             slidesPerView={1}
             centeredSlides={false}
             loop={shouldLoop}
-            loopAdditionalSlides={comments.length}
-            loopedSlides={comments.length}
+            loopAdditionalSlides={carouselComments.length}
+            loopedSlides={carouselComments.length}
             watchSlidesProgress
             observer
             observeParents
             slidesPerGroup={1}
+            grabCursor
             speed={650}
             autoplay={{
               delay: 5000,
@@ -147,8 +150,8 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
             }}
             className="comments-swiper !overflow-visible !pb-12"
           >
-            {comments.map((item, index) => (
-              <SwiperSlide key={item.id} className="!h-auto">
+            {carouselComments.map((item, index) => (
+              <SwiperSlide key={`${item.id}-${index}`} className="!h-auto">
                   <article
                     data-aos="fade-up"
                     data-aos-delay={120 + (index % 3) * 80}
@@ -158,7 +161,7 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                     <div className={`absolute -inset-0.5 rounded-3xl bg-gradient-to-r ${item.color} opacity-10 blur-lg`} />
                     
                     {/* Main Card - Very soft */}
-                    <div className={`relative h-full rounded-3xl border ${isDark ? "border-[#2b3146] bg-[#1a1a28]/88" : `border-white/60 ${item.bgColor} bg-white/40`} backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_15px_40px_rgba(224,124,142,0.08)]`}>
+                    <div className={`relative flex h-full flex-col rounded-3xl border ${isDark ? "border-[#2b3146] bg-[#1a1a28]/88" : `border-white/60 ${item.bgColor} bg-white/40`} backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_15px_40px_rgba(224,124,142,0.08)]`}>
                       
                       {/* Quote icon - soft */}
                       <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-r ${item.color} bg-opacity-20 flex items-center justify-center shadow-sm`}>
@@ -205,12 +208,12 @@ function CommentsSection({ isDark = false }: { isDark?: boolean }) {
                       </div>
                       
                       {/* Comment - soft */}
-                      <p className={`text-xs leading-relaxed mb-4 line-clamp-3 font-light ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
+                      <p className={`text-xs leading-relaxed mb-4 min-h-[84px] line-clamp-3 font-light ${isDark ? "text-[#a1a1aa]" : "text-[#8f6d70]"}`}>
                         "{item.comment}"
                       </p>
                       
                       {/* Footer - minimal */}
-                      <div className={`flex items-center justify-between border-t pt-3 ${isDark ? "border-[#2b3146]" : "border-[#f0d9d6]/30"}`}>
+                      <div className={`mt-auto flex items-center justify-between border-t pt-3 ${isDark ? "border-[#2b3146]" : "border-[#f0d9d6]/30"}`}>
                         <button
                           onClick={() => handleLike(item.id)}
                           className="flex items-center gap-1.5 group/btn"

@@ -210,6 +210,47 @@ const SUBJECT_OPTIONS = [
 
 const AI_COUNT_OPTIONS = [1, 3, 5, 10, 15, 20] as const;
 
+function getAiPanelContent(gameKey: string) {
+  if (gameKey === "baamboozle") {
+    return {
+      heading: "Savol-javoblarni avtomatik yaratish",
+      description: "Mavzu, savollar soni va qiyinlikni tanlang. AI Baamboozle uchun qisqa savol va aniq javoblar qo'shadi.",
+      topicLabel: "Mavzu yoki fan",
+      topicPlaceholder: "Masalan: hayvonlar, tarixiy sanalar, ingliz tili so'zlari...",
+      buttonLabel: `AI bilan ${aiCountPlaceholder} ta savol-javob qo'shish`,
+      loadingLabel: `${aiCountPlaceholder} ta savol-javob yaratilmoqda...`,
+      footnote: `"Aralash" tanlansa easy, medium va hard uslubdagi savol-javoblar birga yaratiladi. Javoblar qisqa va oson tekshiriladigan formatda keladi.`,
+    };
+  }
+
+  return {
+    heading: "Savollarni avtomatik yaratish",
+    description: "Mavzu, savollar soni va qiyinlikni tanlang. AI yangi savollarni shu o'yin ro'yxatiga qo'shadi.",
+    topicLabel: "Mavzu",
+    topicPlaceholder: "Masalan: kasrlar, geografiya, hayvonlar...",
+    buttonLabel: `AI bilan ${aiCountPlaceholder} ta savol qo'shish`,
+    loadingLabel: `${aiCountPlaceholder} ta savol yaratilmoqda...`,
+    footnote: `"Aralash" tanlansa easy, medium va hard darajadagi savollar birga yaratiladi.`,
+  };
+}
+
+const aiCountPlaceholder = "__COUNT__";
+
+function validateDraftItem(gameKey: string, draftValue: unknown) {
+  if (!draftValue || typeof draftValue !== "object") return "Savol formati noto'g'ri.";
+  const value = draftValue as Record<string, unknown>;
+
+  if (gameKey === "baamboozle") {
+    const question = String(value.question ?? "").trim();
+    const answer = String(value.answer ?? "").trim();
+    if (!question) return "Baamboozle uchun savol matnini kiriting.";
+    if (!answer) return "Baamboozle uchun javobni kiriting.";
+    return "";
+  }
+
+  return "";
+}
+
 function SelectField({
   label,
   value,
@@ -588,6 +629,28 @@ function SpecializedEditor({
     );
   }
 
+  if ("question" in value || "answer" in value) {
+    return (
+      <div className="space-y-4">
+        {"question" in value && (
+          <FormField label="question" value={value.question} path={["question"]} onChange={onChange} icon={<FaRegLightbulb />} />
+        )}
+        {"answer" in value && (
+          <FormField label="answer" value={value.answer} path={["answer"]} onChange={onChange} icon={<FaCheck />} />
+        )}
+        {"difficulty" in value && (
+          <FormField label="difficulty" value={value.difficulty} path={["difficulty"]} onChange={onChange} icon={<FaStar />} />
+        )}
+        {"points" in value && (
+          <FormField label="points" value={value.points} path={["points"]} onChange={onChange} icon={<FaStar />} />
+        )}
+        {"id" in value && (
+          <FormField label="id" value={value.id} path={["id"]} onChange={onChange} icon={<FaRobot />} />
+        )}
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -807,6 +870,7 @@ export default function TeacherQuestionPanel() {
 
   const activeGame = GAME_REGISTRY.find((game) => game.gameKey === activeGameKey) ?? GAME_REGISTRY[0];
   const activeItems = questionsByGame[activeGame?.gameKey ?? ""] ?? [];
+  const aiPanelContent = useMemo(() => getAiPanelContent(activeGame?.gameKey ?? ""), [activeGame?.gameKey]);
 
   useEffect(() => {
     let alive = true;
@@ -874,6 +938,11 @@ export default function TeacherQuestionPanel() {
 
   async function handleSaveEditor() {
     if (!activeGame) return;
+    const validationError = validateDraftItem(activeGame.gameKey, draftValue);
+    if (validationError) {
+      setEditorError(validationError);
+      return;
+    }
     const nextItem = withIdFallback(draftValue);
     const nextItems = [...activeItems];
 
@@ -1057,7 +1126,7 @@ export default function TeacherQuestionPanel() {
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative min-w-[200px]">
+                <div className="relative ">
                   <FaSearch className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#b38b8d]" />
                   <input
                     value={search}
@@ -1076,7 +1145,7 @@ export default function TeacherQuestionPanel() {
               </div>
             </div>
 
-            <div className="space-y-2 pr-1 max-h-[600px] overflow-y-auto">
+            <div className="space-y-2 pr-1">
               {filteredItems.map(({ item, index: realIndex }) => {
                 const meta = extractMeta(item);
                 const selected = selectedIndex === realIndex;
@@ -1091,7 +1160,7 @@ export default function TeacherQuestionPanel() {
                     }`}
                   >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="min-w-0 flex-1">
+                      <div className="flex-1">
                         <div className="mb-2 flex flex-wrap items-center gap-1.5">
                           <span className="rounded-full border border-[#f0d9d6] bg-white/90 px-2 py-0.5 text-[8px] font-medium text-[#b38b8d]">
                             #{realIndex + 1}
@@ -1179,20 +1248,20 @@ export default function TeacherQuestionPanel() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b38b8d]">AI Generator</p>
-                  <h4 className="text-sm font-medium text-[#7b4f53]">Savollarni avtomatik yaratish</h4>
+                  <h4 className="text-sm font-medium text-[#7b4f53]">{aiPanelContent.heading}</h4>
                   <p className="mt-1 text-[10px] leading-4 text-[#8f6d70]">
-                    Mavzu, savollar soni va qiyinlikni tanlang. AI yangi savollarni shu o'yin ro'yxatiga qo'shadi.
+                    {aiPanelContent.description}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <label className="block space-y-2">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">Mavzu</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-[#8f6d70]">{aiPanelContent.topicLabel}</span>
                   <input
                     value={aiTopic}
                     onChange={(event) => setAiTopic(event.target.value)}
-                    placeholder="Masalan: kasrlar, geografiya, hayvonlar..."
+                    placeholder={aiPanelContent.topicPlaceholder}
                     className="w-full rounded-xl border border-[#f0d9d6] bg-white/90 px-4 py-3 text-sm text-[#7b4f53] placeholder:text-[#b38b8d] outline-none transition-all duration-200 focus:border-[#e07c8e] focus:shadow-[0_0_0_3px_rgba(224,124,142,0.1)]"
                   />
                 </label>
@@ -1246,16 +1315,18 @@ export default function TeacherQuestionPanel() {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7b4f53] to-[#a66466] px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   <MdAutoAwesome className={`h-4 w-4 ${isGeneratingAi ? "animate-spin" : ""}`} />
-                  {isGeneratingAi ? `${aiCount} ta savol yaratilmoqda...` : `AI bilan ${aiCount} ta savol qo'shish`}
+                  {isGeneratingAi
+                    ? aiPanelContent.loadingLabel.replace(aiCountPlaceholder, String(aiCount))
+                    : aiPanelContent.buttonLabel.replace(aiCountPlaceholder, String(aiCount))}
                 </button>
 
                 <p className="text-[10px] leading-4 text-[#8f6d70]">
-                  "Aralash" tanlansa easy, medium va hard darajadagi savollar birga yaratiladi. AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
+                  {aiPanelContent.footnote} AI ishlashi uchun `.env` ichida `VITE_GEMINI_API_KEY` bo'lishi kerak.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+            <div className="space-y-4 pr-1">
               {draftValue && typeof draftValue === "object" ? (
                 <>
                   <SpecializedEditor

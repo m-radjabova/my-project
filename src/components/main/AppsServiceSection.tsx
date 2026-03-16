@@ -26,7 +26,11 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
     () => gameCards.filter((game) => game.available),
     []
   );
-  const shouldLoop = games.length > 3;
+  const shouldLoop = games.length > 1;
+  const carouselGames = useMemo(() => {
+    if (!shouldLoop) return games;
+    return [...games, ...games, ...games];
+  }, [games, shouldLoop]);
 
   const handleLikeToggle = (gameId: string) => {
     setLikedGames((prev) =>
@@ -83,12 +87,13 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             spaceBetween={24}
             slidesPerView={1}
             loop={shouldLoop}
-            loopAdditionalSlides={games.length}
+            loopAdditionalSlides={carouselGames.length}
+            loopedSlides={carouselGames.length}
             watchSlidesProgress
             observer
             observeParents
-            centeredSlides={false}
             slidesPerGroup={1}
+            grabCursor
             speed={650}
             autoplay={{
               delay: 3500,
@@ -111,14 +116,14 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
             }}
             className="games-swiper !overflow-visible !pb-14"
           >
-            {games.map((game, index) => {
+            {carouselGames.map((game, index) => {
               const isLiked = likedGames.includes(game.id);
               const Icon = game.mainIcon;
               const CategoryIcon = game.categoryIcon;
               const LevelIcon = game.levelIcon;
 
               return (
-                <SwiperSlide key={game.id} className="!h-auto">
+                <SwiperSlide key={`${game.id}-${index}`} className="!h-auto">
                   <article
                     data-aos="fade-up"
                     data-aos-delay={120 + (index % 3) * 80}
@@ -129,7 +134,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
                       />
 
                       <div
-                        className={`relative h-full overflow-hidden rounded-[30px] border p-5 backdrop-blur-md ${
+                        className={`relative flex h-full flex-col overflow-hidden rounded-[30px] border p-5 backdrop-blur-md ${
                           isDark
                             ? "border-[#2b3146] bg-[#1a1a28]/88 shadow-[0_12px_36px_rgba(0,0,0,0.22)] hover:shadow-[0_18px_44px_rgba(255,107,138,0.12)]"
                             : "border-white/70 bg-white/45 shadow-[0_12px_36px_rgba(166,100,102,0.08)] hover:shadow-[0_18px_44px_rgba(224,124,142,0.12)]"
@@ -191,7 +196,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
                           </div>
                         </div>
 
-                        <div className="relative space-y-4">
+                        <div className="relative flex flex-1 flex-col space-y-4">
                           <div className="flex flex-wrap gap-2">
                             {[
                               { icon: FaLayerGroup, value: game.players },
@@ -212,7 +217,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
                             ))}
                           </div>
 
-                          <div>
+                          <div className="min-h-[118px]">
                             <h3 className={`text-2xl font-black ${isDark ? "text-[#f1f1f1]" : "text-[#7b4f53]"}`}>
                               {game.title}
                             </h3>
@@ -244,7 +249,7 @@ function AppsServiceSection({ isDark = false }: { isDark?: boolean }) {
 
                           <button
                             onClick={() => navigate(game.path)}
-                            className={`group/btn relative w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1`}
+                            className={`group/btn relative mt-auto w-full overflow-hidden rounded-2xl bg-gradient-to-r ${game.gradient} p-3.5 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1`}
                           >
                             <span className="absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover/btn:translate-y-0" />
                             <span className="relative flex items-center justify-center gap-2">
