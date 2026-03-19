@@ -6,7 +6,6 @@ import {
   FaRandom,
   FaHome,
   FaUserPlus,
-  FaUserMinus,
   FaCheck,
   FaTimes,
   FaTrophy,
@@ -672,14 +671,6 @@ function Millionaire() {
       askAudience: true,
       switchQuestion: true,
     });
-  }
-
-  function addPlayer() {
-    setNames((p) => (p.length < 5 ? [...p, ""] : p));
-  }
-
-  function removePlayer() {
-    setNames((p) => (p.length > 1 ? p.slice(0, -1) : p));
   }
 
   function walkAway() {
@@ -1429,7 +1420,7 @@ function Millionaire() {
       </div>
 
       {/* Global Styles */}
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

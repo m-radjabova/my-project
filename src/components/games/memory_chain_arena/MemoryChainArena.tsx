@@ -172,8 +172,6 @@ function MemoryChainArena({
   const progressRounds = phase === "ready" ? 0 : phase === "finished" ? totalRounds : Math.max(0, round - 1);
   const progressPercent = Math.round((progressRounds / totalRounds) * 100);
   const roundLabel = `${round}/${totalRounds}`;
-  const visibleSides: Side[] = isSinglePlayer ? ["left"] : ["left", "right"];
-
   useGameResultSubmission(
     phase === "finished",
     "memory-chain",

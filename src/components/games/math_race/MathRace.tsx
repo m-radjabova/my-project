@@ -17,7 +17,6 @@ import { GiRaceCar, GiCheckeredFlag } from "react-icons/gi";
 import Confetti from "react-confetti-boom";
 import { fetchGameQuestions, saveGameQuestions } from "../../../hooks/useGameQuestions";
 import { generateMathRaceQuestions } from "./ai";
-import GameLeaderboardPanel from "../shared/GameLeaderboardPanel";
 import GameStartCountdownOverlay from "../shared/GameStartCountdownOverlay";
 import { useFinishApplause } from "../../../hooks/useFinishApplause";
 import { useGameResultSubmission } from "../../../hooks/useGameResultSubmission";

@@ -271,7 +271,7 @@ function Hangman() {
   const [revealPressed, setRevealPressed] = useState(false);
   const [timerOn, setTimerOn] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(60);
-  const [hintAnimation, setHintAnimation] = useState(false);
+  const [, setHintAnimation] = useState(false);
   const [animateStep, setAnimateStep] = useState<number | null>(null);
   const wrongRef = useRef(0);
   const drawnStepsRef = useRef(0);
@@ -854,4 +854,3 @@ function Hangman() {
 }
 
 export default Hangman;
-

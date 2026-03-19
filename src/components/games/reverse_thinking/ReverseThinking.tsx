@@ -73,7 +73,7 @@ function ReverseThinking() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [roundWinner, setRoundWinner] = useState<number | null>(null);
+  const [, setRoundWinner] = useState<number | null>(null);
   const [level, setLevel] = useState(1);
   
   // Teacher panel

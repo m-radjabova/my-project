@@ -13,7 +13,6 @@ import {
   FaVolumeMute,
   FaUndo
 } from "react-icons/fa";
-import { GiPaintBrush } from "react-icons/gi";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { IoMdMore } from "react-icons/io";
 import GamePlayView from "../shared/GamePlayView";
@@ -93,7 +92,7 @@ function generateRoomCode(): string {
 // ==================== MAIN COMPONENT ====================
 function Pictionary() {
   // ==================== ROOM STATE ====================
-  const [roomCode, setRoomCode] = useState(generateRoomCode);
+  const [roomCode] = useState(generateRoomCode);
   const [players, setPlayers] = useState<Player[]>([
     { 
       id: "host-1", 
@@ -126,9 +125,6 @@ function Pictionary() {
   // ==================== UI STATE ====================
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const [showWord, setShowWord] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  
   // ==================== CANVAS STATE ====================
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -142,7 +138,6 @@ function Pictionary() {
   // ==================== COMPUTED ====================
   const currentPlayer = players.find(p => p.id === currentPlayerId)!;
   const isDrawer = currentDrawer?.id === currentPlayerId;
-  const isGuesser = !isDrawer && currentDrawer !== null;
   const canDraw = phase === "play" && isDrawer;
   
   const teamAScore = teams.A.score;
@@ -421,14 +416,7 @@ function Pictionary() {
 
   // ==================== RENDER ====================
   return (
-    <GamePlayView
-      title="Pictionary Online"
-      subtitle="Real-time multiplayer drawing game"
-      gameKey="pictionary-online"
-      backTo="/games/pictionary"
-      icon={GiPaintBrush}
-      colorClassName="from-indigo-600 via-purple-600 to-pink-600"
-    >
+    <GamePlayView colorClassName="from-indigo-600 via-purple-600 to-pink-600">
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 p-4">
         {/* ===== TOP BAR ===== */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
